@@ -83,7 +83,7 @@ router.post('/create', isAuthenticated, isAdmin, [
     }
 
     try {
-        const { projectName, location, description, totalPlots, availablePlots } = req.body;
+        const { projectName, location, description, legalDetails, totalPlots, availablePlots } = req.body;
 
         // Check if project name already exists
         const existingProject = await Project.findOne({ where: { projectName } });
@@ -101,6 +101,7 @@ router.post('/create', isAuthenticated, isAdmin, [
             projectName,
             location,
             description,
+            legalDetails,
             totalPlots: parseInt(totalPlots),
             availablePlots: parseInt(availablePlots),
             isActive: true
@@ -218,7 +219,7 @@ router.post('/:id/edit', isAuthenticated, isAdmin, [
             return res.status(404).send('Project not found');
         }
 
-        const { projectName, location, description, totalPlots, availablePlots, isActive } = req.body;
+        const { projectName, location, description, legalDetails, totalPlots, availablePlots, isActive } = req.body;
 
         // Check if project name already exists (excluding current project)
         const existingProject = await Project.findOne({
@@ -242,6 +243,7 @@ router.post('/:id/edit', isAuthenticated, isAdmin, [
             projectName,
             location,
             description,
+            legalDetails,
             totalPlots: parseInt(totalPlots),
             availablePlots: parseInt(availablePlots),
             isActive: isActive === 'on' || isActive === true || isActive === 'true'

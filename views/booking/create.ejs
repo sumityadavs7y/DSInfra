@@ -75,10 +75,13 @@
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Project <span class="text-danger">*</span></label>
-                                    <select class="form-select" name="projectId" required>
+                                    <select class="form-select" name="projectId" id="projectSelect" required>
                                         <option value="">Select Project</option>
                                         <% projects.forEach(project => { %>
-                                            <option value="<%= project.id %>"><%= project.projectName %></option>
+                                            <option value="<%= project.id %>" 
+                                                    data-legaldetails="<%= (project.legalDetails || '').replace(/"/g, '&quot;') %>">
+                                                <%= project.projectName %>
+                                            </option>
                                         <% }); %>
                                     </select>
                                 </div>
@@ -117,7 +120,8 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Legal Details</label>
-                                    <textarea class="form-control" name="legalDetails" rows="2"></textarea>
+                                    <textarea class="form-control" name="legalDetails" id="legalDetails" rows="3"></textarea>
+                                    <div class="form-text">Auto-filled from project's default legal details (editable)</div>
                                 </div>
                             </div>
                             
@@ -251,6 +255,20 @@
         // Recalculate when broker is selected/deselected
         brokerSelect.addEventListener('change', function() {
             calculateAmounts();
+        });
+        
+        // Auto-fill legal details when project is selected
+        const projectSelect = document.getElementById('projectSelect');
+        const legalDetails = document.getElementById('legalDetails');
+        
+        projectSelect.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            if (this.value && selected.dataset.legaldetails) {
+                // Only update if legal details is empty or user confirms
+                if (!legalDetails.value || confirm('Replace current legal details with project defaults?')) {
+                    legalDetails.value = selected.dataset.legaldetails;
+                }
+            }
         });
     </script>
 </body>

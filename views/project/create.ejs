@@ -67,6 +67,14 @@
                                 </div>
                                 
                                 <div class="col-12">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-file-earmark-text"></i> Legal Details (Default for Bookings)
+                                    </label>
+                                    <textarea class="form-control" name="legalDetails" rows="4"><%= project.legalDetails || '' %></textarea>
+                                    <div class="form-text">This will be auto-filled when creating a new booking for this project</div>
+                                </div>
+                                
+                                <div class="col-12">
                                     <hr class="my-3">
                                     <h5 class="text-info mb-3">
                                         <i class="bi bi-grid-3x3"></i> Plot Details

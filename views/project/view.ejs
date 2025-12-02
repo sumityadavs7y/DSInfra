@@ -66,6 +66,16 @@
                         <hr>
                         <% } %>
                         
+                        <h5 class="text-info mb-3"><i class="bi bi-file-earmark-text"></i> Legal Details</h5>
+                        <% if (project.legalDetails) { %>
+                        <div class="alert alert-light mb-4">
+                            <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;"><%= project.legalDetails %></pre>
+                        </div>
+                        <% } else { %>
+                        <p class="text-muted mb-4"><em>No legal details set for this project</em></p>
+                        <% } %>
+                        <hr>
+                        
                         <h5 class="text-info mb-3"><i class="bi bi-grid-3x3"></i> Plot Information</h5>
                         <div class="row g-3 mb-4">
                             <div class="col-6 col-md-3">

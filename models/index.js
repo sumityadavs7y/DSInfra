@@ -257,6 +257,11 @@ const Project = sequelize.define('Project', {
     type: DataTypes.TEXT,
     allowNull: true
   },
+  legalDetails: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Default legal details to be used in bookings'
+  },
   totalPlots: {
     type: DataTypes.INTEGER,
     defaultValue: 0

@@ -55,9 +55,11 @@
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Project *</label>
-                                    <select class="form-select" name="projectId" required>
+                                    <select class="form-select" name="projectId" id="projectSelect" required>
                                         <% projects.forEach(project => { %>
-                                            <option value="<%= project.id %>" <%= booking.projectId == project.id ? 'selected' : '' %>>
+                                            <option value="<%= project.id %>" 
+                                                    data-legaldetails="<%= (project.legalDetails || '').replace(/"/g, '&quot;') %>"
+                                                    <%= booking.projectId == project.id ? 'selected' : '' %>>
                                                 <%= project.projectName %>
                                             </option>
                                         <% }); %>
@@ -98,7 +100,12 @@
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Legal Details</label>
-                                    <textarea class="form-control" name="legalDetails" rows="2"><%= booking.legalDetails || '' %></textarea>
+                                    <textarea class="form-control" name="legalDetails" id="legalDetails" rows="3"><%= booking.legalDetails || '' %></textarea>
+                                    <div class="form-text">
+                                        <button type="button" class="btn btn-link btn-sm p-0" id="loadProjectLegalDetails">
+                                            <i class="bi bi-arrow-repeat"></i> Load from project defaults
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -199,6 +206,22 @@
         // Recalculate when broker is selected/deselected
         brokerSelect.addEventListener('change', function() {
             calculateAmounts();
+        });
+        
+        // Load legal details from project defaults
+        const projectSelect = document.getElementById('projectSelect');
+        const legalDetails = document.getElementById('legalDetails');
+        const loadLegalBtn = document.getElementById('loadProjectLegalDetails');
+        
+        loadLegalBtn.addEventListener('click', function() {
+            const selected = projectSelect.options[projectSelect.selectedIndex];
+            if (selected && selected.dataset.legaldetails) {
+                if (!legalDetails.value || confirm('Replace current legal details with project defaults?')) {
+                    legalDetails.value = selected.dataset.legaldetails;
+                }
+            } else {
+                alert('No default legal details available for this project');
+            }
         });
     </script>
 </body>
