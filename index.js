@@ -2,9 +2,21 @@ const express = require('express');
 const session = require('express-session');
 const app = express();
 const { envConfig } = require('./config');
-const { testConnection, syncDatabase } = require('./models');
+const { testConnection, syncDatabase, User } = require('./models');
 const createAdminUser = require('./scripts/createAdmin');
-const createSampleProjects = require('./scripts/createSampleProjects');
+const createSampleData = require('./scripts/createSampleProjects');
+
+// ============================================
+// APPLICATION CONFIGURATION FLAGS
+// ============================================
+// Set to true to insert sample data (projects, customer, broker, booking, payment)
+// Sample data will only be inserted if the database is empty
+const ENABLE_SAMPLE_DATA = true;
+
+// Set to true to auto-login as admin on server restart (for development)
+// WARNING: Disable this in production!
+const AUTO_LOGIN_AS_ADMIN = true;
+// ============================================
 
 
 app.use(express.json())
@@ -27,8 +39,21 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-app.use((req, res, next) => {
-    // res.locals.gigs = navigationData(); // Add any data you want to pass to all pages
+// Auto-login middleware (for development only)
+app.use(async (req, res, next) => {
+    if (AUTO_LOGIN_AS_ADMIN && !req.session.userId) {
+        try {
+            const admin = await User.findOne({ where: { email: 'admin@example.com' } });
+            if (admin) {
+                req.session.userId = admin.id;
+                req.session.userName = admin.name;
+                req.session.userEmail = admin.email;
+                req.session.userRole = admin.role;
+            }
+        } catch (error) {
+            // Silently fail - will require manual login
+        }
+    }
     next();
 });
 
@@ -54,8 +79,13 @@ app.use('/project', projectRoutes);
 // Initialize default data using scripts
 const initializeDefaultData = async () => {
     try {
+        // Always create admin user
         await createAdminUser();
-        await createSampleProjects();
+        
+        // Only create sample data if flag is enabled
+        if (ENABLE_SAMPLE_DATA) {
+            await createSampleData();
+        }
     } catch (error) {
         console.error('⚠️  Error initializing default data:', error.message);
     }
