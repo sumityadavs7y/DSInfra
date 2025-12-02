@@ -26,6 +26,20 @@ jobs:
             set -e
             echo "🚀 Starting deployment..."
             
+            # Load Node.js environment (add npm to PATH)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" || true
+            export PATH="/usr/local/bin:/usr/bin:$PATH"
+            
+            # Source profile to load environment variables
+            [ -f ~/.profile ] && source ~/.profile || true
+            [ -f ~/.bashrc ] && source ~/.bashrc || true
+            
+            # Verify npm is available
+            echo "🔍 Checking npm..."
+            which npm || echo "npm not found in PATH"
+            npm --version || echo "npm command failed"
+            
             # Navigate to project directory
             cd ${{ secrets.EC2_PROJECT_PATH || '~/ds' }}
             
@@ -54,6 +68,9 @@ jobs:
             
             # Restart application with PM2
             echo "🔄 Restarting application..."
+            
+            # Verify PM2 is available
+            which pm2 || echo "pm2 not found in PATH"
             
             # Check if PM2 process exists
             if pm2 describe dsinfra > /dev/null 2>&1; then
