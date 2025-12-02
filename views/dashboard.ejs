@@ -44,9 +44,9 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="row g-3 mb-4">
-            <div class="col-6 col-md-3">
+        <!-- Stats Cards Row 1 -->
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-4">
                 <div class="card border-0 shadow-sm border-start border-primary border-4">
                     <div class="card-body text-center">
                         <i class="bi bi-diagram-3 fs-1 text-primary"></i>
@@ -55,7 +55,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-4">
                 <div class="card border-0 shadow-sm border-start border-success border-4">
                     <div class="card-body text-center">
                         <i class="bi bi-calendar-check fs-1 text-success"></i>
@@ -64,21 +64,46 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="card border-0 shadow-sm border-start border-warning border-4">
-                    <div class="card-body text-center">
-                        <i class="bi bi-currency-rupee fs-1 text-warning"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalRevenue).toLocaleString('en-IN') %></h3>
-                        <p class="text-muted small mb-0">Total Revenue</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-4">
                 <div class="card border-0 shadow-sm border-start border-info border-4">
                     <div class="card-body text-center">
                         <i class="bi bi-people fs-1 text-info"></i>
                         <h3 class="h2 fw-bold mt-2 mb-1"><%= stats.activeCustomers %></h3>
                         <p class="text-muted small mb-0">Active Customers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards Row 2 - Financial -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm border-start border-warning border-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-file-earmark-check-fill fs-1 text-warning"></i>
+                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalRevenue).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted small mb-0"><strong>Registered Property Revenue</strong></p>
+                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Booking value of registered properties</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm border-start border-info border-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-calculator fs-1 text-info"></i>
+                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalRevenueAllBookings).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted small mb-0"><strong>Total Revenue (All Bookings)</strong></p>
+                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-check-circle-fill"></i> Registered + non-registered</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="card border-0 shadow-sm border-start border-success border-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-cash-stack fs-1 text-success"></i>
+                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalPaymentsReceived).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted small mb-0"><strong>Payments Received</strong></p>
+                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-wallet2"></i> Actual cash collected</small>
                     </div>
                 </div>
             </div>

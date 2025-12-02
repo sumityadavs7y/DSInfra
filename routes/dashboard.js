@@ -14,8 +14,39 @@ router.get('/', isAuthenticated, async (req, res) => {
             where: { status: 'Active' }
         });
         
-        // Calculate total revenue from all payments (excluding deleted)
-        const totalRevenue = await Payment.sum('paymentAmount', {
+        // Get all bookings with registry completed
+        const registeredBookings = await Booking.findAll({
+            where: { 
+                registryCompleted: true,
+                isDeleted: false
+            },
+            attributes: ['id']
+        });
+        
+        const registeredBookingIds = registeredBookings.map(b => b.id);
+        
+        // Calculate total revenue only from registered properties (booking value)
+        const totalRevenue = registeredBookingIds.length > 0 
+            ? await Booking.sum('totalAmount', {
+                where: { 
+                    id: registeredBookingIds,
+                    isDeleted: false 
+                }
+            }) || 0
+            : 0;
+        
+        // Calculate total revenue from ALL bookings (registered + non-registered)
+        // This represents the total booking value from all properties
+        const totalRevenueAllBookings = await Booking.sum('totalAmount', {
+            where: { 
+                isDeleted: false,
+                status: 'Active'
+            }
+        }) || 0;
+        
+        // Calculate total payments actually received (cash collected)
+        // This is the sum of all payment transactions
+        const totalPaymentsReceived = await Payment.sum('paymentAmount', {
             where: { isDeleted: false }
         }) || 0;
         
@@ -31,6 +62,8 @@ router.get('/', isAuthenticated, async (req, res) => {
                 totalProjects,
                 activeBookings,
                 totalRevenue,
+                totalRevenueAllBookings,
+                totalPaymentsReceived,
                 activeCustomers
             }
         });
@@ -44,6 +77,8 @@ router.get('/', isAuthenticated, async (req, res) => {
                 totalProjects: 0,
                 activeBookings: 0,
                 totalRevenue: 0,
+                totalRevenueAllBookings: 0,
+                totalPaymentsReceived: 0,
                 activeCustomers: 0
             }
         });

@@ -1,3 +1,4 @@
+const { envConfig } = require('../config');
 // Convert number to words (Indian numbering system)
 function numberToWords(num) {
     const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
@@ -81,7 +82,12 @@ function numberToWords(num) {
     }
 }
 
+function isDevEnvMode(){
+    return envConfig.envMode === 'dev';
+}
+
 module.exports = {
-    numberToWords
+    numberToWords,
+    isDevEnvMode
 };
 

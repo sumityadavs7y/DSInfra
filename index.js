@@ -1,3 +1,6 @@
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const session = require('express-session');
 const app = express();
@@ -5,18 +8,7 @@ const { envConfig } = require('./config');
 const { testConnection, syncDatabase, User } = require('./models');
 const createAdminUser = require('./scripts/createAdmin');
 const createSampleData = require('./scripts/createSampleProjects');
-
-// ============================================
-// APPLICATION CONFIGURATION FLAGS
-// ============================================
-// Set to true to insert sample data (projects, customer, broker, booking, payment)
-// Sample data will only be inserted if the database is empty
-const ENABLE_SAMPLE_DATA = true;
-
-// Set to true to auto-login as admin on server restart (for development)
-// WARNING: Disable this in production!
-const AUTO_LOGIN_AS_ADMIN = true;
-// ============================================
+const { isDevEnvMode } = require('./utils/helpers');
 
 
 app.use(express.json())
@@ -41,7 +33,7 @@ app.set('views', 'views');
 
 // Auto-login middleware (for development only)
 app.use(async (req, res, next) => {
-    if (AUTO_LOGIN_AS_ADMIN && !req.session.userId) {
+    if (isDevEnvMode() && !req.session.userId) {
         try {
             const admin = await User.findOne({ where: { email: 'admin@example.com' } });
             if (admin) {
@@ -84,8 +76,8 @@ const initializeDefaultData = async () => {
         // Always create admin user
         await createAdminUser();
         
-        // Only create sample data if flag is enabled
-        if (ENABLE_SAMPLE_DATA) {
+        // Only create sample data if flag is enabled (from .env)
+        if (isDevEnvMode()) {
             await createSampleData();
         }
     } catch (error) {

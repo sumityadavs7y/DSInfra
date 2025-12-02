@@ -1,6 +1,7 @@
 exports.envConfig = {
     port: process.env.PORT || "80",
     sessionSecret: process.env.SESSION_SECRET || 'ds-secret-key-2024',
+    envMode: process.env.ENV_MODE || 'prod'
   };
   
 //   exports.mailerConfig = {
