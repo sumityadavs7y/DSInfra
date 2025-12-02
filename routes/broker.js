@@ -128,8 +128,22 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             order: [['bookingDate', 'DESC']]
         });
 
-        // Calculate total commission due
+        // Separate bookings by registry completion status
+        const registeredBookings = bookings.filter(b => b.registryCompleted === true);
+        const nonRegisteredBookings = bookings.filter(b => b.registryCompleted !== true);
+
+        // Calculate total commission due (all bookings)
         const totalCommission = bookings.reduce((sum, b) => {
+            return sum + (parseFloat(b.brokerCommission) || 0);
+        }, 0);
+
+        // Calculate commission for registered bookings
+        const totalCommissionRegistered = registeredBookings.reduce((sum, b) => {
+            return sum + (parseFloat(b.brokerCommission) || 0);
+        }, 0);
+
+        // Calculate commission for non-registered bookings
+        const totalCommissionNonRegistered = nonRegisteredBookings.reduce((sum, b) => {
             return sum + (parseFloat(b.brokerCommission) || 0);
         }, 0);
 
@@ -152,11 +166,14 @@ router.get('/:id', isAuthenticated, async (req, res) => {
         }, 0);
 
         const commissionRemaining = totalCommission - totalCommissionPaid;
+        const commissionRemainingRegistered = totalCommissionRegistered - totalCommissionPaid;
 
         // Calculate statistics
         const totalBookings = bookings.length;
         const activeBookings = bookings.filter(b => b.status === 'Active').length;
         const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
+        const registeredBookingsCount = registeredBookings.length;
+        const nonRegisteredBookingsCount = nonRegisteredBookings.length;
 
         res.render('broker/view', {
             broker,
@@ -166,9 +183,14 @@ router.get('/:id', isAuthenticated, async (req, res) => {
                 totalBookings,
                 activeBookings,
                 cancelledBookings,
+                registeredBookingsCount,
+                nonRegisteredBookingsCount,
                 totalCommission,
+                totalCommissionRegistered,
+                totalCommissionNonRegistered,
                 totalCommissionPaid,
-                commissionRemaining
+                commissionRemaining,
+                commissionRemainingRegistered
             },
             userName: req.session.userName,
             userRole: req.session.userRole

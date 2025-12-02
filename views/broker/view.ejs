@@ -221,23 +221,56 @@
                                     </button>
                                     <% } %>
                                 </div>
-                        <div class="row g-3">
-                            <div class="col-6 col-md-4">
-                                <div class="p-3 bg-light rounded">
-                                    <label class="text-muted small d-block">Total Commission Due</label>
-                                    <h4 class="mb-0 text-warning">₹<%= stats.totalCommission.toLocaleString('en-IN') %></h4>
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3"><i class="bi bi-file-earmark-check"></i> Registry Completed Bookings</h6>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 bg-success bg-opacity-10 border border-success rounded">
+                                    <label class="text-muted small d-block">Bookings</label>
+                                    <h5 class="mb-0 text-success"><%= stats.registeredBookingsCount %></h5>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4">
-                                <div class="p-3 bg-light rounded">
-                                    <label class="text-muted small d-block">Paid to Broker</label>
-                                    <h4 class="mb-0 text-success">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></h4>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 bg-success bg-opacity-10 border border-success rounded">
+                                    <label class="text-muted small d-block">Total Commission</label>
+                                    <h5 class="mb-0 text-success">₹<%= stats.totalCommissionRegistered.toLocaleString('en-IN') %></h5>
                                 </div>
                             </div>
-                            <div class="col-6 col-md-4">
-                                <div class="p-3 bg-light rounded">
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 bg-primary bg-opacity-10 border border-primary rounded">
+                                    <label class="text-muted small d-block">Already Paid</label>
+                                    <h5 class="mb-0 text-primary">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></h5>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="p-3 bg-danger bg-opacity-10 border border-danger rounded">
                                     <label class="text-muted small d-block">Pending to Pay</label>
-                                    <h4 class="mb-0 text-danger">₹<%= stats.commissionRemaining.toLocaleString('en-IN') %></h4>
+                                    <h5 class="mb-0 text-danger">₹<%= stats.commissionRemainingRegistered.toLocaleString('en-IN') %></h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h6 class="text-muted mb-3"><i class="bi bi-file-earmark-x"></i> Non-Registered Bookings</h6>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 bg-warning bg-opacity-10 border border-warning rounded">
+                                    <label class="text-muted small d-block">Bookings</label>
+                                    <h5 class="mb-0 text-warning"><%= stats.nonRegisteredBookingsCount %></h5>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 bg-warning bg-opacity-10 border border-warning rounded">
+                                    <label class="text-muted small d-block">Total Commission</label>
+                                    <h5 class="mb-0 text-warning">₹<%= stats.totalCommissionNonRegistered.toLocaleString('en-IN') %></h5>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 bg-info bg-opacity-10 border border-info rounded">
+                                    <label class="text-muted small d-block">Total (All Bookings)</label>
+                                    <h5 class="mb-0 text-info">₹<%= stats.totalCommission.toLocaleString('en-IN') %></h5>
                                 </div>
                             </div>
                                 </div>

@@ -264,30 +264,13 @@ router.get('/:id', isAuthenticated, async (req, res) => {
         // Calculate total paid from all payments
         const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
 
-        // Get all broker payments for this booking
-        const brokerPayments = await BrokerPayment.findAll({
-            where: { bookingId: booking.id, isDeleted: false },
-            include: [
-                {
-                    model: User,
-                    as: 'creator',
-                    attributes: ['name']
-                }
-            ],
-            order: [['paymentDate', 'ASC']]
-        });
-
-        // Calculate total broker payments
-        const totalBrokerPaid = brokerPayments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
-        const brokerCommissionRemaining = parseFloat(booking.brokerCommission || 0) - totalBrokerPaid;
+        // Note: Broker payments are now independent and managed from the broker's page
+        // No longer tied to specific bookings
 
         res.render('booking/view', {
             booking,
             payments,
             totalPaid,
-            brokerPayments,
-            totalBrokerPaid,
-            brokerCommissionRemaining,
             userName: req.session.userName,
             userRole: req.session.userRole
         });

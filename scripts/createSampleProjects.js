@@ -135,7 +135,9 @@ const createSampleData = async () => {
             brokerId: broker.id,
             brokerCommission,
             remainingAmount: totalAmount, // Will update after payment
-            status: 'Active'
+            status: 'Active',
+            registryCompleted: true,
+            registryDate: new Date()
         }, { transaction });
         console.log('✅ Sample booking created: ' + booking.bookingNo);
 
