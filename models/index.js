@@ -534,10 +534,19 @@ const testConnection = async () => {
 };
   
 // Sync database models
+// Note: Using sync without alter to preserve data in SQLite
+// alter: true can cause data loss in SQLite as it recreates tables
 const syncDatabase = async (force = false) => {
     try {
-        await sequelize.sync({ force, alter: !force });
-        console.log('✅ Database synchronized successfully.');
+        if (force) {
+            // Only use force if explicitly requested (will delete all data!)
+            await sequelize.sync({ force: true });
+            console.log('✅ Database synchronized (FORCE - tables recreated).');
+        } else {
+            // Safe sync - only creates missing tables, doesn't alter existing ones
+            await sequelize.sync();
+            console.log('✅ Database synchronized successfully.');
+        }
     } catch (error) {
         console.error('❌ Error synchronizing database:', error);
     }
