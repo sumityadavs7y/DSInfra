@@ -71,6 +71,12 @@
                                 <h5 class="text-success mb-3"><i class="bi bi-credit-card"></i> Payment Details</h5>
                                 <div class="row g-3 mb-4">
                                     <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Payment Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control" name="receiptDate" 
+                                               value="<%= new Date().toISOString().split('T')[0] %>" required>
+                                        <div class="form-text">Default: Today's date (editable)</div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
                                         <label class="form-label fw-semibold">Payment Amount (₹) <span class="text-danger">*</span></label>
                                         <input type="number" class="form-control" name="paymentAmount" id="paymentAmount" step="0.01" min="0" required>
                                         <div class="form-text">Maximum: ₹<span id="maxAmount">0</span></div>

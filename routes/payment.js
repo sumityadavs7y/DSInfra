@@ -79,7 +79,8 @@ router.post('/create', isAuthenticated, async (req, res) => {
             remarks,
             paymentType,
             isRecurring,
-            installmentNumber
+            installmentNumber,
+            receiptDate
         } = req.body;
 
         // Get booking details
@@ -146,7 +147,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
         // Create payment
         const payment = await Payment.create({
             receiptNo,
-            receiptDate: new Date(),
+            receiptDate: receiptDate || new Date(),
             bookingId,
             paymentAmount: amount,
             paymentMode,
@@ -291,7 +292,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             remarks,
             paymentType,
             isRecurring,
-            installmentNumber
+            installmentNumber,
+            receiptDate
         } = req.body;
 
         const newAmount = parseFloat(paymentAmount);
@@ -343,6 +345,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
 
         // Update payment
         await payment.update({
+            receiptDate: receiptDate || payment.receiptDate,
             paymentAmount: newAmount,
             paymentMode,
             transactionNo,

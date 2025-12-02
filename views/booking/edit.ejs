@@ -48,6 +48,12 @@
                             <h5 class="text-primary mb-3"><i class="bi bi-house"></i> Property Details</h5>
                             <div class="row g-3 mb-4">
                                 <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">Booking Date *</label>
+                                    <input type="date" class="form-control" name="bookingDate" 
+                                           value="<%= new Date(booking.bookingDate).toISOString().split('T')[0] %>" required>
+                                    <div class="form-text">Can be edited if needed</div>
+                                </div>
+                                <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Project *</label>
                                     <select class="form-select" name="projectId" required>
                                         <% projects.forEach(project => { %>

@@ -80,7 +80,8 @@ router.post('/create', isAuthenticated, async (req, res) => {
             bookingAmount,
             paymentMode,
             transactionNo,
-            remarks
+            remarks,
+            bookingDate
         } = req.body;
 
         // Calculate effective rate and total amount
@@ -95,7 +96,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
         // Create booking
         const booking = await Booking.create({
             bookingNo,
-            bookingDate: new Date(),
+            bookingDate: bookingDate || new Date(),
             customerId,
             projectId,
             plotNo,
@@ -240,7 +241,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             paymentMode,
             transactionNo,
             remarks,
-            status
+            status,
+            bookingDate
         } = req.body;
 
         // Calculate effective rate and total amount
@@ -250,6 +252,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
 
         // Update booking
         await booking.update({
+            bookingDate: bookingDate || booking.bookingDate,
             customerId,
             projectId,
             plotNo,

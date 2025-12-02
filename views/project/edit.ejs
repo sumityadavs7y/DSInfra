@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-warning shadow-sm">
+        <div class="container-fluid">
+            <div>
+                <a href="/project/<%= project.id %>" class="btn btn-outline-light btn-sm me-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <span class="navbar-brand mb-0 h1">Edit Project</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <% if (error) { %>
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i> <%= error %>
+                        </div>
+                        <% } %>
+                        
+                        <form method="POST" action="/project/<%= project.id %>/edit">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <h5 class="text-warning mb-3">
+                                        <i class="bi bi-building"></i> Project Information
+                                    </h5>
+                                </div>
+                                
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Project Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control <%= errors.projectName ? 'is-invalid' : '' %>" 
+                                           name="projectName" value="<%= project.projectName || '' %>" required>
+                                    <% if (errors.projectName) { %>
+                                    <div class="invalid-feedback"><%= errors.projectName.msg %></div>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Location <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control <%= errors.location ? 'is-invalid' : '' %>" 
+                                           name="location" value="<%= project.location || '' %>" required>
+                                    <% if (errors.location) { %>
+                                    <div class="invalid-feedback"><%= errors.location.msg %></div>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Description</label>
+                                    <textarea class="form-control" name="description" rows="3"><%= project.description || '' %></textarea>
+                                    <div class="form-text">Optional: Add details about amenities, features, etc.</div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <hr class="my-3">
+                                    <h5 class="text-warning mb-3">
+                                        <i class="bi bi-grid-3x3"></i> Plot Details
+                                    </h5>
+                                </div>
+                                
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Total Plots <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control <%= errors.totalPlots ? 'is-invalid' : '' %>" 
+                                           name="totalPlots" value="<%= project.totalPlots || '' %>" min="1" required id="totalPlots">
+                                    <% if (errors.totalPlots) { %>
+                                    <div class="invalid-feedback"><%= errors.totalPlots.msg %></div>
+                                    <% } %>
+                                </div>
+                                
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Available Plots <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control <%= errors.availablePlots ? 'is-invalid' : '' %>" 
+                                           name="availablePlots" value="<%= project.availablePlots || '' %>" min="0" required id="availablePlots">
+                                    <% if (errors.availablePlots) { %>
+                                    <div class="invalid-feedback"><%= errors.availablePlots.msg %></div>
+                                    <% } %>
+                                    <div class="form-text">Cannot exceed total plots</div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <hr class="my-3">
+                                    <h5 class="text-warning mb-3">
+                                        <i class="bi bi-toggle-on"></i> Status
+                                    </h5>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isActive" name="isActive" 
+                                               <%= project.isActive ? 'checked' : '' %>>
+                                        <label class="form-check-label" for="isActive">
+                                            Project is Active
+                                        </label>
+                                        <div class="form-text">Inactive projects won't appear in booking forms</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <hr class="my-3">
+                                </div>
+                                
+                                <div class="col-12 d-flex justify-content-end gap-2">
+                                    <a href="/project/<%= project.id %>" class="btn btn-secondary">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="bi bi-check-circle"></i> Update Project
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const totalPlotsInput = document.getElementById('totalPlots');
+        const availablePlotsInput = document.getElementById('availablePlots');
+        
+        totalPlotsInput.addEventListener('input', function() {
+            availablePlotsInput.max = this.value;
+            if (parseInt(availablePlotsInput.value) > parseInt(this.value)) {
+                availablePlotsInput.value = this.value;
+            }
+        });
+        
+        availablePlotsInput.addEventListener('input', function() {
+            const total = parseInt(totalPlotsInput.value) || 0;
+            if (parseInt(this.value) > total) {
+                this.value = total;
+            }
+        });
+    </script>
+</body>
+</html>
+
