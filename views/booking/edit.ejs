@@ -130,38 +130,19 @@
                             
                             <hr class="my-4">
                             
-                            <!-- Payment -->
-                            <h5 class="text-primary mb-3"><i class="bi bi-credit-card"></i> Payment Details</h5>
+                            <!-- Status -->
+                            <h5 class="text-primary mb-3"><i class="bi bi-info-circle"></i> Booking Status</h5>
                             <div class="row g-3 mb-4">
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Booking Amount (₹) *</label>
-                                    <input type="number" class="form-control" name="bookingAmount" value="<%= parseFloat(booking.bookingAmount) %>" step="0.01" required>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Payment Mode *</label>
-                                    <select class="form-select" name="paymentMode" required>
-                                        <option value="Cash" <%= booking.paymentMode === 'Cash' ? 'selected' : '' %>>Cash</option>
-                                        <option value="Cheque" <%= booking.paymentMode === 'Cheque' ? 'selected' : '' %>>Cheque</option>
-                                        <option value="Online Transfer" <%= booking.paymentMode === 'Online Transfer' ? 'selected' : '' %>>Online Transfer</option>
-                                        <option value="UPI" <%= booking.paymentMode === 'UPI' ? 'selected' : '' %>>UPI</option>
-                                        <option value="Card" <%= booking.paymentMode === 'Card' ? 'selected' : '' %>>Card</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Transaction Number</label>
-                                    <input type="text" class="form-control" name="transactionNo" value="<%= booking.transactionNo || '' %>">
-                                </div>
-                                <div class="col-12 col-md-6">
+                                <div class="col-12">
                                     <label class="form-label fw-semibold">Status</label>
                                     <select class="form-select" name="status">
                                         <option value="Active" <%= booking.status === 'Active' ? 'selected' : '' %>>Active</option>
                                         <option value="Completed" <%= booking.status === 'Completed' ? 'selected' : '' %>>Completed</option>
                                         <option value="Cancelled" <%= booking.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
                                     </select>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label fw-semibold">Remarks</label>
-                                    <textarea class="form-control" name="remarks" rows="2"><%= booking.remarks || '' %></textarea>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> To edit payment details, go to the Payments section on the booking details page.
+                                    </div>
                                 </div>
                             </div>
                             

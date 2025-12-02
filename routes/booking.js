@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Booking, Project, User, Customer, Broker } = require('../models');
+const { Booking, Project, User, Customer, Broker, Payment, sequelize } = require('../models');
 const { isAuthenticated } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 const { numberToWords } = require('../utils/helpers');
+const { Op } = require('sequelize');
 
 // List all bookings
 router.get('/', isAuthenticated, async (req, res) => {
@@ -71,6 +72,7 @@ router.get('/create', isAuthenticated, async (req, res) => {
             customers,
             projects,
             brokers,
+            currentDate: new Date().toISOString().split('T')[0],
             userName: req.session.userName,
             userRole: req.session.userRole,
             error: null
@@ -83,6 +85,8 @@ router.get('/create', isAuthenticated, async (req, res) => {
 
 // Create new booking
 router.post('/create', isAuthenticated, async (req, res) => {
+    const transaction = await sequelize.transaction();
+    
     try {
         const {
             customerId,
@@ -98,14 +102,48 @@ router.post('/create', isAuthenticated, async (req, res) => {
             bookingAmount,
             paymentMode,
             transactionNo,
-            remarks,
-            bookingDate
+            paymentRemarks,
+            bookingDate,
+            receiptDate
         } = req.body;
 
         // Calculate effective rate and total amount
         const effectiveRate = parseFloat(rate) - (parseFloat(discount) || 0);
         const totalAmount = (parseFloat(area) * effectiveRate) + (parseFloat(plc) || 0);
-        const remainingAmount = totalAmount - parseFloat(bookingAmount);
+        const bookingAmountVal = parseFloat(bookingAmount);
+        
+        // Validate booking amount
+        if (bookingAmountVal <= 0) {
+            await transaction.rollback();
+            const customers = await Customer.findAll({ where: { isActive: true, isDeleted: false }, order: [['applicantName', 'ASC']] });
+            const projects = await Project.findAll({ where: { isActive: true, isDeleted: false } });
+            const brokers = await Broker.findAll({ where: { isActive: true, isDeleted: false }, order: [['name', 'ASC']] });
+            return res.render('booking/create', {
+                customers,
+                projects,
+                brokers,
+                currentDate: new Date().toISOString().split('T')[0],
+                userName: req.session.userName,
+                userRole: req.session.userRole,
+                error: 'Booking amount must be greater than 0'
+            });
+        }
+        
+        if (bookingAmountVal > totalAmount) {
+            await transaction.rollback();
+            const customers = await Customer.findAll({ where: { isActive: true, isDeleted: false }, order: [['applicantName', 'ASC']] });
+            const projects = await Project.findAll({ where: { isActive: true, isDeleted: false } });
+            const brokers = await Broker.findAll({ where: { isActive: true, isDeleted: false }, order: [['name', 'ASC']] });
+            return res.render('booking/create', {
+                customers,
+                projects,
+                brokers,
+                currentDate: new Date().toISOString().split('T')[0],
+                userName: req.session.userName,
+                userRole: req.session.userRole,
+                error: `Booking amount cannot exceed total amount of ₹${totalAmount.toLocaleString('en-IN')}`
+            });
+        }
         
         // Auto-calculate broker commission: (associateRate - rate) * area
         const areaVal = parseFloat(area) || 0;
@@ -116,10 +154,10 @@ router.post('/create', isAuthenticated, async (req, res) => {
             : 0;
 
         // Generate booking number
-        const bookingCount = await Booking.count();
+        const bookingCount = await Booking.count({ paranoid: false });
         const bookingNo = `BK${new Date().getFullYear()}${String(bookingCount + 1).padStart(5, '0')}`;
 
-        // Create booking
+        // Create booking (with initial remainingAmount = totalAmount)
         const booking = await Booking.create({
             bookingNo,
             bookingDate: bookingDate || new Date(),
@@ -136,17 +174,42 @@ router.post('/create', isAuthenticated, async (req, res) => {
             totalAmount,
             brokerId: brokerId || null,
             brokerCommission,
-            bookingAmount,
-            paymentMode,
-            transactionNo,
-            remarks,
-            remainingAmount,
+            remainingAmount: totalAmount, // Initially full amount
             status: 'Active',
             createdBy: req.session.userId
-        });
+        }, { transaction });
 
+        // Generate payment/receipt number
+        const paymentCount = await Payment.count({ paranoid: false });
+        const receiptNo = `RCP${new Date().getFullYear()}${String(paymentCount + 1).padStart(5, '0')}`;
+
+        // Create first payment for booking amount
+        await Payment.create({
+            receiptNo,
+            receiptDate: receiptDate || bookingDate || new Date(),
+            bookingId: booking.id,
+            paymentAmount: bookingAmountVal,
+            paymentMode,
+            transactionNo,
+            remarks: paymentRemarks || 'Initial booking payment',
+            paymentType: 'Booking',
+            isRecurring: false,
+            installmentNumber: null,
+            balanceBeforePayment: totalAmount,
+            balanceAfterPayment: totalAmount - bookingAmountVal,
+            createdBy: req.session.userId
+        }, { transaction });
+
+        // Update booking's remaining amount
+        await booking.update({
+            remainingAmount: totalAmount - bookingAmountVal,
+            status: (totalAmount - bookingAmountVal) <= 0 ? 'Completed' : 'Active'
+        }, { transaction });
+
+        await transaction.commit();
         res.redirect(`/booking/${booking.id}`);
     } catch (error) {
+        await transaction.rollback();
         console.error('Error creating booking:', error);
         
         const customers = await Customer.findAll({ where: { isActive: true, isDeleted: false }, order: [['applicantName', 'ASC']] });
@@ -156,6 +219,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
             customers,
             projects,
             brokers,
+            currentDate: new Date().toISOString().split('T')[0],
             userName: req.session.userName,
             userRole: req.session.userRole,
             error: 'Error creating booking: ' + error.message
@@ -193,15 +257,18 @@ router.get('/:id', isAuthenticated, async (req, res) => {
         }
 
         // Get all payments for this booking
-        const { Payment } = require('../models');
         const payments = await Payment.findAll({
-            where: { bookingId: booking.id },
+            where: { bookingId: booking.id, isDeleted: false },
             order: [['receiptDate', 'ASC']]
         });
+
+        // Calculate total paid from all payments
+        const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
 
         res.render('booking/view', {
             booking,
             payments,
+            totalPaid,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
@@ -262,10 +329,13 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
 
 // Update booking
 router.post('/:id/edit', isAuthenticated, async (req, res) => {
+    const transaction = await sequelize.transaction();
+    
     try {
         const booking = await Booking.findByPk(req.params.id);
 
         if (!booking) {
+            await transaction.rollback();
             return res.status(404).send('Booking not found');
         }
 
@@ -280,10 +350,6 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             associateRate,
             discount,
             brokerId,
-            bookingAmount,
-            paymentMode,
-            transactionNo,
-            remarks,
             status,
             bookingDate
         } = req.body;
@@ -291,7 +357,6 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         // Calculate effective rate and total amount
         const effectiveRate = parseFloat(rate) - (parseFloat(discount) || 0);
         const totalAmount = (parseFloat(area) * effectiveRate) + (parseFloat(plc) || 0);
-        const remainingAmount = totalAmount - parseFloat(bookingAmount);
         
         // Auto-calculate broker commission: (associateRate - rate) * area
         const areaVal = parseFloat(area) || 0;
@@ -300,6 +365,13 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         const brokerCommission = brokerId && associateRateVal > 0 
             ? Math.max(0, (associateRateVal - rateVal) * areaVal) 
             : 0;
+
+        // Calculate remaining amount from payments
+        const totalPaid = await Payment.sum('paymentAmount', {
+            where: { bookingId: booking.id, isDeleted: false },
+            transaction
+        }) || 0;
+        const remainingAmount = totalAmount - totalPaid;
 
         // Update booking
         await booking.update({
@@ -317,16 +389,14 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             totalAmount,
             brokerId: brokerId || null,
             brokerCommission,
-            bookingAmount,
-            paymentMode,
-            transactionNo,
-            remarks,
             remainingAmount,
-            status: status || 'Active'
-        });
+            status: remainingAmount <= 0 ? 'Completed' : (status || 'Active')
+        }, { transaction });
 
+        await transaction.commit();
         res.redirect(`/booking/${booking.id}`);
     } catch (error) {
+        await transaction.rollback();
         console.error('Error updating booking:', error);
         
         const booking = await Booking.findByPk(req.params.id, {
@@ -367,6 +437,15 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
         if (!booking) {
             return res.status(404).send('Booking not found');
         }
+
+        // Get all payments for this booking
+        const payments = await Payment.findAll({
+            where: { bookingId: booking.id, isDeleted: false },
+            order: [['receiptDate', 'ASC']]
+        });
+
+        // Calculate total paid
+        const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
 
         // Create PDF
         const doc = new PDFDocument({ margin: 50 });
@@ -415,20 +494,14 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
         }
         doc.moveDown();
 
-        // Payment Details
-        doc.fontSize(14).text('Payment Details', { underline: true });
+        // Payment Summary
+        doc.fontSize(14).text('Payment Summary', { underline: true });
         doc.moveDown(0.5);
         doc.fontSize(10);
-        doc.text(`Booking Amount: ₹${parseFloat(booking.bookingAmount).toLocaleString('en-IN')}`);
-        doc.text(`Amount in Words: ${numberToWords(booking.bookingAmount)} Rupees Only`);
-        doc.text(`Payment Mode: ${booking.paymentMode}`);
-        if (booking.transactionNo) {
-            doc.text(`Transaction No: ${booking.transactionNo}`);
-        }
-        if (booking.remarks) {
-            doc.text(`Remarks: ${booking.remarks}`);
-        }
+        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}`);
+        doc.text(`Total Paid: ₹${totalPaid.toLocaleString('en-IN')}`);
         doc.text(`Remaining Amount: ₹${parseFloat(booking.remainingAmount).toLocaleString('en-IN')}`);
+        doc.text(`Number of Payments: ${payments.length}`);
         doc.moveDown();
 
         // Terms & Conditions

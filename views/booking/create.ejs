@@ -149,11 +149,16 @@
                             <hr class="my-4">
                             
                             <!-- Payment Details -->
-                            <h5 class="text-primary mb-3"><i class="bi bi-credit-card"></i> Booking Payment Details</h5>
+                            <h5 class="text-primary mb-3"><i class="bi bi-credit-card"></i> Initial Payment Details</h5>
                             <div class="row g-3 mb-4">
                                 <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Booking Amount (₹) <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control" name="bookingAmount" step="0.01" min="0" required>
+                                    <div class="form-text">This will be recorded as the first payment</div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">Receipt Date</label>
+                                    <input type="date" class="form-control" name="receiptDate" value="<%= currentDate %>">
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Payment Mode <span class="text-danger">*</span></label>
@@ -171,8 +176,8 @@
                                     <input type="text" class="form-control" name="transactionNo">
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold">Remarks</label>
-                                    <textarea class="form-control" name="remarks" rows="2"></textarea>
+                                    <label class="form-label fw-semibold">Payment Remarks</label>
+                                    <textarea class="form-control" name="paymentRemarks" rows="2" placeholder="Initial booking payment"></textarea>
                                 </div>
                             </div>
                             

@@ -357,34 +357,17 @@ const Booking = sequelize.define('Booking', {
     allowNull: false,
     comment: 'Total booking amount'
   },
-  // Booking Payment
-  bookingAmount: {
-    type: DataTypes.DECIMAL(15, 2),
-    allowNull: false,
-    comment: 'Initial booking amount paid'
-  },
-  paymentMode: {
-    type: DataTypes.ENUM('Cash', 'Cheque', 'Online Transfer', 'UPI', 'Card'),
-    allowNull: false
-  },
-  transactionNo: {
-    type: DataTypes.STRING,
-    allowNull: true
-  },
-  remarks: {
-    type: DataTypes.TEXT,
-    allowNull: true
-  },
   // Status
   status: {
     type: DataTypes.ENUM('Active', 'Completed', 'Cancelled'),
     defaultValue: 'Active'
   },
-  // Remaining amount
+  // Remaining amount (calculated from payments)
   remainingAmount: {
     type: DataTypes.DECIMAL(15, 2),
     allowNull: false,
-    comment: 'Remaining amount to be paid'
+    defaultValue: 0,
+    comment: 'Remaining amount to be paid (totalAmount - sum of payments)'
   },
   // Broker Reference (Optional - refers to Broker entity)
   brokerId: {

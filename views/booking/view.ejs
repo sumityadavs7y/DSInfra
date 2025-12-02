@@ -186,7 +186,7 @@
                                     </div>
                                     <div class="col-12 col-md-4">
                                         <small class="d-block opacity-75">Amount Paid</small>
-                                        <h3 class="mb-0">₹<%= parseFloat(booking.bookingAmount).toLocaleString('en-IN') %></h3>
+                                        <h3 class="mb-0">₹<%= totalPaid.toLocaleString('en-IN') %></h3>
                                     </div>
                                     <div class="col-12 col-md-4">
                                         <small class="d-block opacity-75">Balance</small>
@@ -194,27 +194,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Payment Details -->
-                        <h5 class="text-primary mb-3"><i class="bi bi-credit-card"></i> Payment Details</h5>
-                        <div class="row g-3">
-                            <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">Payment Mode</label>
-                                <p class="h6 mb-0"><%= booking.paymentMode %></p>
-                            </div>
-                            <% if (booking.transactionNo) { %>
-                            <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">Transaction No</label>
-                                <p class="h6 mb-0"><%= booking.transactionNo %></p>
-                            </div>
-                            <% } %>
-                            <% if (booking.remarks) { %>
-                            <div class="col-12">
-                                <label class="text-muted small fw-semibold text-uppercase">Remarks</label>
-                                <p class="h6 mb-0"><%= booking.remarks %></p>
-                            </div>
-                            <% } %>
                         </div>
                     </div>
                     <div class="card-footer bg-light text-muted small">

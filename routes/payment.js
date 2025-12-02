@@ -308,25 +308,21 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         } = req.body;
 
         const newAmount = parseFloat(paymentAmount);
-        const oldAmount = parseFloat(payment.paymentAmount);
+        const booking = payment.booking;
+        const totalBookingAmount = parseFloat(booking.totalAmount);
 
-        // Get all other payments for this booking
+        // Get all other payments for this booking (excluding current payment being edited and deleted ones)
         const otherPayments = await Payment.findAll({
             where: { 
                 bookingId: payment.bookingId,
-                id: { [require('sequelize').Op.ne]: payment.id }
-            }
+                id: { [require('sequelize').Op.ne]: payment.id },
+                isDeleted: false
+            },
+            transaction
         });
 
         // Calculate total of other payments
         const otherPaymentsTotal = otherPayments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
-        
-        // Calculate booking amount (initial payment)
-        const bookingInitialAmount = parseFloat(payment.booking.bookingAmount);
-        const totalBookingAmount = parseFloat(payment.booking.totalAmount);
-
-        // Total payments including this new amount
-        const totalPayments = bookingInitialAmount + otherPaymentsTotal + newAmount;
 
         // Validate
         if (newAmount <= 0) {
@@ -339,9 +335,12 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             });
         }
 
+        // Total payments including this new amount
+        const totalPayments = otherPaymentsTotal + newAmount;
+
         if (totalPayments > totalBookingAmount) {
             await transaction.rollback();
-            const maxAllowed = totalBookingAmount - bookingInitialAmount - otherPaymentsTotal;
+            const maxAllowed = totalBookingAmount - otherPaymentsTotal;
             return res.render('payment/edit', {
                 payment,
                 userName: req.session.userName,
@@ -351,7 +350,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         }
 
         // Calculate new balance after this payment
-        const balanceBeforeThisPayment = totalBookingAmount - bookingInitialAmount - otherPaymentsTotal;
+        const balanceBeforeThisPayment = totalBookingAmount - otherPaymentsTotal;
         const balanceAfterThisPayment = balanceBeforeThisPayment - newAmount;
 
         // Update payment

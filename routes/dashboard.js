@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('../middleware/auth');
-const { Project, Booking, Customer } = require('../models');
+const { Project, Booking, Customer, Payment } = require('../models');
 const { Sequelize } = require('sequelize');
 
 // Dashboard route - protected by authentication
@@ -14,7 +14,10 @@ router.get('/', isAuthenticated, async (req, res) => {
             where: { status: 'Active' }
         });
         
-        const totalRevenue = await Booking.sum('bookingAmount') || 0;
+        // Calculate total revenue from all payments (excluding deleted)
+        const totalRevenue = await Payment.sum('paymentAmount', {
+            where: { isDeleted: false }
+        }) || 0;
         
         const activeCustomers = await Customer.count({
             where: { isActive: true }
