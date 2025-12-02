@@ -82,6 +82,73 @@ User.prototype.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// Define Customer model
+const Customer = sequelize.define('Customer', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  customerNo: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+    comment: 'Auto-generated customer number'
+  },
+  applicantName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
+  },
+  fatherOrHusbandName: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  aadhaarNo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      len: [12, 12]
+    }
+  },
+  mobileNo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [10, 15]
+    }
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  createdBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  }
+}, {
+  tableName: 'customers',
+  timestamps: true
+});
+
 // Define Project model
 const Project = sequelize.define('Project', {
   id: {
@@ -139,37 +206,16 @@ const Booking = sequelize.define('Booking', {
     allowNull: false,
     defaultValue: DataTypes.NOW
   },
-  // Applicant Details
-  applicantName: {
-    type: DataTypes.STRING,
+  // Customer Reference
+  customerId: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    validate: {
-      notEmpty: true
+    references: {
+      model: 'customers',
+      key: 'id'
     }
   },
-  fatherOrHusbandName: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  address: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  aadhaarNo: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      len: [12, 12]
-    }
-  },
-  mobileNo: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      len: [10, 15]
-    }
-  },
-  // Property Details
+  // Project Reference
   projectId: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -259,8 +305,14 @@ const Booking = sequelize.define('Booking', {
 });
 
 // Define relationships
+User.hasMany(Customer, { foreignKey: 'createdBy', as: 'customers' });
+Customer.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
 Project.hasMany(Booking, { foreignKey: 'projectId', as: 'bookings' });
 Booking.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+
+Customer.hasMany(Booking, { foreignKey: 'customerId', as: 'bookings' });
+Booking.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 
 User.hasMany(Booking, { foreignKey: 'createdBy', as: 'bookings' });
 Booking.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
@@ -292,6 +344,7 @@ module.exports = {
     syncDatabase,
     // Models
     User,
+    Customer,
     Project,
     Booking
 }; 

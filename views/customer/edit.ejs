@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Customer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; }
+        .back-btn { color: white; text-decoration: none; margin-right: 15px; }
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .form-card { background: white; border-radius: 15px; padding: 40px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .error { background: #fee; color: #c33; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full { grid-column: 1 / -1; }
+        label { font-weight: 600; margin-bottom: 8px; color: #555; }
+        input, textarea, select { padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: #667eea; }
+        textarea { resize: vertical; min-height: 80px; }
+        .btn-group { display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/customer/<%= customer.id %>" class="back-btn">← Back</a>
+        <h1>Edit Customer - <%= customer.customerNo %></h1>
+    </div>
+    
+    <div class="container">
+        <div class="form-card">
+            <% if (error) { %>
+                <div class="error"><%= error %></div>
+            <% } %>
+            
+            <form method="POST" action="/customer/<%= customer.id %>/edit">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" name="applicantName" value="<%= customer.applicantName %>" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Father/Husband Name *</label>
+                        <input type="text" name="fatherOrHusbandName" value="<%= customer.fatherOrHusbandName %>" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile *</label>
+                        <input type="tel" name="mobileNo" value="<%= customer.mobileNo %>" pattern="[0-9]{10}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Aadhaar *</label>
+                        <input type="text" name="aadhaarNo" value="<%= customer.aadhaarNo %>" pattern="[0-9]{12}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" value="<%= customer.email || '' %>">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="isActive">
+                            <option value="true" <%= customer.isActive ? 'selected' : '' %>>Active</option>
+                            <option value="false" <%= !customer.isActive ? 'selected' : '' %>>Inactive</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <label>Address *</label>
+                        <textarea name="address" required><%= customer.address %></textarea>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <a href="/customer/<%= customer.id %>" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Update Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+

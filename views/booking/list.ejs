@@ -279,7 +279,8 @@
                         <tr>
                             <th>Booking No</th>
                             <th>Date</th>
-                            <th>Applicant Name</th>
+                            <th>Customer</th>
+                            <th>Mobile</th>
                             <th>Project</th>
                             <th>Plot No</th>
                             <th>Total Amount</th>
@@ -294,7 +295,8 @@
                             <tr>
                                 <td><strong><%= booking.bookingNo %></strong></td>
                                 <td><%= new Date(booking.bookingDate).toLocaleDateString('en-IN') %></td>
-                                <td><%= booking.applicantName %></td>
+                                <td><%= booking.customer.applicantName %></td>
+                                <td><%= booking.customer.mobileNo %></td>
                                 <td><%= booking.project.projectName %></td>
                                 <td><%= booking.plotNo %></td>
                                 <td>₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></td>

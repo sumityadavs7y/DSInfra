@@ -242,28 +242,38 @@
                 </span>
             </div>
             
-            <!-- Applicant Details -->
-            <h2 class="section-title">👤 Applicant Details</h2>
+            <!-- Customer Details -->
+            <h2 class="section-title">👤 Customer Details</h2>
             <div class="detail-grid">
                 <div class="detail-item">
-                    <div class="detail-label">Applicant Name</div>
-                    <div class="detail-value"><%= booking.applicantName %></div>
+                    <div class="detail-label">Customer No</div>
+                    <div class="detail-value highlight"><%= booking.customer.customerNo %></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Name</div>
+                    <div class="detail-value"><%= booking.customer.applicantName %></div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Father/Husband Name</div>
-                    <div class="detail-value"><%= booking.fatherOrHusbandName %></div>
+                    <div class="detail-value"><%= booking.customer.fatherOrHusbandName %></div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Mobile Number</div>
-                    <div class="detail-value"><%= booking.mobileNo %></div>
+                    <div class="detail-value"><%= booking.customer.mobileNo %></div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">Aadhaar Number</div>
-                    <div class="detail-value"><%= booking.aadhaarNo %></div>
+                    <div class="detail-value"><%= booking.customer.aadhaarNo %></div>
                 </div>
+                <% if (booking.customer.email) { %>
+                <div class="detail-item">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value"><%= booking.customer.email %></div>
+                </div>
+                <% } %>
                 <div class="detail-item" style="grid-column: 1 / -1;">
                     <div class="detail-label">Address</div>
-                    <div class="detail-value"><%= booking.address %></div>
+                    <div class="detail-value"><%= booking.customer.address %></div>
                 </div>
             </div>
             

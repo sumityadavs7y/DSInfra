@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Booking, Project, User } = require('../models');
+const { Booking, Project, User, Customer } = require('../models');
 const { isAuthenticated } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 const { numberToWords } = require('../utils/helpers');
@@ -10,6 +10,11 @@ router.get('/', isAuthenticated, async (req, res) => {
     try {
         const bookings = await Booking.findAll({
             include: [
+                {
+                    model: Customer,
+                    as: 'customer',
+                    attributes: ['customerNo', 'applicantName', 'mobileNo']
+                },
                 {
                     model: Project,
                     as: 'project',
@@ -38,11 +43,17 @@ router.get('/', isAuthenticated, async (req, res) => {
 // Show create booking form
 router.get('/create', isAuthenticated, async (req, res) => {
     try {
+        const customers = await Customer.findAll({
+            where: { isActive: true },
+            order: [['applicantName', 'ASC']]
+        });
+        
         const projects = await Project.findAll({
             where: { isActive: true }
         });
 
         res.render('booking/create', {
+            customers,
             projects,
             userName: req.session.userName,
             userRole: req.session.userRole,
@@ -58,11 +69,7 @@ router.get('/create', isAuthenticated, async (req, res) => {
 router.post('/create', isAuthenticated, async (req, res) => {
     try {
         const {
-            applicantName,
-            fatherOrHusbandName,
-            address,
-            aadhaarNo,
-            mobileNo,
+            customerId,
             projectId,
             plotNo,
             area,
@@ -89,11 +96,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
         const booking = await Booking.create({
             bookingNo,
             bookingDate: new Date(),
-            applicantName,
-            fatherOrHusbandName,
-            address,
-            aadhaarNo,
-            mobileNo,
+            customerId,
             projectId,
             plotNo,
             area,
@@ -116,8 +119,10 @@ router.post('/create', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error creating booking:', error);
         
+        const customers = await Customer.findAll({ where: { isActive: true }, order: [['applicantName', 'ASC']] });
         const projects = await Project.findAll({ where: { isActive: true } });
         res.render('booking/create', {
+            customers,
             projects,
             userName: req.session.userName,
             userRole: req.session.userRole,
@@ -131,6 +136,10 @@ router.get('/:id', isAuthenticated, async (req, res) => {
     try {
         const booking = await Booking.findByPk(req.params.id, {
             include: [
+                {
+                    model: Customer,
+                    as: 'customer'
+                },
                 {
                     model: Project,
                     as: 'project'
@@ -164,6 +173,10 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
         const booking = await Booking.findByPk(req.params.id, {
             include: [
                 {
+                    model: Customer,
+                    as: 'customer'
+                },
+                {
                     model: Project,
                     as: 'project'
                 }
@@ -174,12 +187,18 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
             return res.status(404).send('Booking not found');
         }
 
+        const customers = await Customer.findAll({
+            where: { isActive: true },
+            order: [['applicantName', 'ASC']]
+        });
+
         const projects = await Project.findAll({
             where: { isActive: true }
         });
 
         res.render('booking/edit', {
             booking,
+            customers,
             projects,
             userName: req.session.userName,
             userRole: req.session.userRole,
@@ -201,11 +220,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         }
 
         const {
-            applicantName,
-            fatherOrHusbandName,
-            address,
-            aadhaarNo,
-            mobileNo,
+            customerId,
             projectId,
             plotNo,
             area,
@@ -227,11 +242,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
 
         // Update booking
         await booking.update({
-            applicantName,
-            fatherOrHusbandName,
-            address,
-            aadhaarNo,
-            mobileNo,
+            customerId,
             projectId,
             plotNo,
             area,
@@ -253,11 +264,15 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error updating booking:', error);
         
-        const booking = await Booking.findByPk(req.params.id);
+        const booking = await Booking.findByPk(req.params.id, {
+            include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
+        });
+        const customers = await Customer.findAll({ where: { isActive: true }, order: [['applicantName', 'ASC']] });
         const projects = await Project.findAll({ where: { isActive: true } });
         
         res.render('booking/edit', {
             booking,
+            customers,
             projects,
             userName: req.session.userName,
             userRole: req.session.userRole,
@@ -271,6 +286,10 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
     try {
         const booking = await Booking.findByPk(req.params.id, {
             include: [
+                {
+                    model: Customer,
+                    as: 'customer'
+                },
                 {
                     model: Project,
                     as: 'project'
@@ -294,6 +313,7 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
         doc.fontSize(20).text('BOOKING SLIP', { align: 'center' });
         doc.moveDown();
         doc.fontSize(10).text(`Booking No: ${booking.bookingNo}`, { align: 'right' });
+        doc.text(`Customer No: ${booking.customer.customerNo}`, { align: 'right' });
         doc.text(`Date: ${new Date(booking.bookingDate).toLocaleDateString('en-IN')}`, { align: 'right' });
         doc.moveDown();
 
@@ -301,11 +321,14 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
         doc.fontSize(14).text('Applicant Details', { underline: true });
         doc.moveDown(0.5);
         doc.fontSize(10);
-        doc.text(`Name: ${booking.applicantName}`);
-        doc.text(`Father/Husband Name: ${booking.fatherOrHusbandName}`);
-        doc.text(`Address: ${booking.address}`);
-        doc.text(`Aadhaar No: ${booking.aadhaarNo}`);
-        doc.text(`Mobile No: ${booking.mobileNo}`);
+        doc.text(`Name: ${booking.customer.applicantName}`);
+        doc.text(`Father/Husband Name: ${booking.customer.fatherOrHusbandName}`);
+        doc.text(`Address: ${booking.customer.address}`);
+        doc.text(`Aadhaar No: ${booking.customer.aadhaarNo}`);
+        doc.text(`Mobile No: ${booking.customer.mobileNo}`);
+        if (booking.customer.email) {
+            doc.text(`Email: ${booking.customer.email}`);
+        }
         doc.moveDown();
 
         // Property Details

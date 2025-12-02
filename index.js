@@ -36,11 +36,13 @@ app.use((req, res, next) => {
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const customerRoutes = require('./routes/customer');
 const bookingRoutes = require('./routes/booking');
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/customer', customerRoutes);
 app.use('/booking', bookingRoutes);
 
 // Initialize default data using scripts
