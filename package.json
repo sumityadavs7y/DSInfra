@@ -1,0 +1,33 @@
+{
+  "name": "real-estate-management",
+  "version": "1.0.0",
+  "description": "Complete Real Estate Management System for plot bookings, payments, and broker management",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "pm2-runtime start index.js --name adsspec",
+    "dev": "nodemon -r dotenv/config index.js"
+  },
+  "keywords": ["real-estate", "booking", "payment", "broker", "management"],
+  "author": "sumit.yadav",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cheerio": "^1.0.0-rc.12",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.18.2",
+    "express-validator": "^7.0.1",
+    "multer": "^2.0.2",
+    "pdfkit": "^0.15.0",
+    "nodemailer": "^6.9.7",
+    "razorpay": "^2.9.2",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1",
+    "nodemon": "^3.0.2"
+  }
+}
+
