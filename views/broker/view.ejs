@@ -111,8 +111,8 @@
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="p-3">
-                                    <h2 class="text-info mb-1"><%= stats.completedBookings %></h2>
-                                    <small class="text-muted">Completed</small>
+                                    <h2 class="text-danger mb-1"><%= stats.cancelledBookings %></h2>
+                                    <small class="text-muted">Cancelled</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
@@ -125,12 +125,29 @@
                     </div>
                 </div>
 
-                <!-- Bookings List -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h5 class="text-dark mb-3">
-                            <i class="bi bi-journal-text"></i> Broker Bookings (<%= bookings.length %>)
-                        </h5>
+                <!-- Tabs Navigation -->
+                <ul class="nav nav-tabs mb-3" id="brokerTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings" type="button" role="tab">
+                            <i class="bi bi-journal-text"></i> Bookings (<%= bookings.length %>)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">
+                            <i class="bi bi-cash-coin"></i> Broker Payments (<%= brokerPayments ? brokerPayments.length : 0 %>)
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="brokerTabContent">
+                    <!-- Bookings Tab -->
+                    <div class="tab-pane fade show active" id="bookings" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <h5 class="text-dark mb-3">
+                                    <i class="bi bi-journal-text"></i> Broker Bookings
+                                </h5>
                         <% if (bookings.length === 0) { %>
                             <p class="text-muted text-center py-3">No bookings yet</p>
                         <% } else { %>
@@ -160,7 +177,7 @@
                                                     ₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %>">
+                                                    <span class="badge bg-<%= booking.status === 'Active' ? 'success' : 'danger' %>">
                                                         <%= booking.status %>
                                                     </span>
                                                 </td>
@@ -186,13 +203,401 @@
                                 </table>
                             </div>
                         <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Broker Payments Tab -->
+                    <div class="tab-pane fade" id="payments" role="tabpanel">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="text-dark mb-0">
+                                        <i class="bi bi-cash-coin"></i> Broker Payment Summary
+                                    </h5>
+                                    <% if (!broker.isDeleted) { %>
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBrokerPaymentModal">
+                                        <i class="bi bi-plus-circle"></i> Add Broker Payment
+                                    </button>
+                                    <% } %>
+                                </div>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 bg-light rounded">
+                                    <label class="text-muted small d-block">Total Commission Due</label>
+                                    <h4 class="mb-0 text-warning">₹<%= stats.totalCommission.toLocaleString('en-IN') %></h4>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 bg-light rounded">
+                                    <label class="text-muted small d-block">Paid to Broker</label>
+                                    <h4 class="mb-0 text-success">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></h4>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 bg-light rounded">
+                                    <label class="text-muted small d-block">Pending to Pay</label>
+                                    <h4 class="mb-0 text-danger">₹<%= stats.commissionRemaining.toLocaleString('en-IN') %></h4>
+                                </div>
+                            </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Broker Payment History -->
+                        <% if (brokerPayments && brokerPayments.length > 0) { %>
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-body p-4">
+                                <h5 class="text-dark mb-3">
+                                    <i class="bi bi-clock-history"></i> Broker Payment History
+                                </h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Payment No</th>
+                                        <th class="d-none d-md-table-cell">Date</th>
+                                        <th>Amount</th>
+                                        <th class="d-none d-lg-table-cell">Mode</th>
+                                        <th class="d-none d-lg-table-cell">Transaction No</th>
+                                        <th>Remarks</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% brokerPayments.forEach(payment => { %>
+                                        <tr>
+                                            <td><strong><%= payment.paymentNo %></strong></td>
+                                            <td class="d-none d-md-table-cell"><%= new Date(payment.paymentDate).toLocaleDateString('en-IN') %></td>
+                                            <td class="fw-bold text-success">₹<%= parseFloat(payment.paymentAmount).toLocaleString('en-IN') %></td>
+                                            <td class="d-none d-lg-table-cell"><%= payment.paymentMode %></td>
+                                            <td class="d-none d-lg-table-cell"><small><%= payment.transactionNo || '-' %></small></td>
+                                            <td><small><%= payment.remarks || '-' %></small></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1" onclick="editPayment(<%= payment.id %>)">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deletePayment(<%= payment.id %>)">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="2" class="text-end">Total Paid to Broker:</th>
+                                        <th class="fw-bold text-success">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></th>
+                                        <th colspan="4"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                                </div>
+                            </div>
+                        </div>
+                        <% } else { %>
+                        <div class="card border-0 shadow-sm mt-4">
+                            <div class="card-body p-4">
+                                <h5 class="text-dark mb-3">
+                                    <i class="bi bi-clock-history"></i> Broker Payment History
+                                </h5>
+                                <p class="text-muted text-center py-3">No broker payments made yet</p>
+                            </div>
+                        </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Add Broker Payment Modal -->
+    <div class="modal fade" id="addBrokerPaymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-cash-coin"></i> Add Broker Commission Payment
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="brokerPaymentForm">
+                    <div class="modal-body">
+                        <input type="hidden" name="brokerId" value="<%= broker.id %>">
+
+                        <div class="alert alert-info mb-3">
+                            <small><i class="bi bi-info-circle"></i> Broker payments are independent transactions to the broker, not tied to any specific booking</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Payment Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="paymentDate" id="paymentDate" 
+                                   value="<%= new Date().toISOString().split('T')[0] %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Broker Payment Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" name="paymentAmount" 
+                                   id="paymentAmount" placeholder="Enter payment amount to broker" required>
+                            <small class="text-muted">Amount you are paying to the broker for their commission</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
+                            <select class="form-select" name="paymentMode" required>
+                                <option value="Cash">Cash</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Online Transfer" selected>Online Transfer</option>
+                                <option value="NEFT/RTGS">NEFT/RTGS</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Transaction No</label>
+                            <input type="text" class="form-control" name="transactionNo" 
+                                   placeholder="Enter transaction number">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Remarks</label>
+                            <textarea class="form-control" name="remarks" rows="2" 
+                                      placeholder="Any additional notes"></textarea>
+                        </div>
+
+                        <div id="paymentError" class="alert alert-danger d-none"></div>
+                        <div id="paymentSuccess" class="alert alert-success d-none"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Save Broker Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Broker Payment Modal -->
+    <div class="modal fade" id="editBrokerPaymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="editBrokerPaymentForm">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-pencil-square"></i> Edit Broker Payment
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editPaymentId" name="paymentId">
+                        
+                        <div class="alert alert-info mb-3">
+                            <small><i class="bi bi-info-circle"></i> Editing payment: <strong id="editPaymentNo"></strong></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Payment Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="paymentDate" id="editPaymentDate" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Broker Payment Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" class="form-control" name="paymentAmount" 
+                                   id="editPaymentAmount" placeholder="Enter payment amount to broker" required>
+                            <small class="text-muted">Amount you are paying to the broker</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Payment Mode <span class="text-danger">*</span></label>
+                            <select class="form-select" name="paymentMode" id="editPaymentMode" required>
+                                <option value="Cash">Cash</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Online Transfer">Online Transfer</option>
+                                <option value="NEFT/RTGS">NEFT/RTGS</option>
+                                <option value="UPI">UPI</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Transaction No</label>
+                            <input type="text" class="form-control" name="transactionNo" id="editTransactionNo"
+                                   placeholder="Enter transaction number">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Remarks</label>
+                            <textarea class="form-control" name="remarks" id="editRemarks" rows="2" 
+                                      placeholder="Any additional notes"></textarea>
+                        </div>
+
+                        <div id="editPaymentError" class="alert alert-danger d-none"></div>
+                        <div id="editPaymentSuccess" class="alert alert-success d-none"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Update Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle form submission
+        document.getElementById('brokerPaymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            const errorDiv = document.getElementById('paymentError');
+            const successDiv = document.getElementById('paymentSuccess');
+            errorDiv.classList.add('d-none');
+            successDiv.classList.add('d-none');
+
+            try {
+                const response = await fetch('/broker-payment/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    successDiv.textContent = result.message;
+                    successDiv.classList.remove('d-none');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = result.message || 'An error occurred';
+                    errorDiv.classList.remove('d-none');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Error: ' + error.message;
+                errorDiv.classList.remove('d-none');
+            }
+        });
+
+        // Reset modal when closed
+        document.getElementById('addBrokerPaymentModal').addEventListener('hidden.bs.modal', function() {
+            document.getElementById('brokerPaymentForm').reset();
+            document.getElementById('paymentDate').value = '<%= new Date().toISOString().split("T")[0] %>';
+            document.getElementById('paymentError').classList.add('d-none');
+            document.getElementById('paymentSuccess').classList.add('d-none');
+        });
+
+        // Edit payment function
+        async function editPayment(paymentId) {
+            try {
+                const response = await fetch(`/broker-payment/${paymentId}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const payment = result.payment;
+                    document.getElementById('editPaymentId').value = payment.id;
+                    document.getElementById('editPaymentNo').textContent = payment.paymentNo;
+                    document.getElementById('editPaymentDate').value = payment.paymentDate;
+                    document.getElementById('editPaymentAmount').value = payment.paymentAmount;
+                    document.getElementById('editPaymentMode').value = payment.paymentMode;
+                    document.getElementById('editTransactionNo').value = payment.transactionNo || '';
+                    document.getElementById('editRemarks').value = payment.remarks || '';
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(document.getElementById('editBrokerPaymentModal'));
+                    modal.show();
+                } else {
+                    alert('Error loading payment: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error loading payment: ' + error.message);
+            }
+        }
+
+        // Handle edit form submission
+        document.getElementById('editBrokerPaymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const paymentId = document.getElementById('editPaymentId').value;
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData);
+            
+            const errorDiv = document.getElementById('editPaymentError');
+            const successDiv = document.getElementById('editPaymentSuccess');
+            errorDiv.classList.add('d-none');
+            successDiv.classList.add('d-none');
+
+            try {
+                const response = await fetch(`/broker-payment/${paymentId}/edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    successDiv.textContent = result.message;
+                    successDiv.classList.remove('d-none');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    errorDiv.textContent = result.message || 'An error occurred';
+                    errorDiv.classList.remove('d-none');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Error: ' + error.message;
+                errorDiv.classList.remove('d-none');
+            }
+        });
+
+        // Reset edit modal when closed
+        document.getElementById('editBrokerPaymentModal').addEventListener('hidden.bs.modal', function() {
+            document.getElementById('editBrokerPaymentForm').reset();
+            document.getElementById('editPaymentError').classList.add('d-none');
+            document.getElementById('editPaymentSuccess').classList.add('d-none');
+        });
+
+        // Delete payment function
+        async function deletePayment(paymentId) {
+            if (!confirm('Are you sure you want to delete this broker payment? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/broker-payment/${paymentId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Error deleting payment: ' + error.message);
+            }
+        }
+    </script>
 </body>
 </html>
 

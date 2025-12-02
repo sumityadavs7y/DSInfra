@@ -115,8 +115,8 @@
                                 <p class="h5 mb-0 text-success"><%= stats.activeBookings %></p>
                             </div>
                             <div class="col-6 col-md-3">
-                                <label class="text-muted small fw-semibold text-uppercase">Completed</label>
-                                <p class="h5 mb-0 text-info"><%= stats.completedBookings %></p>
+                                <label class="text-muted small fw-semibold text-uppercase">Cancelled</label>
+                                <p class="h5 mb-0 text-danger"><%= stats.cancelledBookings %></p>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="text-muted small fw-semibold text-uppercase">Total Revenue</label>
@@ -161,7 +161,7 @@
                                         </td>
                                         <td>₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></td>
                                         <td>
-                                            <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %>">
+                                            <span class="badge bg-<%= booking.status === 'Active' ? 'success' : 'danger' %>">
                                                 <%= booking.status %>
                                             </span>
                                         </td>

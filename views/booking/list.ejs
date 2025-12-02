@@ -57,8 +57,8 @@
             <div class="col-12 col-md-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
-                        <h3 class="h2 fw-bold text-info"><%= bookings.filter(b => b.status === 'Completed').length %></h3>
-                        <p class="text-muted small mb-0">Completed</p>
+                        <h3 class="h2 fw-bold text-danger"><%= bookings.filter(b => b.status === 'Cancelled').length %></h3>
+                        <p class="text-muted small mb-0">Cancelled</p>
                     </div>
                 </div>
             </div>
@@ -97,6 +97,7 @@
                                     <th class="d-none d-lg-table-cell">Total</th>
                                     <th class="d-none d-xl-table-cell">Balance</th>
                                     <th>Status</th>
+                                    <th class="d-none d-md-table-cell">Registry</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -115,9 +116,16 @@
                                             <% if (booking.isDeleted) { %>
                                             <span class="badge bg-danger">Deleted</span>
                                             <% } else { %>
-                                            <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %>">
+                                            <span class="badge bg-<%= booking.status === 'Active' ? 'success' : 'danger' %>">
                                                 <%= booking.status %>
                                             </span>
+                                            <% } %>
+                                        </td>
+                                        <td class="d-none d-md-table-cell">
+                                            <% if (booking.registryCompleted) { %>
+                                                <i class="bi bi-check-circle-fill text-success" title="Registry Done"></i>
+                                            <% } else { %>
+                                                <i class="bi bi-x-circle-fill text-warning" title="Registry Pending"></i>
                                             <% } %>
                                         </td>
                                         <td>

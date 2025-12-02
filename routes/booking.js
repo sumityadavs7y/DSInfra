@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Booking, Project, User, Customer, Broker, Payment, sequelize } = require('../models');
+const { Booking, Project, User, Customer, Broker, Payment, BrokerPayment, sequelize } = require('../models');
 const { isAuthenticated } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 const { numberToWords } = require('../utils/helpers');
@@ -202,8 +202,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
 
         // Update booking's remaining amount
         await booking.update({
-            remainingAmount: totalAmount - bookingAmountVal,
-            status: (totalAmount - bookingAmountVal) <= 0 ? 'Completed' : 'Active'
+            remainingAmount: totalAmount - bookingAmountVal
         }, { transaction });
 
         await transaction.commit();
@@ -265,10 +264,30 @@ router.get('/:id', isAuthenticated, async (req, res) => {
         // Calculate total paid from all payments
         const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
 
+        // Get all broker payments for this booking
+        const brokerPayments = await BrokerPayment.findAll({
+            where: { bookingId: booking.id, isDeleted: false },
+            include: [
+                {
+                    model: User,
+                    as: 'creator',
+                    attributes: ['name']
+                }
+            ],
+            order: [['paymentDate', 'ASC']]
+        });
+
+        // Calculate total broker payments
+        const totalBrokerPaid = brokerPayments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
+        const brokerCommissionRemaining = parseFloat(booking.brokerCommission || 0) - totalBrokerPaid;
+
         res.render('booking/view', {
             booking,
             payments,
             totalPaid,
+            brokerPayments,
+            totalBrokerPaid,
+            brokerCommissionRemaining,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
@@ -351,7 +370,9 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             discount,
             brokerId,
             status,
-            bookingDate
+            bookingDate,
+            registryCompleted,
+            registryDate
         } = req.body;
 
         // Calculate effective rate and total amount
@@ -390,7 +411,9 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             brokerId: brokerId || null,
             brokerCommission,
             remainingAmount,
-            status: remainingAmount <= 0 ? 'Completed' : (status || 'Active')
+            status: status || 'Active',
+            registryCompleted: registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true',
+            registryDate: (registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true') && registryDate ? new Date(registryDate) : null
         }, { transaction });
 
         await transaction.commit();

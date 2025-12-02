@@ -174,8 +174,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
 
         // Update booking remaining amount
         await booking.update({
-            remainingAmount: newBalance,
-            status: newBalance === 0 ? 'Completed' : 'Active'
+            remainingAmount: newBalance
         }, { transaction });
 
         await transaction.commit();
@@ -370,8 +369,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         // Recalculate booking's remaining amount
         const newBookingBalance = totalBookingAmount - totalPayments;
         await payment.booking.update({
-            remainingAmount: newBookingBalance,
-            status: newBookingBalance === 0 ? 'Completed' : 'Active'
+            remainingAmount: newBookingBalance
         }, { transaction });
 
         await transaction.commit();

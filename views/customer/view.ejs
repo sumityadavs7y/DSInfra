@@ -97,7 +97,7 @@
                                                 <td><%= booking.plotNo %></td>
                                                 <td class="d-none d-lg-table-cell">₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></td>
                                                 <td>
-                                                    <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %>">
+                                                    <span class="badge bg-<%= booking.status === 'Active' ? 'success' : 'danger' %>">
                                                         <%= booking.status %>
                                                     </span>
                                                 </td>

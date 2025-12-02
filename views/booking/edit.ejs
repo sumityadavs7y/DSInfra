@@ -140,13 +140,30 @@
                             <!-- Status -->
                             <h5 class="text-primary mb-3"><i class="bi bi-info-circle"></i> Booking Status</h5>
                             <div class="row g-3 mb-4">
-                                <div class="col-12">
+                                <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Status</label>
                                     <select class="form-select" name="status">
                                         <option value="Active" <%= booking.status === 'Active' ? 'selected' : '' %>>Active</option>
-                                        <option value="Completed" <%= booking.status === 'Completed' ? 'selected' : '' %>>Completed</option>
                                         <option value="Cancelled" <%= booking.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
                                     </select>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">Registry Date</label>
+                                    <input type="date" class="form-control" name="registryDate" id="registryDate"
+                                           value="<%= booking.registryDate ? new Date(booking.registryDate).toISOString().split('T')[0] : '' %>"
+                                           <%= booking.registryCompleted ? '' : 'disabled' %>>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="registryCompleted" name="registryCompleted" 
+                                               <%= booking.registryCompleted ? 'checked' : '' %>>
+                                        <label class="form-check-label fw-semibold" for="registryCompleted">
+                                            <i class="bi bi-file-earmark-check"></i> Registry Completed
+                                        </label>
+                                        <div class="form-text">Mark this when property registration/registry is done</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
                                     <div class="form-text">
                                         <i class="bi bi-info-circle"></i> To edit payment details, go to the Payments section on the booking details page.
                                     </div>
@@ -221,6 +238,22 @@
                 }
             } else {
                 alert('No default legal details available for this project');
+            }
+        });
+        
+        // Enable/disable registry date based on registry completed checkbox
+        const registryCompleted = document.getElementById('registryCompleted');
+        const registryDate = document.getElementById('registryDate');
+        
+        registryCompleted.addEventListener('change', function() {
+            if (this.checked) {
+                registryDate.disabled = false;
+                if (!registryDate.value) {
+                    registryDate.value = new Date().toISOString().split('T')[0];
+                }
+            } else {
+                registryDate.disabled = true;
+                registryDate.value = '';
             }
         });
     </script>

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Broker, Booking, Customer, Project, User } = require('../models');
+const { Broker, Booking, Customer, Project, User, BrokerPayment } = require('../models');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const { Op } = require('sequelize');
 
@@ -128,24 +128,47 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             order: [['bookingDate', 'DESC']]
         });
 
-        // Calculate total commission
+        // Calculate total commission due
         const totalCommission = bookings.reduce((sum, b) => {
             return sum + (parseFloat(b.brokerCommission) || 0);
         }, 0);
 
+        // Get all broker payments (non-deleted)
+        const brokerPayments = await BrokerPayment.findAll({
+            where: { brokerId: broker.id, isDeleted: false },
+            include: [
+                {
+                    model: User,
+                    as: 'creator',
+                    attributes: ['name']
+                }
+            ],
+            order: [['paymentDate', 'DESC']]
+        });
+
+        // Calculate total commission paid
+        const totalCommissionPaid = brokerPayments.reduce((sum, p) => {
+            return sum + parseFloat(p.paymentAmount);
+        }, 0);
+
+        const commissionRemaining = totalCommission - totalCommissionPaid;
+
         // Calculate statistics
         const totalBookings = bookings.length;
         const activeBookings = bookings.filter(b => b.status === 'Active').length;
-        const completedBookings = bookings.filter(b => b.status === 'Completed').length;
+        const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
 
         res.render('broker/view', {
             broker,
             bookings,
+            brokerPayments,
             stats: {
                 totalBookings,
                 activeBookings,
-                completedBookings,
-                totalCommission
+                cancelledBookings,
+                totalCommission,
+                totalCommissionPaid,
+                commissionRemaining
             },
             userName: req.session.userName,
             userRole: req.session.userRole

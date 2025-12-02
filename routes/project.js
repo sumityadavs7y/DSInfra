@@ -141,9 +141,9 @@ router.get('/:id', isAuthenticated, async (req, res) => {
         // Calculate statistics
         const totalBookings = bookings.length;
         const activeBookings = bookings.filter(b => b.status === 'Active').length;
-        const completedBookings = bookings.filter(b => b.status === 'Completed').length;
+        const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
         const totalRevenue = bookings.reduce((sum, b) => sum + parseFloat(b.totalAmount), 0);
-        const collectedAmount = bookings.reduce((sum, b) => sum + parseFloat(b.bookingAmount), 0);
+        const collectedAmount = bookings.reduce((sum, b) => sum + (parseFloat(b.totalAmount) - parseFloat(b.remainingAmount)), 0);
 
         res.render('project/view', {
             project,
@@ -151,7 +151,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             stats: {
                 totalBookings,
                 activeBookings,
-                completedBookings,
+                cancelledBookings,
                 totalRevenue,
                 collectedAmount
             },
