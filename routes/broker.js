@@ -29,8 +29,69 @@ router.get('/', isAuthenticated, async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
+        // Calculate cumulative statistics for all brokers
+        // Get all bookings
+        const allBookings = await Booking.findAll({
+            where: { isDeleted: false },
+            include: [
+                { model: Broker, as: 'broker', where: whereClause }
+            ]
+        });
+
+        // Separate bookings by registry status
+        const registeredBookings = allBookings.filter(b => b.registryCompleted === true);
+        const nonRegisteredBookings = allBookings.filter(b => b.registryCompleted !== true);
+
+        // Calculate total commission
+        const totalCommission = allBookings.reduce((sum, b) => {
+            return sum + (parseFloat(b.brokerCommission) || 0);
+        }, 0);
+
+        const totalCommissionRegistered = registeredBookings.reduce((sum, b) => {
+            return sum + (parseFloat(b.brokerCommission) || 0);
+        }, 0);
+
+        const totalCommissionNonRegistered = nonRegisteredBookings.reduce((sum, b) => {
+            return sum + (parseFloat(b.brokerCommission) || 0);
+        }, 0);
+
+        // Get all broker payments
+        const allBrokerPayments = await BrokerPayment.findAll({
+            where: { isDeleted: false },
+            include: [
+                {
+                    model: Broker,
+                    as: 'broker',
+                    where: whereClause
+                }
+            ]
+        });
+
+        // Calculate total payments made to brokers
+        const totalCommissionPaid = allBrokerPayments.reduce((sum, p) => {
+            return sum + parseFloat(p.paymentAmount);
+        }, 0);
+
+        const commissionRemaining = totalCommission - totalCommissionPaid;
+        const commissionRemainingRegistered = totalCommissionRegistered - totalCommissionPaid;
+
+        // Calculate cumulative stats
+        const cumulativeStats = {
+            totalBrokers: brokers.length,
+            totalBookings: allBookings.length,
+            registeredBookingsCount: registeredBookings.length,
+            nonRegisteredBookingsCount: nonRegisteredBookings.length,
+            totalCommission,
+            totalCommissionRegistered,
+            totalCommissionNonRegistered,
+            totalCommissionPaid,
+            commissionRemaining,
+            commissionRemainingRegistered
+        };
+
         res.render('broker/list', {
             brokers,
+            stats: cumulativeStats,
             search,
             showDeleted: showDeleted === 'true',
             userName: req.session.userName,
