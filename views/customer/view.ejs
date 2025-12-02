@@ -62,9 +62,139 @@
                                 <label class="text-muted small fw-semibold text-uppercase">Address</label>
                                 <p class="h5 mb-0"><%= customer.address %></p>
                             </div>
+                            <% if (customer.isBroker) { %>
+                            <div class="col-12">
+                                <hr class="my-3">
+                                <div class="alert alert-info mb-0">
+                                    <i class="bi bi-briefcase"></i> <strong>This customer is also a broker</strong>
+                                </div>
+                            </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
+
+                <!-- Bookings as Customer -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-body p-4">
+                        <h5 class="text-primary mb-3">
+                            <i class="bi bi-journal-text"></i> Bookings as Customer (<%= customerBookings.length %>)
+                        </h5>
+                        <% if (customerBookings.length === 0) { %>
+                            <p class="text-muted text-center py-3">No bookings as customer</p>
+                        <% } else { %>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Booking No</th>
+                                            <th class="d-none d-md-table-cell">Date</th>
+                                            <th>Project</th>
+                                            <th>Plot</th>
+                                            <th class="d-none d-lg-table-cell">Amount</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% customerBookings.forEach(booking => { %>
+                                            <tr>
+                                                <td><strong><%= booking.bookingNo %></strong></td>
+                                                <td class="d-none d-md-table-cell"><%= new Date(booking.bookingDate).toLocaleDateString('en-IN') %></td>
+                                                <td><%= booking.project.projectName %></td>
+                                                <td><%= booking.plotNo %></td>
+                                                <td class="d-none d-lg-table-cell">₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></td>
+                                                <td>
+                                                    <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %>">
+                                                        <%= booking.status %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="/booking/<%= booking.id %>" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Bookings as Broker (if customer is broker) -->
+                <% if (customer.isBroker) { %>
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-dark text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-briefcase"></i> Bookings as Broker (<%= brokerBookings.length %>)
+                            </h5>
+                            <span class="badge bg-warning text-dark px-3 py-2">
+                                Total Commission: ₹<%= totalCommission.toLocaleString('en-IN') %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <% if (brokerBookings.length === 0) { %>
+                            <p class="text-muted text-center py-3">No bookings as broker yet</p>
+                        <% } else { %>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Booking No</th>
+                                            <th class="d-none d-md-table-cell">Date</th>
+                                            <th>Customer</th>
+                                            <th>Project</th>
+                                            <th>Plot</th>
+                                            <th class="d-none d-lg-table-cell">Commission</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% brokerBookings.forEach(booking => { %>
+                                            <tr>
+                                                <td><strong><%= booking.bookingNo %></strong></td>
+                                                <td class="d-none d-md-table-cell"><%= new Date(booking.bookingDate).toLocaleDateString('en-IN') %></td>
+                                                <td><%= booking.customer.applicantName %></td>
+                                                <td><%= booking.project.projectName %></td>
+                                                <td><%= booking.plotNo %></td>
+                                                <td class="d-none d-lg-table-cell fw-bold text-success">
+                                                    ₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %>">
+                                                        <%= booking.status %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="/booking/<%= booking.id %>" class="btn btn-sm btn-dark">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <th colspan="5" class="text-end">Total Commission:</th>
+                                            <th class="d-none d-lg-table-cell fw-bold text-success">
+                                                ₹<%= totalCommission.toLocaleString('en-IN') %>
+                                            </th>
+                                            <th colspan="2" class="d-lg-none fw-bold text-success">
+                                                ₹<%= totalCommission.toLocaleString('en-IN') %>
+                                            </th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+                <% } %>
             </div>
         </div>
     </div>

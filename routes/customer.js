@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Customer, User } = require('../models');
+const { Customer, User, Booking, Project } = require('../models');
 const { isAuthenticated } = require('../middleware/auth');
 
 // List all customers
@@ -46,7 +46,8 @@ router.post('/create', isAuthenticated, async (req, res) => {
             address,
             aadhaarNo,
             mobileNo,
-            email
+            email,
+            isBroker
         } = req.body;
 
         // Check if Aadhaar already exists
@@ -72,6 +73,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
             aadhaarNo,
             mobileNo,
             email: email || null,
+            isBroker: isBroker === 'on' || isBroker === true || isBroker === 'true',
             isActive: true,
             createdBy: req.session.userId
         });
@@ -104,8 +106,36 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             return res.status(404).send('Customer not found');
         }
 
+        // Get bookings where this person is the customer (exclude deleted)
+        const customerBookings = await Booking.findAll({
+            where: { customerId: customer.id, isDeleted: false },
+            include: [
+                { model: Project, as: 'project' },
+                { model: Customer, as: 'broker' }
+            ],
+            order: [['bookingDate', 'DESC']]
+        });
+
+        // Get bookings where this person is the broker (exclude deleted)
+        const brokerBookings = await Booking.findAll({
+            where: { brokerId: customer.id, isDeleted: false },
+            include: [
+                { model: Customer, as: 'customer' },
+                { model: Project, as: 'project' }
+            ],
+            order: [['bookingDate', 'DESC']]
+        });
+
+        // Calculate total commission from broker bookings (only non-deleted)
+        const totalCommission = brokerBookings.reduce((sum, b) => {
+            return sum + (parseFloat(b.brokerCommission) || 0);
+        }, 0);
+
         res.render('customer/view', {
             customer,
+            customerBookings,
+            brokerBookings,
+            totalCommission,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
@@ -152,7 +182,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             aadhaarNo,
             mobileNo,
             email,
-            isActive
+            isActive,
+            isBroker
         } = req.body;
 
         // Check if Aadhaar is being changed and already exists for another customer
@@ -182,6 +213,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             aadhaarNo,
             mobileNo,
             email: email || null,
+            isBroker: isBroker === 'on' || isBroker === true || isBroker === 'true',
             isActive: isActive === 'true' || isActive === true
         });
 

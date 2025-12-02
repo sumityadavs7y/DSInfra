@@ -136,6 +136,11 @@ const Customer = sequelize.define('Customer', {
     type: DataTypes.BOOLEAN,
     defaultValue: true
   },
+  isBroker: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Whether this customer is also a broker'
+  },
   isDeleted: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
@@ -298,6 +303,21 @@ const Booking = sequelize.define('Booking', {
     allowNull: false,
     comment: 'Remaining amount to be paid'
   },
+  // Broker Reference (Optional - refers to a Customer who is a broker)
+  brokerId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'customers',
+      key: 'id'
+    }
+  },
+  brokerCommission: {
+    type: DataTypes.DECIMAL(12, 2),
+    allowNull: true,
+    defaultValue: 0,
+    comment: 'Commission amount for broker'
+  },
   // Created by user
   createdBy: {
     type: DataTypes.INTEGER,
@@ -416,6 +436,9 @@ Booking.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
 
 Customer.hasMany(Booking, { foreignKey: 'customerId', as: 'bookings' });
 Booking.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+
+Customer.hasMany(Booking, { foreignKey: 'brokerId', as: 'brokerBookings' });
+Booking.belongsTo(Customer, { foreignKey: 'brokerId', as: 'broker' });
 
 User.hasMany(Booking, { foreignKey: 'createdBy', as: 'bookings' });
 Booking.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });

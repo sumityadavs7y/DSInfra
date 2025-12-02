@@ -87,6 +87,8 @@ router.post('/create', isAuthenticated, async (req, res) => {
             legalDetails,
             rate,
             discount,
+            brokerId,
+            brokerCommission,
             bookingAmount,
             paymentMode,
             transactionNo,
@@ -117,6 +119,8 @@ router.post('/create', isAuthenticated, async (req, res) => {
             discount: discount || 0,
             effectiveRate,
             totalAmount,
+            brokerId: brokerId || null,
+            brokerCommission: brokerCommission || 0,
             bookingAmount,
             paymentMode,
             transactionNo,
@@ -154,6 +158,10 @@ router.get('/:id', isAuthenticated, async (req, res) => {
                 {
                     model: Project,
                     as: 'project'
+                },
+                {
+                    model: Customer,
+                    as: 'broker'
                 },
                 {
                     model: User,
@@ -247,6 +255,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             legalDetails,
             rate,
             discount,
+            brokerId,
+            brokerCommission,
             bookingAmount,
             paymentMode,
             transactionNo,
@@ -273,6 +283,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             discount: discount || 0,
             effectiveRate,
             totalAmount,
+            brokerId: brokerId || null,
+            brokerCommission: brokerCommission || 0,
             bookingAmount,
             paymentMode,
             transactionNo,

@@ -144,6 +144,27 @@
                             <% } %>
                         </div>
 
+                        <!-- Broker Information (if applicable) -->
+                        <% if (booking.broker) { %>
+                        <div class="alert alert-dark mb-4">
+                            <div class="row align-items-center">
+                                <div class="col-12 col-md-8">
+                                    <h6 class="mb-2">
+                                        <i class="bi bi-briefcase"></i> Broker Information
+                                    </h6>
+                                    <p class="mb-0">
+                                        <strong><%= booking.broker.applicantName %></strong><br>
+                                        <small>Mobile: <%= booking.broker.mobileNo %></small>
+                                    </p>
+                                </div>
+                                <div class="col-12 col-md-4 text-md-end mt-2 mt-md-0">
+                                    <label class="text-muted small d-block">Commission</label>
+                                    <h4 class="mb-0 text-warning">₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <% } %>
+
                         <!-- Amount Summary -->
                         <div class="card text-white mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                             <div class="card-body">

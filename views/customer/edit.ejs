@@ -61,6 +61,16 @@
                                     <label class="form-label fw-semibold">Address *</label>
                                     <textarea class="form-control" name="address" rows="3" required><%= customer.address %></textarea>
                                 </div>
+                                <div class="col-12">
+                                    <hr class="my-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="isBroker" name="isBroker" <%= customer.isBroker ? 'checked' : '' %>>
+                                        <label class="form-check-label fw-semibold" for="isBroker">
+                                            <i class="bi bi-briefcase"></i> This customer is also a broker
+                                        </label>
+                                        <div class="form-text">Enable this if the customer can earn commission on bookings</div>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="mt-4 d-flex gap-2 justify-content-end">
