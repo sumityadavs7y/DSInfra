@@ -337,6 +337,12 @@ const Booking = sequelize.define('Booking', {
     allowNull: false,
     comment: 'Rate per unit'
   },
+  associateRate: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0,
+    comment: 'Associate rate per unit (for broker commission calculation)'
+  },
   discount: {
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0

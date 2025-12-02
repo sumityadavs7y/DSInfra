@@ -92,9 +92,9 @@ router.post('/create', isAuthenticated, async (req, res) => {
             plc,
             legalDetails,
             rate,
+            associateRate,
             discount,
             brokerId,
-            brokerCommission,
             bookingAmount,
             paymentMode,
             transactionNo,
@@ -106,6 +106,14 @@ router.post('/create', isAuthenticated, async (req, res) => {
         const effectiveRate = parseFloat(rate) - (parseFloat(discount) || 0);
         const totalAmount = (parseFloat(area) * effectiveRate) + (parseFloat(plc) || 0);
         const remainingAmount = totalAmount - parseFloat(bookingAmount);
+        
+        // Auto-calculate broker commission: (associateRate - rate) * area
+        const areaVal = parseFloat(area) || 0;
+        const rateVal = parseFloat(rate) || 0;
+        const associateRateVal = parseFloat(associateRate) || 0;
+        const brokerCommission = brokerId && associateRateVal > 0 
+            ? Math.max(0, (associateRateVal - rateVal) * areaVal) 
+            : 0;
 
         // Generate booking number
         const bookingCount = await Booking.count();
@@ -122,11 +130,12 @@ router.post('/create', isAuthenticated, async (req, res) => {
             plc: plc || 0,
             legalDetails,
             rate,
+            associateRate: associateRate || 0,
             discount: discount || 0,
             effectiveRate,
             totalAmount,
             brokerId: brokerId || null,
-            brokerCommission: brokerCommission || 0,
+            brokerCommission,
             bookingAmount,
             paymentMode,
             transactionNo,
@@ -268,9 +277,9 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             plc,
             legalDetails,
             rate,
+            associateRate,
             discount,
             brokerId,
-            brokerCommission,
             bookingAmount,
             paymentMode,
             transactionNo,
@@ -283,6 +292,14 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         const effectiveRate = parseFloat(rate) - (parseFloat(discount) || 0);
         const totalAmount = (parseFloat(area) * effectiveRate) + (parseFloat(plc) || 0);
         const remainingAmount = totalAmount - parseFloat(bookingAmount);
+        
+        // Auto-calculate broker commission: (associateRate - rate) * area
+        const areaVal = parseFloat(area) || 0;
+        const rateVal = parseFloat(rate) || 0;
+        const associateRateVal = parseFloat(associateRate) || 0;
+        const brokerCommission = brokerId && associateRateVal > 0 
+            ? Math.max(0, (associateRateVal - rateVal) * areaVal) 
+            : 0;
 
         // Update booking
         await booking.update({
@@ -294,11 +311,12 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             plc: plc || 0,
             legalDetails,
             rate,
+            associateRate: associateRate || 0,
             discount: discount || 0,
             effectiveRate,
             totalAmount,
             brokerId: brokerId || null,
-            brokerCommission: brokerCommission || 0,
+            brokerCommission,
             bookingAmount,
             paymentMode,
             transactionNo,

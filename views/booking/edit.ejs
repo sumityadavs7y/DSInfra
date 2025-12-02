@@ -76,6 +76,11 @@
                                     <input type="number" class="form-control" name="rate" id="rate" value="<%= parseFloat(booking.rate) %>" step="0.01" required>
                                 </div>
                                 <div class="col-6 col-md-3">
+                                    <label class="form-label fw-semibold">Associate Rate (₹)</label>
+                                    <input type="number" class="form-control" name="associateRate" id="associateRate" value="<%= parseFloat(booking.associateRate || 0) %>" step="0.01">
+                                    <div class="form-text">For broker commission</div>
+                                </div>
+                                <div class="col-6 col-md-3">
                                     <label class="form-label fw-semibold">PLC (₹)</label>
                                     <input type="number" class="form-control" name="plc" id="plc" value="<%= parseFloat(booking.plc) %>" step="0.01">
                                 </div>
@@ -116,10 +121,10 @@
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Broker Commission (₹)</label>
-                                    <input type="number" class="form-control" name="brokerCommission" id="brokerCommission" 
+                                    <input type="number" class="form-control bg-light" name="brokerCommission" id="brokerCommission" 
                                            value="<%= parseFloat(booking.brokerCommission || 0) %>" 
-                                           step="0.01" min="0" <%= booking.brokerId ? '' : 'disabled' %>>
-                                    <div class="form-text">Enable when a broker is selected</div>
+                                           step="0.01" min="0" readonly>
+                                    <div class="form-text">Auto-calculated: (Associate Rate - Rate) × Area</div>
                                 </div>
                             </div>
                             
@@ -177,14 +182,18 @@
     <script>
         const area = document.getElementById('area');
         const rate = document.getElementById('rate');
+        const associateRate = document.getElementById('associateRate');
         const plc = document.getElementById('plc');
         const discount = document.getElementById('discount');
         const effectiveRate = document.getElementById('effectiveRate');
         const totalAmount = document.getElementById('totalAmount');
+        const brokerCommission = document.getElementById('brokerCommission');
+        const brokerSelect = document.getElementById('brokerSelect');
         
         function calculateAmounts() {
             const areaVal = parseFloat(area.value) || 0;
             const rateVal = parseFloat(rate.value) || 0;
+            const associateRateVal = parseFloat(associateRate.value) || 0;
             const plcVal = parseFloat(plc.value) || 0;
             const discountVal = parseFloat(discount.value) || 0;
             
@@ -193,23 +202,22 @@
             
             effectiveRate.value = effRate.toFixed(2);
             totalAmount.value = total.toFixed(2);
+            
+            // Auto-calculate broker commission: (associateRate - rate) * area
+            if (brokerSelect.value && associateRateVal > 0) {
+                const commission = (associateRateVal - rateVal) * areaVal;
+                brokerCommission.value = commission > 0 ? commission.toFixed(2) : '0.00';
+            } else {
+                brokerCommission.value = '0.00';
+            }
         }
         
-        [area, rate, plc, discount].forEach(el => el.addEventListener('input', calculateAmounts));
+        [area, rate, associateRate, plc, discount].forEach(el => el.addEventListener('input', calculateAmounts));
         calculateAmounts();
         
-        // Enable/disable broker commission based on broker selection
-        const brokerSelect = document.getElementById('brokerSelect');
-        const brokerCommission = document.getElementById('brokerCommission');
-        
+        // Recalculate when broker is selected/deselected
         brokerSelect.addEventListener('change', function() {
-            if (this.value) {
-                brokerCommission.disabled = false;
-                brokerCommission.required = false;
-            } else {
-                brokerCommission.disabled = true;
-                brokerCommission.value = '0';
-            }
+            calculateAmounts();
         });
     </script>
 </body>

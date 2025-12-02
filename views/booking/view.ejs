@@ -128,6 +128,12 @@
                                 <label class="text-muted small fw-semibold text-uppercase">Rate</label>
                                 <p class="h6 mb-0">₹<%= parseFloat(booking.rate).toLocaleString('en-IN') %></p>
                             </div>
+                            <% if (booking.associateRate && parseFloat(booking.associateRate) > 0) { %>
+                            <div class="col-6 col-md-3">
+                                <label class="text-muted small fw-semibold text-uppercase">Associate Rate</label>
+                                <p class="h6 mb-0">₹<%= parseFloat(booking.associateRate).toLocaleString('en-IN') %></p>
+                            </div>
+                            <% } %>
                             <div class="col-6 col-md-3">
                                 <label class="text-muted small fw-semibold text-uppercase">PLC</label>
                                 <p class="h6 mb-0">₹<%= parseFloat(booking.plc).toLocaleString('en-IN') %></p>
