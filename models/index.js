@@ -82,6 +82,189 @@ User.prototype.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
+// Define Project model
+const Project = sequelize.define('Project', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  projectName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
+  },
+  location: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  totalPlots: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  availablePlots: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  }
+}, {
+  tableName: 'projects',
+  timestamps: true
+});
+
+// Define Booking model
+const Booking = sequelize.define('Booking', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  // Auto-generated booking number
+  bookingNo: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false
+  },
+  bookingDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  },
+  // Applicant Details
+  applicantName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
+  },
+  fatherOrHusbandName: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  aadhaarNo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [12, 12]
+    }
+  },
+  mobileNo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [10, 15]
+    }
+  },
+  // Property Details
+  projectId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'projects',
+      key: 'id'
+    }
+  },
+  plotNo: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  area: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    comment: 'Area in sq. ft. or sq. meters'
+  },
+  plc: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0,
+    comment: 'Price Level Charges'
+  },
+  legalDetails: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  rate: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    comment: 'Rate per unit'
+  },
+  discount: {
+    type: DataTypes.DECIMAL(10, 2),
+    defaultValue: 0
+  },
+  effectiveRate: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    comment: 'Rate after discount'
+  },
+  totalAmount: {
+    type: DataTypes.DECIMAL(15, 2),
+    allowNull: false,
+    comment: 'Total booking amount'
+  },
+  // Booking Payment
+  bookingAmount: {
+    type: DataTypes.DECIMAL(15, 2),
+    allowNull: false,
+    comment: 'Initial booking amount paid'
+  },
+  paymentMode: {
+    type: DataTypes.ENUM('Cash', 'Cheque', 'Online Transfer', 'UPI', 'Card'),
+    allowNull: false
+  },
+  transactionNo: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  remarks: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  // Status
+  status: {
+    type: DataTypes.ENUM('Active', 'Completed', 'Cancelled'),
+    defaultValue: 'Active'
+  },
+  // Remaining amount
+  remainingAmount: {
+    type: DataTypes.DECIMAL(15, 2),
+    allowNull: false,
+    comment: 'Remaining amount to be paid'
+  },
+  // Created by user
+  createdBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  }
+}, {
+  tableName: 'bookings',
+  timestamps: true
+});
+
+// Define relationships
+Project.hasMany(Booking, { foreignKey: 'projectId', as: 'bookings' });
+Booking.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
+
+User.hasMany(Booking, { foreignKey: 'createdBy', as: 'bookings' });
+Booking.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
 // Test database connection
 const testConnection = async () => {
     try {
@@ -108,5 +291,7 @@ module.exports = {
     testConnection,
     syncDatabase,
     // Models
-    User
+    User,
+    Project,
+    Booking
 }; 

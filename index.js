@@ -3,6 +3,8 @@ const session = require('express-session');
 const app = express();
 const { envConfig } = require('./config');
 const { testConnection, syncDatabase } = require('./models');
+const createAdminUser = require('./scripts/createAdmin');
+const createSampleProjects = require('./scripts/createSampleProjects');
 
 
 app.use(express.json())
@@ -34,10 +36,22 @@ app.use((req, res, next) => {
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const bookingRoutes = require('./routes/booking');
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/booking', bookingRoutes);
+
+// Initialize default data using scripts
+const initializeDefaultData = async () => {
+    try {
+        await createAdminUser();
+        await createSampleProjects();
+    } catch (error) {
+        console.error('⚠️  Error initializing default data:', error.message);
+    }
+};
 
 // Initialize database and start server
 const startServer = async () => {
@@ -48,9 +62,14 @@ const startServer = async () => {
       // Sync database models (creates tables if they don't exist)
       await syncDatabase();
       
+      // Initialize default admin user and sample projects
+      await initializeDefaultData();
+      
       // Start the server
       app.listen(envConfig.port, () => {
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
         console.log(`🚀 Server is running on port ${envConfig.port}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       });
     } catch (error) {
       console.error('Failed to start server:', error);
