@@ -32,7 +32,12 @@ app.use((req, res, next) => {
 
 // Routes
 const indexRoutes = require('./routes/index');
+const authRoutes = require('./routes/auth');
+const dashboardRoutes = require('./routes/dashboard');
+
 app.use('/', indexRoutes);
+app.use('/auth', authRoutes);
+app.use('/dashboard', dashboardRoutes);
 
 // Initialize database and start server
 const startServer = async () => {
