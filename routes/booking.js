@@ -156,8 +156,16 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             return res.status(404).send('Booking not found');
         }
 
+        // Get all payments for this booking
+        const { Payment } = require('../models');
+        const payments = await Payment.findAll({
+            where: { bookingId: booking.id },
+            order: [['receiptDate', 'ASC']]
+        });
+
         res.render('booking/view', {
             booking,
+            payments,
             userName: req.session.userName,
             userRole: req.session.userRole
         });

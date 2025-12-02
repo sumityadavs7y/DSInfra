@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Payment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-success shadow-sm">
+        <div class="container-fluid">
+            <div>
+                <a href="/payment" class="btn btn-outline-light btn-sm me-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <span class="navbar-brand mb-0 h1">Record Payment</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <% if (error) { %>
+                            <div class="alert alert-danger"><i class="bi bi-exclamation-triangle"></i> <%= error %></div>
+                        <% } %>
+                        
+                        <% if (bookings.length === 0) { %>
+                            <div class="text-center py-5">
+                                <i class="bi bi-exclamation-circle fs-1 text-warning"></i>
+                                <h5 class="mt-3">No Active Bookings with Pending Balance</h5>
+                                <p class="text-muted">All bookings are either completed or have no pending payments.</p>
+                                <a href="/booking" class="btn btn-primary">View Bookings</a>
+                            </div>
+                        <% } else { %>
+                            <form method="POST" action="/payment/create" id="paymentForm">
+                                <!-- Booking Selection -->
+                                <h5 class="text-success mb-3"><i class="bi bi-journal-check"></i> Select Booking</h5>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Booking <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="bookingId" id="bookingSelect" required>
+                                        <option value="">-- Select Booking --</option>
+                                        <% bookings.forEach(booking => { %>
+                                            <option value="<%= booking.id %>" 
+                                                data-booking-no="<%= booking.bookingNo %>"
+                                                data-customer="<%= booking.customer.applicantName %>"
+                                                data-project="<%= booking.project.projectName %>"
+                                                data-plot="<%= booking.plotNo %>"
+                                                data-total="<%= parseFloat(booking.totalAmount) %>"
+                                                data-remaining="<%= parseFloat(booking.remainingAmount) %>">
+                                                <%= booking.bookingNo %> - <%= booking.customer.applicantName %> - <%= booking.project.projectName %> (Plot: <%= booking.plotNo %>)
+                                            </option>
+                                        <% }); %>
+                                    </select>
+                                    <div class="alert alert-info mt-2 d-none" id="bookingInfo">
+                                        <small>
+                                            <strong>Customer:</strong> <span id="infoCustomer"></span><br>
+                                            <strong>Project:</strong> <span id="infoProject"></span> - Plot: <span id="infoPlot"></span><br>
+                                            <strong>Total Amount:</strong> ₹<span id="infoTotal"></span><br>
+                                            <strong class="text-danger">Remaining Balance:</strong> ₹<span id="infoRemaining" class="fw-bold text-danger"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <hr class="my-4">
+                                
+                                <!-- Payment Details -->
+                                <h5 class="text-success mb-3"><i class="bi bi-credit-card"></i> Payment Details</h5>
+                                <div class="row g-3 mb-4">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Payment Amount (₹) <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" name="paymentAmount" id="paymentAmount" step="0.01" min="0" required>
+                                        <div class="form-text">Maximum: ₹<span id="maxAmount">0</span></div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Payment Mode <span class="text-danger">*</span></label>
+                                        <select class="form-select" name="paymentMode" required>
+                                            <option value="">Select Mode</option>
+                                            <option value="Cash">Cash</option>
+                                            <option value="Cheque">Cheque</option>
+                                            <option value="Online Transfer">Online Transfer</option>
+                                            <option value="UPI">UPI</option>
+                                            <option value="Card">Card</option>
+                                            <option value="EMI">EMI</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Transaction Number</label>
+                                        <input type="text" class="form-control" name="transactionNo">
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Payment Type</label>
+                                        <select class="form-select" name="paymentType">
+                                            <option value="Installment">Installment</option>
+                                            <option value="Final">Final Payment</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="form-check mt-4">
+                                            <input class="form-check-input" type="checkbox" name="isRecurring" value="true" id="isRecurring">
+                                            <label class="form-check-label" for="isRecurring">
+                                                Recurring/EMI Payment
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label fw-semibold">Installment Number (if recurring)</label>
+                                        <input type="number" class="form-control" name="installmentNumber" min="1">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Remarks</label>
+                                        <textarea class="form-control" name="remarks" rows="2"></textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="/payment" class="btn btn-secondary">Cancel</a>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="bi bi-check-circle"></i> Record Payment
+                                    </button>
+                                </div>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const bookingSelect = document.getElementById('bookingSelect');
+        const bookingInfo = document.getElementById('bookingInfo');
+        const paymentAmount = document.getElementById('paymentAmount');
+        const maxAmount = document.getElementById('maxAmount');
+        
+        bookingSelect?.addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            if (this.value) {
+                const remaining = parseFloat(selected.dataset.remaining);
+                
+                document.getElementById('infoCustomer').textContent = selected.dataset.customer;
+                document.getElementById('infoProject').textContent = selected.dataset.project;
+                document.getElementById('infoPlot').textContent = selected.dataset.plot;
+                document.getElementById('infoTotal').textContent = parseFloat(selected.dataset.total).toLocaleString('en-IN');
+                document.getElementById('infoRemaining').textContent = remaining.toLocaleString('en-IN');
+                
+                maxAmount.textContent = remaining.toLocaleString('en-IN');
+                paymentAmount.max = remaining;
+                
+                bookingInfo.classList.remove('d-none');
+            } else {
+                bookingInfo.classList.add('d-none');
+            }
+        });
+        
+        // Validate payment amount doesn't exceed remaining balance
+        paymentAmount?.addEventListener('input', function() {
+            const selected = bookingSelect.options[bookingSelect.selectedIndex];
+            if (selected && selected.value) {
+                const remaining = parseFloat(selected.dataset.remaining);
+                const amount = parseFloat(this.value);
+                
+                if (amount > remaining) {
+                    this.setCustomValidity(`Amount cannot exceed remaining balance of ₹${remaining.toLocaleString('en-IN')}`);
+                } else {
+                    this.setCustomValidity('');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
