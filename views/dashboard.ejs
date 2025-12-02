@@ -3,346 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Real Estate Management</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
-            min-height: 100vh;
-        }
-        
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 40px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .logo {
-            font-size: 2em;
-        }
-        
-        .header-title h1 {
-            font-size: 1.8em;
-            font-weight: 600;
-        }
-        
-        .header-title p {
-            font-size: 0.9em;
-            opacity: 0.9;
-        }
-        
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .user-info {
-            text-align: right;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-        
-        .user-role {
-            font-size: 0.85em;
-            opacity: 0.9;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 3px 10px;
-            border-radius: 12px;
-            display: inline-block;
-            margin-top: 3px;
-        }
-        
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 20px;
-            border: 2px solid white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        
-        .logout-btn:hover {
-            background: white;
-            color: #667eea;
-        }
-        
-        /* Main Content */
-        .container {
-            max-width: 1400px;
-            margin: 40px auto;
-            padding: 0 40px;
-        }
-        
-        .welcome-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-        
-        .welcome-section h2 {
-            color: #333;
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        
-        .welcome-section p {
-            color: #666;
-            font-size: 1.1em;
-        }
-        
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border-left: 5px solid;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .stat-card.blue {
-            border-color: #667eea;
-        }
-        
-        .stat-card.purple {
-            border-color: #764ba2;
-        }
-        
-        .stat-card.green {
-            border-color: #48bb78;
-        }
-        
-        .stat-card.orange {
-            border-color: #ed8936;
-        }
-        
-        .stat-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
-        }
-        
-        .stat-label {
-            color: #666;
-            font-size: 0.95em;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-        
-        .stat-value {
-            color: #333;
-            font-size: 2.2em;
-            font-weight: 700;
-        }
-        
-        /* Quick Actions */
-        .quick-actions {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-        }
-        
-        .quick-actions h3 {
-            color: #333;
-            font-size: 1.5em;
-            margin-bottom: 20px;
-        }
-        
-        .action-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .action-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 15px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            color: white;
-            font-weight: 600;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .action-btn.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .action-btn.success {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-        }
-        
-        .action-btn.warning {
-            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-        }
-        
-        .action-btn.info {
-            background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-        }
-        
-        .action-icon {
-            font-size: 1.5em;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header {
-                padding: 20px;
-                flex-direction: column;
-                gap: 20px;
-                text-align: center;
-            }
-            
-            .header-left {
-                flex-direction: column;
-            }
-            
-            .container {
-                padding: 0 20px;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <title>Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 </head>
-<body>
+<body class="bg-light">
     <!-- Header -->
-    <div class="header">
-        <div class="header-left">
-            <div class="logo">🏢</div>
-            <div class="header-title">
-                <h1>Admin Dashboard</h1>
-                <p>Real Estate Management System</p>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/dashboard">
+                <i class="bi bi-building"></i> Admin Dashboard
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="bi bi-person-circle"></i> <%= userName %> 
+                            <span class="badge bg-light text-dark"><%= userRole.toUpperCase() %></span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
-        <div class="header-right">
-            <div class="user-info">
-                <div class="user-name">👤 <%= userName %></div>
-                <div class="user-role"><%= userRole.toUpperCase() %></div>
-            </div>
-            <a href="/auth/logout" class="logout-btn">Logout</a>
-        </div>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="container">
+    </nav>
+
+    <div class="container my-4">
         <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h2>Welcome back, <%= userName %>! 👋</h2>
-            <p>Here's what's happening with your real estate business today.</p>
-        </div>
-        
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card blue">
-                <div class="stat-icon">📊</div>
-                <div class="stat-label">Total Projects</div>
-                <div class="stat-value">0</div>
-            </div>
-            
-            <div class="stat-card purple">
-                <div class="stat-icon">📅</div>
-                <div class="stat-label">Active Bookings</div>
-                <div class="stat-value">0</div>
-            </div>
-            
-            <div class="stat-card green">
-                <div class="stat-icon">💰</div>
-                <div class="stat-label">Total Revenue</div>
-                <div class="stat-value">₹0</div>
-            </div>
-            
-            <div class="stat-card orange">
-                <div class="stat-icon">🤝</div>
-                <div class="stat-label">Active Brokers</div>
-                <div class="stat-value">0</div>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h2 class="h3 mb-2">Welcome back, <%= userName %>! 👋</h2>
+                <p class="text-muted mb-0">Here's what's happening with your real estate business today.</p>
             </div>
         </div>
-        
+
+        <!-- Stats Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm border-start border-primary border-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-diagram-3 fs-1 text-primary"></i>
+                        <h3 class="h2 fw-bold mt-2 mb-1"><%= stats.totalProjects %></h3>
+                        <p class="text-muted small mb-0">Total Projects</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm border-start border-success border-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-calendar-check fs-1 text-success"></i>
+                        <h3 class="h2 fw-bold mt-2 mb-1"><%= stats.activeBookings %></h3>
+                        <p class="text-muted small mb-0">Active Bookings</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm border-start border-warning border-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-currency-rupee fs-1 text-warning"></i>
+                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalRevenue).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted small mb-0">Total Revenue</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm border-start border-info border-4">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people fs-1 text-info"></i>
+                        <h3 class="h2 fw-bold mt-2 mb-1"><%= stats.activeCustomers %></h3>
+                        <p class="text-muted small mb-0">Active Customers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h3>Quick Actions</h3>
-            <div class="action-buttons">
-                <a href="/customer" class="action-btn primary">
-                    <span class="action-icon">👥</span>
-                    <span>Manage Customers</span>
-                </a>
-                <a href="/customer/create" class="action-btn success">
-                    <span class="action-icon">➕</span>
-                    <span>Add Customer</span>
-                </a>
-                <a href="/booking" class="action-btn primary">
-                    <span class="action-icon">📋</span>
-                    <span>View Bookings</span>
-                </a>
-                <a href="/booking/create" class="action-btn success">
-                    <span class="action-icon">📝</span>
-                    <span>Create Booking</span>
-                </a>
-                <a href="#" class="action-btn warning">
-                    <span class="action-icon">💳</span>
-                    <span>Record Payment</span>
-                </a>
-                <a href="#" class="action-btn info">
-                    <span class="action-icon">📊</span>
-                    <span>View Reports</span>
-                </a>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h3 class="h5 mb-4">Quick Actions</h3>
+                <div class="row g-3">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/customer" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-people fs-4 d-block mb-2"></i>
+                            <small>Customers</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/customer/create" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-person-plus fs-4 d-block mb-2"></i>
+                            <small>Add Customer</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/booking" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
+                            <small>Bookings</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/booking/create" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                            <small>New Booking</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="#" class="btn btn-outline-warning w-100 py-3">
+                            <i class="bi bi-credit-card fs-4 d-block mb-2"></i>
+                            <small>Payments</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="#" class="btn btn-outline-info w-100 py-3">
+                            <i class="bi bi-graph-up fs-4 d-block mb-2"></i>
+                            <small>Reports</small>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
