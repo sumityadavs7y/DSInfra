@@ -106,9 +106,9 @@
                                     <label class="form-label fw-semibold">Broker</label>
                                     <select class="form-select" name="brokerId" id="brokerSelect">
                                         <option value="">-- No Broker --</option>
-                                        <% customers.filter(c => c.isBroker).forEach(broker => { %>
+                                        <% brokers.forEach(broker => { %>
                                             <option value="<%= broker.id %>" <%= booking.brokerId == broker.id ? 'selected' : '' %>>
-                                                <%= broker.applicantName %> (<%= broker.mobileNo %>)
+                                                <%= broker.name %> (<%= broker.mobileNo %>)
                                             </option>
                                         <% }) %>
                                     </select>

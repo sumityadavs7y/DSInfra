@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Booking, Project, User, Customer } = require('../models');
+const { Booking, Project, User, Customer, Broker } = require('../models');
 const { isAuthenticated } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 const { numberToWords } = require('../utils/helpers');
@@ -62,9 +62,15 @@ router.get('/create', isAuthenticated, async (req, res) => {
             where: { isActive: true, isDeleted: false }
         });
 
+        const brokers = await Broker.findAll({
+            where: { isActive: true, isDeleted: false },
+            order: [['name', 'ASC']]
+        });
+
         res.render('booking/create', {
             customers,
             projects,
+            brokers,
             userName: req.session.userName,
             userRole: req.session.userRole,
             error: null
@@ -136,9 +142,11 @@ router.post('/create', isAuthenticated, async (req, res) => {
         
         const customers = await Customer.findAll({ where: { isActive: true, isDeleted: false }, order: [['applicantName', 'ASC']] });
         const projects = await Project.findAll({ where: { isActive: true, isDeleted: false } });
+        const brokers = await Broker.findAll({ where: { isActive: true, isDeleted: false }, order: [['name', 'ASC']] });
         res.render('booking/create', {
             customers,
             projects,
+            brokers,
             userName: req.session.userName,
             userRole: req.session.userRole,
             error: 'Error creating booking: ' + error.message
@@ -160,7 +168,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
                     as: 'project'
                 },
                 {
-                    model: Customer,
+                    model: Broker,
                     as: 'broker'
                 },
                 {
@@ -223,10 +231,16 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
             where: { isActive: true, isDeleted: false }
         });
 
+        const brokers = await Broker.findAll({
+            where: { isActive: true, isDeleted: false },
+            order: [['name', 'ASC']]
+        });
+
         res.render('booking/edit', {
             booking,
             customers,
             projects,
+            brokers,
             userName: req.session.userName,
             userRole: req.session.userRole,
             error: null
@@ -302,11 +316,13 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         });
         const customers = await Customer.findAll({ where: { isActive: true, isDeleted: false }, order: [['applicantName', 'ASC']] });
         const projects = await Project.findAll({ where: { isActive: true, isDeleted: false } });
+        const brokers = await Broker.findAll({ where: { isActive: true, isDeleted: false }, order: [['name', 'ASC']] });
         
         res.render('booking/edit', {
             booking,
             customers,
             projects,
+            brokers,
             userName: req.session.userName,
             userRole: req.session.userRole,
             error: 'Error updating booking: ' + error.message

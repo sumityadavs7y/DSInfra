@@ -136,11 +136,6 @@ const Customer = sequelize.define('Customer', {
     type: DataTypes.BOOLEAN,
     defaultValue: true
   },
-  isBroker: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
-    comment: 'Whether this customer is also a broker'
-  },
   isDeleted: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
@@ -156,6 +151,88 @@ const Customer = sequelize.define('Customer', {
 }, {
   tableName: 'customers',
   timestamps: true
+});
+
+// Define Broker model
+const Broker = sequelize.define('Broker', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  brokerNo: {
+    type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
+    comment: 'Auto-generated broker number'
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
+  },
+  mobileNo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      len: [10, 15]
+    }
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  address: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  aadhaarNo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      len: [12, 12]
+    }
+  },
+  panNo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      len: [10, 10]
+    }
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  createdBy: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'users',
+      key: 'id'
+    }
+  }
+}, {
+  tableName: 'brokers',
+  timestamps: true,
+  hooks: {
+    beforeValidate: async (broker, options) => {
+      if (!broker.brokerNo) {
+        const year = new Date().getFullYear();
+        const count = await Broker.count({ paranoid: false });
+        broker.brokerNo = `BRK${year}${(count + 1).toString().padStart(5, '0')}`;
+      }
+    }
+  }
 });
 
 // Define Project model
@@ -303,12 +380,12 @@ const Booking = sequelize.define('Booking', {
     allowNull: false,
     comment: 'Remaining amount to be paid'
   },
-  // Broker Reference (Optional - refers to a Customer who is a broker)
+  // Broker Reference (Optional - refers to Broker entity)
   brokerId: {
     type: DataTypes.INTEGER,
     allowNull: true,
     references: {
-      model: 'customers',
+      model: 'brokers',
       key: 'id'
     }
   },
@@ -437,8 +514,11 @@ Booking.belongsTo(Project, { foreignKey: 'projectId', as: 'project' });
 Customer.hasMany(Booking, { foreignKey: 'customerId', as: 'bookings' });
 Booking.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 
-Customer.hasMany(Booking, { foreignKey: 'brokerId', as: 'brokerBookings' });
-Booking.belongsTo(Customer, { foreignKey: 'brokerId', as: 'broker' });
+Broker.hasMany(Booking, { foreignKey: 'brokerId', as: 'bookings' });
+Booking.belongsTo(Broker, { foreignKey: 'brokerId', as: 'broker' });
+
+User.hasMany(Broker, { foreignKey: 'createdBy', as: 'brokers' });
+Broker.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 
 User.hasMany(Booking, { foreignKey: 'createdBy', as: 'bookings' });
 Booking.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
@@ -477,6 +557,7 @@ module.exports = {
     // Models
     User,
     Customer,
+    Broker,
     Project,
     Booking,
     Payment
