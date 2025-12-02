@@ -161,6 +161,7 @@
                                             <th>Project</th>
                                             <th>Plot</th>
                                             <th class="d-none d-lg-table-cell">Commission</th>
+                                            <th class="text-center">Registry</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -175,6 +176,13 @@
                                                 <td><%= booking.plotNo %></td>
                                                 <td class="d-none d-lg-table-cell fw-bold text-warning">
                                                     ₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %>
+                                                </td>
+                                                <td class="text-center">
+                                                    <% if (booking.registryCompleted) { %>
+                                                        <i class="bi bi-check-circle-fill text-success fs-5" title="Registry Completed"></i>
+                                                    <% } else { %>
+                                                        <i class="bi bi-hourglass-split text-warning fs-5" title="Registry Pending"></i>
+                                                    <% } %>
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-<%= booking.status === 'Active' ? 'success' : 'danger' %>">
@@ -195,7 +203,7 @@
                                             <th class="d-none d-lg-table-cell fw-bold text-warning">
                                                 ₹<%= stats.totalCommission.toLocaleString('en-IN') %>
                                             </th>
-                                            <th colspan="2" class="d-lg-none fw-bold text-warning">
+                                            <th colspan="3" class="d-lg-none fw-bold text-warning">
                                                 ₹<%= stats.totalCommission.toLocaleString('en-IN') %>
                                             </th>
                                         </tr>
