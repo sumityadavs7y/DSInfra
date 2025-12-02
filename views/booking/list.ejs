@@ -23,6 +23,19 @@
     </nav>
 
     <div class="container my-4">
+        <!-- Show/Hide Deleted Toggle -->
+        <div class="mb-3">
+            <% if (showDeleted) { %>
+                <a href="/booking" class="btn btn-outline-danger">
+                    <i class="bi bi-eye-slash"></i> Hide Deleted
+                </a>
+            <% } else { %>
+                <a href="/booking?showDeleted=true" class="btn btn-outline-secondary">
+                    <i class="bi bi-trash"></i> Show Deleted
+                </a>
+            <% } %>
+        </div>
+
         <!-- Stats -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-4">
@@ -99,18 +112,30 @@
                                         <td class="d-none d-lg-table-cell">₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></td>
                                         <td class="d-none d-xl-table-cell">₹<%= parseFloat(booking.remainingAmount).toLocaleString('en-IN') %></td>
                                         <td>
+                                            <% if (booking.isDeleted) { %>
+                                            <span class="badge bg-danger">Deleted</span>
+                                            <% } else { %>
                                             <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %>">
                                                 <%= booking.status %>
                                             </span>
+                                            <% } %>
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="/booking/<%= booking.id %>" class="btn btn-primary">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
+                                                <% if (!booking.isDeleted) { %>
                                                 <a href="/booking/<%= booking.id %>/edit" class="btn btn-warning">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
+                                                <form method="POST" action="/booking/<%= booking.id %>/delete" style="display:inline;" 
+                                                      onsubmit="return confirm('Delete this booking? This will also delete all related payments.');">
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>

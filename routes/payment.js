@@ -8,7 +8,16 @@ const { numberToWords } = require('../utils/helpers');
 // List all payments
 router.get('/', isAuthenticated, async (req, res) => {
     try {
+        const { showDeleted } = req.query;
+        const whereClause = {};
+
+        // By default, hide deleted payments
+        if (showDeleted !== 'true') {
+            whereClause.isDeleted = false;
+        }
+
         const payments = await Payment.findAll({
+            where: whereClause,
             include: [
                 {
                     model: Booking,
@@ -29,6 +38,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 
         res.render('payment/list', {
             payments,
+            showDeleted: showDeleted === 'true',
             userName: req.session.userName,
             userRole: req.session.userRole
         });
@@ -41,11 +51,12 @@ router.get('/', isAuthenticated, async (req, res) => {
 // Show create payment form
 router.get('/create', isAuthenticated, async (req, res) => {
     try {
-        // Get bookings with remaining balance
+        // Get bookings with remaining balance (only non-deleted bookings)
         const bookings = await Booking.findAll({
             where: { 
                 status: 'Active',
-                remainingAmount: { [require('sequelize').Op.gt]: 0 }
+                remainingAmount: { [require('sequelize').Op.gt]: 0 },
+                isDeleted: false
             },
             include: [
                 { model: Customer, as: 'customer' },
@@ -94,7 +105,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
         if (!booking) {
             await transaction.rollback();
             const bookings = await Booking.findAll({
-                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 } },
+                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
                 include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
             });
             return res.render('payment/create', {
@@ -112,7 +123,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
         if (amount <= 0) {
             await transaction.rollback();
             const bookings = await Booking.findAll({
-                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 } },
+                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
                 include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
             });
             return res.render('payment/create', {
@@ -126,7 +137,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
         if (amount > currentBalance) {
             await transaction.rollback();
             const bookings = await Booking.findAll({
-                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 } },
+                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
                 include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
             });
             return res.render('payment/create', {
@@ -175,7 +186,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
         console.error('Error creating payment:', error);
         
         const bookings = await Booking.findAll({
-            where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 } },
+            where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
             include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
         });
         res.render('payment/create', {
@@ -532,6 +543,25 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error generating PDF:', error);
         res.status(500).send('Error generating PDF');
+    }
+});
+
+// Delete Payment (Soft Delete)
+router.post('/:id/delete', isAuthenticated, async (req, res) => {
+    try {
+        const payment = await Payment.findByPk(req.params.id);
+        
+        if (!payment) {
+            return res.status(404).send('Payment not found');
+        }
+
+        // Soft delete payment
+        await payment.update({ isDeleted: true });
+
+        res.redirect('/payment?message=deleted');
+    } catch (error) {
+        console.error('Error deleting payment:', error);
+        res.status(500).send('Error deleting payment: ' + error.message);
     }
 });
 

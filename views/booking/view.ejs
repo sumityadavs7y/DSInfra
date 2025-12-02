@@ -17,12 +17,20 @@
                 <span class="navbar-brand mb-0 h1">Booking Details</span>
             </div>
             <div class="d-flex gap-2">
+                <% if (!booking.isDeleted) { %>
                 <a href="/booking/<%= booking.id %>/edit" class="btn btn-warning">
                     <i class="bi bi-pencil"></i> <span class="d-none d-sm-inline">Edit</span>
                 </a>
                 <a href="/booking/<%= booking.id %>/pdf" class="btn btn-light">
                     <i class="bi bi-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
                 </a>
+                <form method="POST" action="/booking/<%= booking.id %>/delete" style="display:inline;" 
+                      onsubmit="return confirm('Delete this booking? This will also delete all related payments.');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> <span class="d-none d-sm-inline">Delete</span>
+                    </button>
+                </form>
+                <% } %>
             </div>
         </div>
     </nav>
@@ -42,6 +50,11 @@
                                 </small>
                             </div>
                             <div class="col-12 col-md-4 text-md-end">
+                                <% if (booking.isDeleted) { %>
+                                <span class="badge bg-danger px-3 py-2 me-2">
+                                    Deleted
+                                </span>
+                                <% } %>
                                 <span class="badge bg-<%= booking.status === 'Active' ? 'success' : booking.status === 'Completed' ? 'info' : 'danger' %> px-3 py-2">
                                     <%= booking.status %>
                                 </span>

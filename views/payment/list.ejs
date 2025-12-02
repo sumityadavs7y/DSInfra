@@ -23,6 +23,19 @@
     </nav>
 
     <div class="container my-4">
+        <!-- Show/Hide Deleted Toggle -->
+        <div class="mb-3">
+            <% if (showDeleted) { %>
+                <a href="/payment" class="btn btn-outline-danger">
+                    <i class="bi bi-eye-slash"></i> Hide Deleted
+                </a>
+            <% } else { %>
+                <a href="/payment?showDeleted=true" class="btn btn-outline-secondary">
+                    <i class="bi bi-trash"></i> Show Deleted
+                </a>
+            <% } %>
+        </div>
+
         <!-- Stats -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">
@@ -74,6 +87,7 @@
                                     <th>Amount</th>
                                     <th class="d-none d-md-table-cell">Mode</th>
                                     <th class="d-none d-xl-table-cell">Balance After</th>
+                                    <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -88,16 +102,31 @@
                                         <td class="d-none d-md-table-cell"><%= payment.paymentMode %></td>
                                         <td class="d-none d-xl-table-cell">₹<%= parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN') %></td>
                                         <td>
+                                            <% if (payment.isDeleted) { %>
+                                            <span class="badge bg-danger">Deleted</span>
+                                            <% } else { %>
+                                            <span class="badge bg-success">Active</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="/payment/<%= payment.id %>" class="btn btn-success">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
+                                                <% if (!payment.isDeleted) { %>
                                                 <a href="/payment/<%= payment.id %>/edit" class="btn btn-warning">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <a href="/payment/<%= payment.id %>/pdf" class="btn btn-danger">
                                                     <i class="bi bi-file-pdf"></i>
                                                 </a>
+                                                <form method="POST" action="/payment/<%= payment.id %>/delete" style="display:inline;" 
+                                                      onsubmit="return confirm('Delete this payment?');">
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                                <% } %>
                                             </div>
                                         </td>
                                     </tr>

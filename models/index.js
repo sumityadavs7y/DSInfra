@@ -136,6 +136,10 @@ const Customer = sequelize.define('Customer', {
     type: DataTypes.BOOLEAN,
     defaultValue: true
   },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
   createdBy: {
     type: DataTypes.INTEGER,
     allowNull: true,
@@ -182,6 +186,10 @@ const Project = sequelize.define('Project', {
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   tableName: 'projects',
@@ -298,6 +306,10 @@ const Booking = sequelize.define('Booking', {
       model: 'users',
       key: 'id'
     }
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   tableName: 'bookings',
@@ -385,6 +397,10 @@ const Payment = sequelize.define('Payment', {
       model: 'users',
       key: 'id'
     }
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   tableName: 'payments',

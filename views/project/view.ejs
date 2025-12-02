@@ -16,10 +16,18 @@
                 </a>
                 <span class="navbar-brand mb-0 h1">Project Details</span>
             </div>
-            <% if (userRole === 'admin') { %>
-            <a href="/project/<%= project.id %>/edit" class="btn btn-warning">
-                <i class="bi bi-pencil"></i> <span class="d-none d-sm-inline">Edit</span>
-            </a>
+            <% if (userRole === 'admin' && !project.isDeleted) { %>
+            <div class="d-flex gap-2">
+                <a href="/project/<%= project.id %>/edit" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> <span class="d-none d-sm-inline">Edit</span>
+                </a>
+                <form method="POST" action="/project/<%= project.id %>/delete" style="display:inline;" 
+                      onsubmit="return confirm('Delete this project? This will also delete all related bookings and payments.');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> <span class="d-none d-sm-inline">Delete</span>
+                    </button>
+                </form>
+            </div>
             <% } %>
         </div>
     </nav>
@@ -40,6 +48,11 @@
                                 </small>
                             </div>
                             <div class="col-12 col-md-4 text-md-end">
+                                <% if (project.isDeleted) { %>
+                                <span class="badge bg-danger px-3 py-2 me-2">
+                                    Deleted
+                                </span>
+                                <% } %>
                                 <span class="badge bg-<%= project.isActive ? 'success' : 'secondary' %> px-3 py-2">
                                     <%= project.isActive ? 'Active' : 'Inactive' %>
                                 </span>

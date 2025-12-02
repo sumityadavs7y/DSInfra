@@ -25,10 +25,24 @@
     </nav>
 
     <div class="container my-4">
+        <!-- Show/Hide Deleted Toggle -->
+        <div class="mb-3">
+            <% if (showDeleted) { %>
+                <a href="/project" class="btn btn-outline-danger">
+                    <i class="bi bi-eye-slash"></i> Hide Deleted
+                </a>
+            <% } else { %>
+                <a href="/project?showDeleted=true" class="btn btn-outline-secondary">
+                    <i class="bi bi-trash"></i> Show Deleted
+                </a>
+            <% } %>
+        </div>
+
         <!-- Search & Filter -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
                 <form action="/project" method="GET" class="row g-3">
+                    <input type="hidden" name="showDeleted" value="<%= showDeleted ? 'true' : '' %>">
                     <div class="col-12 col-md-6">
                         <input type="text" class="form-control" placeholder="Search by project name or location..." 
                                name="search" value="<%= search || '' %>">
@@ -73,16 +87,21 @@
         <div class="row g-4">
             <% projects.forEach(project => { %>
             <div class="col-12 col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm <%= !project.isActive ? 'opacity-75' : '' %>">
+                <div class="card h-100 border-0 shadow-sm <%= !project.isActive || project.isDeleted ? 'opacity-75' : '' %> <%= project.isDeleted ? 'border-danger border-2' : '' %>">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <h5 class="card-title text-info mb-0">
                                 <i class="bi bi-building"></i>
                                 <%= project.projectName %>
                             </h5>
-                            <span class="badge bg-<%= project.isActive ? 'success' : 'secondary' %>">
-                                <%= project.isActive ? 'Active' : 'Inactive' %>
-                            </span>
+                            <div>
+                                <% if (project.isDeleted) { %>
+                                <span class="badge bg-danger me-1">Deleted</span>
+                                <% } %>
+                                <span class="badge bg-<%= project.isActive ? 'success' : 'secondary' %>">
+                                    <%= project.isActive ? 'Active' : 'Inactive' %>
+                                </span>
+                            </div>
                         </div>
                         
                         <p class="text-muted mb-2">
@@ -114,10 +133,16 @@
                             <a href="/project/<%= project.id %>" class="btn btn-sm btn-info flex-fill">
                                 <i class="bi bi-eye"></i> View
                             </a>
-                            <% if (userRole === 'admin') { %>
+                            <% if (userRole === 'admin' && !project.isDeleted) { %>
                             <a href="/project/<%= project.id %>/edit" class="btn btn-sm btn-warning">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <form method="POST" action="/project/<%= project.id %>/delete" style="display:inline;" 
+                                  onsubmit="return confirm('Delete this project? This will also delete all related bookings and payments.');">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                             <% } %>
                         </div>
                     </div>

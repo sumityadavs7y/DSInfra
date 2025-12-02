@@ -17,12 +17,20 @@
                 <span class="navbar-brand mb-0 h1">Payment Receipt</span>
             </div>
             <div class="d-flex gap-2">
+                <% if (!payment.isDeleted) { %>
                 <a href="/payment/<%= payment.id %>/edit" class="btn btn-warning">
                     <i class="bi bi-pencil"></i> <span class="d-none d-sm-inline">Edit</span>
                 </a>
                 <a href="/payment/<%= payment.id %>/pdf" class="btn btn-light">
                     <i class="bi bi-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
                 </a>
+                <form method="POST" action="/payment/<%= payment.id %>/delete" style="display:inline;" 
+                      onsubmit="return confirm('Delete this payment?');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> <span class="d-none d-sm-inline">Delete</span>
+                    </button>
+                </form>
+                <% } %>
             </div>
         </div>
     </nav>
@@ -43,6 +51,11 @@
                                 </small>
                             </div>
                             <div class="col-12 col-md-4 text-md-end">
+                                <% if (payment.isDeleted) { %>
+                                <span class="badge bg-danger px-3 py-2 me-2">
+                                    Deleted
+                                </span>
+                                <% } %>
                                 <span class="badge bg-success px-3 py-2">
                                     <%= payment.paymentType %>
                                 </span>

@@ -8,7 +8,16 @@ const { numberToWords } = require('../utils/helpers');
 // List all bookings
 router.get('/', isAuthenticated, async (req, res) => {
     try {
+        const { showDeleted } = req.query;
+        const whereClause = {};
+
+        // By default, hide deleted bookings
+        if (showDeleted !== 'true') {
+            whereClause.isDeleted = false;
+        }
+
         const bookings = await Booking.findAll({
+            where: whereClause,
             include: [
                 {
                     model: Customer,
@@ -31,6 +40,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 
         res.render('booking/list', {
             bookings,
+            showDeleted: showDeleted === 'true',
             userName: req.session.userName,
             userRole: req.session.userRole
         });
@@ -44,12 +54,12 @@ router.get('/', isAuthenticated, async (req, res) => {
 router.get('/create', isAuthenticated, async (req, res) => {
     try {
         const customers = await Customer.findAll({
-            where: { isActive: true },
+            where: { isActive: true, isDeleted: false },
             order: [['applicantName', 'ASC']]
         });
         
         const projects = await Project.findAll({
-            where: { isActive: true }
+            where: { isActive: true, isDeleted: false }
         });
 
         res.render('booking/create', {
@@ -120,8 +130,8 @@ router.post('/create', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error creating booking:', error);
         
-        const customers = await Customer.findAll({ where: { isActive: true }, order: [['applicantName', 'ASC']] });
-        const projects = await Project.findAll({ where: { isActive: true } });
+        const customers = await Customer.findAll({ where: { isActive: true, isDeleted: false }, order: [['applicantName', 'ASC']] });
+        const projects = await Project.findAll({ where: { isActive: true, isDeleted: false } });
         res.render('booking/create', {
             customers,
             projects,
@@ -197,12 +207,12 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
         }
 
         const customers = await Customer.findAll({
-            where: { isActive: true },
+            where: { isActive: true, isDeleted: false },
             order: [['applicantName', 'ASC']]
         });
 
         const projects = await Project.findAll({
-            where: { isActive: true }
+            where: { isActive: true, isDeleted: false }
         });
 
         res.render('booking/edit', {
@@ -278,8 +288,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         const booking = await Booking.findByPk(req.params.id, {
             include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
         });
-        const customers = await Customer.findAll({ where: { isActive: true }, order: [['applicantName', 'ASC']] });
-        const projects = await Project.findAll({ where: { isActive: true } });
+        const customers = await Customer.findAll({ where: { isActive: true, isDeleted: false }, order: [['applicantName', 'ASC']] });
+        const projects = await Project.findAll({ where: { isActive: true, isDeleted: false } });
         
         res.render('booking/edit', {
             booking,
@@ -397,6 +407,39 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error generating PDF:', error);
         res.status(500).send('Error generating PDF');
+    }
+});
+
+// Delete Booking (Soft Delete with Cascade)
+router.post('/:id/delete', isAuthenticated, async (req, res) => {
+    const transaction = await require('../models').sequelize.transaction();
+    
+    try {
+        const booking = await Booking.findByPk(req.params.id);
+        
+        if (!booking) {
+            await transaction.rollback();
+            return res.status(404).send('Booking not found');
+        }
+
+        // Soft delete booking
+        await booking.update({ isDeleted: true }, { transaction });
+
+        // Cascade soft delete: Delete all payments for this booking
+        await Payment.update(
+            { isDeleted: true },
+            {
+                where: { bookingId: booking.id },
+                transaction
+            }
+        );
+
+        await transaction.commit();
+        res.redirect('/booking?message=deleted');
+    } catch (error) {
+        await transaction.rollback();
+        console.error('Error deleting booking:', error);
+        res.status(500).send('Error deleting booking: ' + error.message);
     }
 });
 

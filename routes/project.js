@@ -8,8 +8,13 @@ const { Op } = require('sequelize');
 // Project List Page
 router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const { search, status } = req.query;
+        const { search, status, showDeleted } = req.query;
         let whereClause = {};
+
+        // By default, hide deleted projects
+        if (showDeleted !== 'true') {
+            whereClause.isDeleted = false;
+        }
 
         if (search) {
             whereClause[Op.or] = [
@@ -31,6 +36,7 @@ router.get('/', isAuthenticated, async (req, res) => {
             projects,
             search,
             status,
+            showDeleted: showDeleted === 'true',
             userName: req.session.userName,
             userRole: req.session.userRole
         });
@@ -252,6 +258,49 @@ router.post('/:id/edit', isAuthenticated, isAdmin, [
             userRole: req.session.userRole,
             error: 'Error updating project: ' + error.message
         });
+    }
+});
+
+// Delete Project (Soft Delete with Cascade)
+router.post('/:id/delete', isAuthenticated, isAdmin, async (req, res) => {
+    const transaction = await require('../models').sequelize.transaction();
+    
+    try {
+        const project = await Project.findByPk(req.params.id);
+        
+        if (!project) {
+            await transaction.rollback();
+            return res.status(404).send('Project not found');
+        }
+
+        // Soft delete project
+        await project.update({ isDeleted: true }, { transaction });
+
+        // Cascade soft delete: Get all bookings for this project
+        const bookings = await Booking.findAll({
+            where: { projectId: project.id }
+        });
+
+        // Soft delete all related bookings
+        for (const booking of bookings) {
+            await booking.update({ isDeleted: true }, { transaction });
+
+            // Cascade soft delete all payments for each booking
+            await require('../models').Payment.update(
+                { isDeleted: true },
+                {
+                    where: { bookingId: booking.id },
+                    transaction
+                }
+            );
+        }
+
+        await transaction.commit();
+        res.redirect('/project?message=deleted');
+    } catch (error) {
+        await transaction.rollback();
+        console.error('Error deleting project:', error);
+        res.status(500).send('Error deleting project: ' + error.message);
     }
 });
 
