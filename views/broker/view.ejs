@@ -219,7 +219,7 @@
                     <div class="tab-pane fade" id="payments" role="tabpanel">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                                     <h5 class="text-dark mb-0">
                                         <i class="bi bi-cash-coin"></i> Broker Payment Summary
                                     </h5>
@@ -229,6 +229,38 @@
                                     </button>
                                     <% } %>
                                 </div>
+
+                                <!-- Payment Date Filter -->
+                                <form method="GET" action="/broker/<%= broker.id %>" id="paymentFilterForm" class="mb-3">
+                                    <input type="hidden" name="tab" value="payments">
+                                    <div class="card bg-light border">
+                                        <div class="card-body">
+                                            <div class="row g-2 align-items-end">
+                                                <div class="col-12 col-md-4">
+                                                    <label class="form-label fw-bold text-primary small mb-1">
+                                                        <i class="bi bi-calendar-event"></i> Payment Date From
+                                                    </label>
+                                                    <input type="date" class="form-control form-control-sm" 
+                                                           name="paymentDateFrom" value="<%= paymentDateFrom %>"
+                                                           onchange="document.getElementById('paymentFilterForm').submit()">
+                                                </div>
+                                                <div class="col-12 col-md-4">
+                                                    <label class="form-label fw-bold text-primary small mb-1">
+                                                        <i class="bi bi-calendar-event"></i> Payment Date To
+                                                    </label>
+                                                    <input type="date" class="form-control form-control-sm" 
+                                                           name="paymentDateTo" value="<%= paymentDateTo %>"
+                                                           onchange="document.getElementById('paymentFilterForm').submit()">
+                                                </div>
+                                                <div class="col-12 col-md-4">
+                                                    <a href="/broker/<%= broker.id %>?tab=payments" class="btn btn-outline-secondary btn-sm w-100">
+                                                        <i class="bi bi-x-circle"></i> Clear Filter
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
                         <div class="row g-3 mb-4">
                             <div class="col-12">
                                 <h6 class="text-muted mb-3"><i class="bi bi-file-earmark-check"></i> Registry Completed Bookings</h6>
@@ -247,8 +279,18 @@
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="p-3 bg-primary bg-opacity-10 border border-primary rounded">
-                                    <label class="text-muted small d-block">Already Paid</label>
-                                    <h5 class="mb-0 text-primary">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></h5>
+                                    <label class="text-muted small d-block">
+                                        Already Paid
+                                        <% if (paymentDateFrom || paymentDateTo) { %>
+                                            <i class="bi bi-funnel-fill text-warning" title="Filtered"></i>
+                                        <% } %>
+                                    </label>
+                                    <% if (paymentDateFrom || paymentDateTo) { %>
+                                        <h5 class="mb-0 text-primary">₹<%= stats.filteredPaymentTotal.toLocaleString('en-IN') %></h5>
+                                        <small class="text-muted d-block">of ₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %> total</small>
+                                    <% } else { %>
+                                        <h5 class="mb-0 text-primary">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></h5>
+                                    <% } %>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
@@ -327,9 +369,25 @@
                                 </tbody>
                                 <tfoot class="table-light">
                                     <tr>
-                                        <th colspan="2" class="text-end">Total Paid to Broker:</th>
-                                        <th class="fw-bold text-success">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></th>
-                                        <th colspan="4"></th>
+                                        <th colspan="2" class="text-end">
+                                            <% if (paymentDateFrom || paymentDateTo) { %>
+                                                Filtered Total:
+                                            <% } else { %>
+                                                Total Paid to Broker:
+                                            <% } %>
+                                        </th>
+                                        <th class="fw-bold text-success">
+                                            <% if (paymentDateFrom || paymentDateTo) { %>
+                                                ₹<%= stats.filteredPaymentTotal.toLocaleString('en-IN') %>
+                                            <% } else { %>
+                                                ₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %>
+                                            <% } %>
+                                        </th>
+                                        <th colspan="4">
+                                            <% if (paymentDateFrom || paymentDateTo) { %>
+                                                <small class="text-muted">(Total: ₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %>)</small>
+                                            <% } %>
+                                        </th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -638,6 +696,28 @@
                 alert('Error deleting payment: ' + error.message);
             }
         }
+
+        // Activate correct tab based on URL parameter
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTab = urlParams.get('tab');
+            
+            if (activeTab === 'payments') {
+                // Activate the payments tab
+                const paymentsTabButton = document.getElementById('payments-tab');
+                const paymentsTabContent = document.getElementById('payments');
+                const bookingsTabButton = document.getElementById('bookings-tab');
+                const bookingsTabContent = document.getElementById('bookings');
+                
+                // Remove active class from bookings tab
+                bookingsTabButton.classList.remove('active');
+                bookingsTabContent.classList.remove('show', 'active');
+                
+                // Add active class to payments tab
+                paymentsTabButton.classList.add('active');
+                paymentsTabContent.classList.add('show', 'active');
+            }
+        });
     </script>
 </body>
 </html>

@@ -9,7 +9,14 @@ const { Op } = require('sequelize');
 // List all bookings
 router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const { showDeleted, registryStatus = 'all' } = req.query;
+        const { 
+            showDeleted, 
+            registryStatus = 'all',
+            bookingDateFrom = '',
+            bookingDateTo = '',
+            registryDateFrom = '',
+            registryDateTo = ''
+        } = req.query;
         const whereClause = {};
 
         // By default, hide deleted bookings
@@ -24,6 +31,34 @@ router.get('/', isAuthenticated, async (req, res) => {
             whereClause.registryCompleted = false;
         }
         // 'all' means no filter on registryCompleted
+
+        // Filter by booking date range
+        if (bookingDateFrom || bookingDateTo) {
+            whereClause.bookingDate = {};
+            if (bookingDateFrom) {
+                whereClause.bookingDate[Op.gte] = new Date(bookingDateFrom);
+            }
+            if (bookingDateTo) {
+                // Add one day to include the entire end date
+                const endDate = new Date(bookingDateTo);
+                endDate.setDate(endDate.getDate() + 1);
+                whereClause.bookingDate[Op.lt] = endDate;
+            }
+        }
+
+        // Filter by registry date range
+        if (registryDateFrom || registryDateTo) {
+            whereClause.registryDate = {};
+            if (registryDateFrom) {
+                whereClause.registryDate[Op.gte] = new Date(registryDateFrom);
+            }
+            if (registryDateTo) {
+                // Add one day to include the entire end date
+                const endDate = new Date(registryDateTo);
+                endDate.setDate(endDate.getDate() + 1);
+                whereClause.registryDate[Op.lt] = endDate;
+            }
+        }
 
         const bookings = await Booking.findAll({
             where: whereClause,
@@ -51,6 +86,10 @@ router.get('/', isAuthenticated, async (req, res) => {
             bookings,
             showDeleted: showDeleted === 'true',
             registryStatus: registryStatus,
+            bookingDateFrom: bookingDateFrom,
+            bookingDateTo: bookingDateTo,
+            registryDateFrom: registryDateFrom,
+            registryDateTo: registryDateTo,
             userName: req.session.userName,
             userRole: req.session.userRole
         });

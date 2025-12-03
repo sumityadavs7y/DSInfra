@@ -24,38 +24,99 @@
 
     <div class="container my-4">
         <!-- Filters -->
-        <div class="row mb-3 g-2">
-            <!-- Show/Hide Deleted Toggle -->
-            <div class="col-12 col-md-auto">
-                <% if (showDeleted) { %>
-                    <a href="/booking?registryStatus=<%= registryStatus %>" class="btn btn-outline-danger">
-                        <i class="bi bi-eye-slash"></i> Hide Deleted
-                    </a>
-                <% } else { %>
-                    <a href="/booking?showDeleted=true&registryStatus=<%= registryStatus %>" class="btn btn-outline-secondary">
-                        <i class="bi bi-trash"></i> Show Deleted
-                    </a>
-                <% } %>
-            </div>
+        <form method="GET" action="/booking" id="filterForm">
+            <input type="hidden" name="showDeleted" value="<%= showDeleted ? 'true' : '' %>">
+            <input type="hidden" name="registryStatus" value="<%= registryStatus %>">
             
-            <!-- Registry Status Filter -->
-            <div class="col-12 col-md-auto">
-                <div class="btn-group" role="group" aria-label="Registry filter">
-                    <a href="/booking?<%= showDeleted ? 'showDeleted=true&' : '' %>registryStatus=all" 
-                       class="btn btn-<%= registryStatus === 'all' ? 'primary' : 'outline-primary' %>">
-                        <i class="bi bi-list"></i> All
-                    </a>
-                    <a href="/booking?<%= showDeleted ? 'showDeleted=true&' : '' %>registryStatus=completed" 
-                       class="btn btn-<%= registryStatus === 'completed' ? 'success' : 'outline-success' %>">
-                        <i class="bi bi-check-circle"></i> Registered
-                    </a>
-                    <a href="/booking?<%= showDeleted ? 'showDeleted=true&' : '' %>registryStatus=pending" 
-                       class="btn btn-<%= registryStatus === 'pending' ? 'warning' : 'outline-warning' %>">
-                        <i class="bi bi-clock"></i> Unregistered
-                    </a>
+            <div class="row mb-3 g-2">
+                <!-- Show/Hide Deleted Toggle -->
+                <div class="col-12 col-md-auto">
+                    <% if (showDeleted) { %>
+                        <a href="/booking?registryStatus=<%= registryStatus %>&bookingDateFrom=<%= bookingDateFrom %>&bookingDateTo=<%= bookingDateTo %>&registryDateFrom=<%= registryDateFrom %>&registryDateTo=<%= registryDateTo %>" class="btn btn-outline-danger">
+                            <i class="bi bi-eye-slash"></i> Hide Deleted
+                        </a>
+                    <% } else { %>
+                        <a href="/booking?showDeleted=true&registryStatus=<%= registryStatus %>&bookingDateFrom=<%= bookingDateFrom %>&bookingDateTo=<%= bookingDateTo %>&registryDateFrom=<%= registryDateFrom %>&registryDateTo=<%= registryDateTo %>" class="btn btn-outline-secondary">
+                            <i class="bi bi-trash"></i> Show Deleted
+                        </a>
+                    <% } %>
+                </div>
+                
+                <!-- Registry Status Filter -->
+                <div class="col-12 col-md-auto">
+                    <div class="btn-group" role="group" aria-label="Registry filter">
+                        <button type="button" onclick="setRegistryStatus('all')" 
+                           class="btn btn-<%= registryStatus === 'all' ? 'primary' : 'outline-primary' %>">
+                            <i class="bi bi-list"></i> All
+                        </button>
+                        <button type="button" onclick="setRegistryStatus('completed')" 
+                           class="btn btn-<%= registryStatus === 'completed' ? 'success' : 'outline-success' %>">
+                            <i class="bi bi-check-circle"></i> Registered
+                        </button>
+                        <button type="button" onclick="setRegistryStatus('pending')" 
+                           class="btn btn-<%= registryStatus === 'pending' ? 'warning' : 'outline-warning' %>">
+                            <i class="bi bi-clock"></i> Unregistered
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Date Filters -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Booking Date Filter -->
+                        <div class="col-12 col-lg-5">
+                            <label class="form-label fw-bold text-primary">
+                                <i class="bi bi-calendar-event"></i> Booking Date
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label small">From</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           name="bookingDateFrom" value="<%= bookingDateFrom %>"
+                                           onchange="document.getElementById('filterForm').submit()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">To</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           name="bookingDateTo" value="<%= bookingDateTo %>"
+                                           onchange="document.getElementById('filterForm').submit()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Registry Date Filter -->
+                        <div class="col-12 col-lg-5">
+                            <label class="form-label fw-bold text-success">
+                                <i class="bi bi-calendar-check"></i> Registry Date
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label small">From</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           name="registryDateFrom" value="<%= registryDateFrom %>"
+                                           onchange="document.getElementById('filterForm').submit()">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small">To</label>
+                                    <input type="date" class="form-control form-control-sm" 
+                                           name="registryDateTo" value="<%= registryDateTo %>"
+                                           onchange="document.getElementById('filterForm').submit()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clear Filters Button -->
+                        <div class="col-12 col-lg-2 d-flex align-items-end">
+                            <a href="/booking" class="btn btn-outline-secondary btn-sm w-100">
+                                <i class="bi bi-x-circle"></i> Clear Filters
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
 
         <!-- Stats -->
         <div class="row g-3 mb-4">
@@ -187,6 +248,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Search functionality
         document.getElementById('searchBox')?.addEventListener('input', function(e) {
             const searchTerm = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('#bookingTable tbody tr');
@@ -195,6 +257,12 @@
                 row.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
+
+        // Registry status filter
+        function setRegistryStatus(status) {
+            document.querySelector('input[name="registryStatus"]').value = status;
+            document.getElementById('filterForm').submit();
+        }
     </script>
 </body>
 </html>

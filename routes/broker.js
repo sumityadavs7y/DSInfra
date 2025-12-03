@@ -208,9 +208,40 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             return sum + (parseFloat(b.brokerCommission) || 0);
         }, 0);
 
-        // Get all broker payments (non-deleted)
-        const brokerPayments = await BrokerPayment.findAll({
+        // Get payment date filters and tab from query
+        const { paymentDateFrom = '', paymentDateTo = '', tab = '' } = req.query;
+        
+        // First, get ALL broker payments (unfiltered) for accurate total commission paid calculation
+        const allBrokerPayments = await BrokerPayment.findAll({
             where: { brokerId: broker.id, isDeleted: false },
+            order: [['paymentDate', 'DESC']]
+        });
+
+        // Calculate actual total commission paid (unfiltered)
+        const totalCommissionPaid = allBrokerPayments.reduce((sum, p) => {
+            return sum + parseFloat(p.paymentAmount);
+        }, 0);
+
+        // Build where clause for filtered broker payments (for display)
+        const brokerPaymentWhere = { brokerId: broker.id, isDeleted: false };
+        
+        // Apply date filters if provided
+        if (paymentDateFrom || paymentDateTo) {
+            brokerPaymentWhere.paymentDate = {};
+            if (paymentDateFrom) {
+                brokerPaymentWhere.paymentDate[Op.gte] = new Date(paymentDateFrom);
+            }
+            if (paymentDateTo) {
+                // Add one day to include the entire end date
+                const endDate = new Date(paymentDateTo);
+                endDate.setDate(endDate.getDate() + 1);
+                brokerPaymentWhere.paymentDate[Op.lt] = endDate;
+            }
+        }
+
+        // Get filtered broker payments (for display in table)
+        const brokerPayments = await BrokerPayment.findAll({
+            where: brokerPaymentWhere,
             include: [
                 {
                     model: User,
@@ -221,8 +252,8 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             order: [['paymentDate', 'DESC']]
         });
 
-        // Calculate total commission paid
-        const totalCommissionPaid = brokerPayments.reduce((sum, p) => {
+        // Calculate filtered payment total (for display only)
+        const filteredPaymentTotal = brokerPayments.reduce((sum, p) => {
             return sum + parseFloat(p.paymentAmount);
         }, 0);
 
@@ -250,9 +281,13 @@ router.get('/:id', isAuthenticated, async (req, res) => {
                 totalCommissionRegistered,
                 totalCommissionNonRegistered,
                 totalCommissionPaid,
+                filteredPaymentTotal,
                 commissionRemaining,
                 commissionRemainingRegistered
             },
+            paymentDateFrom: paymentDateFrom,
+            paymentDateTo: paymentDateTo,
+            tab: tab,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
