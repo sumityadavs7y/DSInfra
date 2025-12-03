@@ -81,12 +81,20 @@
                                                 <span class="badge bg-primary">
                                                     <i class="bi bi-shield-check"></i> Admin
                                                 </span>
+                                            <% } else if (user.role === 'manager') { %>
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-person-badge"></i> Manager
+                                                </span>
+                                            <% } else if (user.role === 'employee') { %>
+                                                <span class="badge bg-secondary">
+                                                    <i class="bi bi-person-fill"></i> Employee
+                                                </span>
                                             <% } else if (user.role === 'user') { %>
                                                 <span class="badge bg-secondary">
                                                     <i class="bi bi-person"></i> User
                                                 </span>
                                             <% } else { %>
-                                                <span class="badge bg-info">
+                                                <span class="badge bg-warning">
                                                     <%= user.role %>
                                                 </span>
                                             <% } %>

@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
 const { User } = require('../models');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 
@@ -66,14 +65,11 @@ router.post('/create', async (req, res) => {
             });
         }
 
-        // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Create user
+        // Create user (password will be hashed by the model's beforeCreate hook)
         await User.create({
             name,
             email,
-            password: hashedPassword,
+            password,  // Plain password - will be hashed by model hook
             role
         });
 
@@ -240,11 +236,8 @@ router.post('/:id/reset-password', async (req, res) => {
             return res.redirect('/user?error=User not found');
         }
 
-        // Hash new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-        // Update password
-        await user.update({ password: hashedPassword });
+        // Update password (will be hashed by the model's beforeUpdate hook)
+        await user.update({ password: newPassword });
 
         res.redirect('/user?success=Password reset successfully');
     } catch (error) {
