@@ -190,6 +190,14 @@
                             <small>Record Payment</small>
                         </a>
                     </div>
+                    <% if (userRole === 'admin') { %>
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <a href="/user" class="btn btn-outline-dark w-100 py-3">
+                            <i class="bi bi-people-fill fs-4 d-block mb-2"></i>
+                            <small>User Management</small>
+                        </a>
+                    </div>
+                    <% } %>
                     <div class="col-6 col-md-4 col-xl-3">
                         <a href="#" class="btn btn-outline-secondary w-100 py-3">
                             <i class="bi bi-graph-up fs-4 d-block mb-2"></i>

@@ -54,6 +54,7 @@ app.use(async (req, res, next) => {
 const indexRoutes = require('./routes/index');
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
+const userRoutes = require('./routes/user');
 const customerRoutes = require('./routes/customer');
 const brokerRoutes = require('./routes/broker');
 const bookingRoutes = require('./routes/booking');
@@ -64,6 +65,7 @@ const brokerPaymentRoutes = require('./routes/brokerPayment');
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
+app.use('/user', userRoutes);
 app.use('/customer', customerRoutes);
 app.use('/broker', brokerRoutes);
 app.use('/booking', bookingRoutes);
