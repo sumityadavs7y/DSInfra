@@ -9,13 +9,21 @@ const { Op } = require('sequelize');
 // List all bookings
 router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const { showDeleted } = req.query;
+        const { showDeleted, registryStatus = 'all' } = req.query;
         const whereClause = {};
 
         // By default, hide deleted bookings
         if (showDeleted !== 'true') {
             whereClause.isDeleted = false;
         }
+
+        // Filter by registry status
+        if (registryStatus === 'completed') {
+            whereClause.registryCompleted = true;
+        } else if (registryStatus === 'pending') {
+            whereClause.registryCompleted = false;
+        }
+        // 'all' means no filter on registryCompleted
 
         const bookings = await Booking.findAll({
             where: whereClause,
@@ -42,6 +50,7 @@ router.get('/', isAuthenticated, async (req, res) => {
         res.render('booking/list', {
             bookings,
             showDeleted: showDeleted === 'true',
+            registryStatus: registryStatus,
             userName: req.session.userName,
             userRole: req.session.userRole
         });

@@ -23,22 +23,43 @@
     </nav>
 
     <div class="container my-4">
-        <!-- Show/Hide Deleted Toggle -->
-        <div class="mb-3">
-            <% if (showDeleted) { %>
-                <a href="/booking" class="btn btn-outline-danger">
-                    <i class="bi bi-eye-slash"></i> Hide Deleted
-                </a>
-            <% } else { %>
-                <a href="/booking?showDeleted=true" class="btn btn-outline-secondary">
-                    <i class="bi bi-trash"></i> Show Deleted
-                </a>
-            <% } %>
+        <!-- Filters -->
+        <div class="row mb-3 g-2">
+            <!-- Show/Hide Deleted Toggle -->
+            <div class="col-12 col-md-auto">
+                <% if (showDeleted) { %>
+                    <a href="/booking?registryStatus=<%= registryStatus %>" class="btn btn-outline-danger">
+                        <i class="bi bi-eye-slash"></i> Hide Deleted
+                    </a>
+                <% } else { %>
+                    <a href="/booking?showDeleted=true&registryStatus=<%= registryStatus %>" class="btn btn-outline-secondary">
+                        <i class="bi bi-trash"></i> Show Deleted
+                    </a>
+                <% } %>
+            </div>
+            
+            <!-- Registry Status Filter -->
+            <div class="col-12 col-md-auto">
+                <div class="btn-group" role="group" aria-label="Registry filter">
+                    <a href="/booking?<%= showDeleted ? 'showDeleted=true&' : '' %>registryStatus=all" 
+                       class="btn btn-<%= registryStatus === 'all' ? 'primary' : 'outline-primary' %>">
+                        <i class="bi bi-list"></i> All
+                    </a>
+                    <a href="/booking?<%= showDeleted ? 'showDeleted=true&' : '' %>registryStatus=completed" 
+                       class="btn btn-<%= registryStatus === 'completed' ? 'success' : 'outline-success' %>">
+                        <i class="bi bi-check-circle"></i> Registered
+                    </a>
+                    <a href="/booking?<%= showDeleted ? 'showDeleted=true&' : '' %>registryStatus=pending" 
+                       class="btn btn-<%= registryStatus === 'pending' ? 'warning' : 'outline-warning' %>">
+                        <i class="bi bi-clock"></i> Unregistered
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- Stats -->
         <div class="row g-3 mb-4">
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <h3 class="h2 fw-bold text-primary"><%= bookings.length %></h3>
@@ -46,7 +67,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <h3 class="h2 fw-bold text-success"><%= bookings.filter(b => b.status === 'Active').length %></h3>
@@ -54,11 +75,19 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-4">
+            <div class="col-6 col-md-3">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
-                        <h3 class="h2 fw-bold text-danger"><%= bookings.filter(b => b.status === 'Cancelled').length %></h3>
-                        <p class="text-muted small mb-0">Cancelled</p>
+                        <h3 class="h2 fw-bold text-success"><%= bookings.filter(b => b.registryCompleted).length %></h3>
+                        <p class="text-muted small mb-0">Registered</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="h2 fw-bold text-warning"><%= bookings.filter(b => !b.registryCompleted).length %></h3>
+                        <p class="text-muted small mb-0">Unregistered</p>
                     </div>
                 </div>
             </div>
