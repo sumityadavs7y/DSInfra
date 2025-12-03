@@ -21,7 +21,7 @@ DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 BACKUP_DIR="$HOME/backup"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_NAME="db_backup_${DB_NAME}_${TIMESTAMP}.sql.gz"
+BACKUP_NAME="db_backup_${DB_NAME}_${TIMESTAMP}.dump"
 BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
 
 # Try to get password from environment or .pgpass file
@@ -82,8 +82,15 @@ pg_dump -h "$DB_HOST" \
     -U "$DB_USER" \
     -d "$DB_NAME" \
     --format=custom \
-    --file="${BACKUP_PATH%.gz}" \
+    --file="$BACKUP_PATH" \
     --verbose 2>&1 | grep -v "^pg_dump:" || true
+
+# Check if backup was created
+if [ ! -f "$BACKUP_PATH" ]; then
+    echo ""
+    echo -e "${RED}❌ Backup file was not created. Check database credentials and connection.${NC}"
+    exit 1
+fi
 
 # Set permissions
 chmod 600 "$BACKUP_PATH"

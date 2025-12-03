@@ -32,7 +32,7 @@ DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 BACKUP_DIR="${HOME}/backup"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_NAME="db_backup_${DB_NAME}_${TIMESTAMP}.sql.gz"
+BACKUP_NAME="db_backup_${DB_NAME}_${TIMESTAMP}.dump"
 BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
 
 # Create backup directory
@@ -106,10 +106,10 @@ else
 fi
 
 # Cleanup old backups (keep last 30 days)
-OLD_BACKUPS=$(find "$BACKUP_DIR" -name "db_backup_*.sql.gz" -mtime +30 2>/dev/null | wc -l)
+OLD_BACKUPS=$(find "$BACKUP_DIR" -name "db_backup_*.dump" -mtime +30 2>/dev/null | wc -l)
 if [ "$OLD_BACKUPS" -gt 0 ]; then
     echo -e "${BLUE}🗑️  Cleaning up $OLD_BACKUPS old backup(s)...${NC}"
-    find "$BACKUP_DIR" -name "db_backup_*.sql.gz" -mtime +30 -delete
+    find "$BACKUP_DIR" -name "db_backup_*.dump" -mtime +30 -delete
 fi
 
 echo -e "${GREEN}✅ Done!${NC}"
