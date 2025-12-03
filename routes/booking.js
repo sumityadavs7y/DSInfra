@@ -519,80 +519,89 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
         // Calculate total paid
         const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
 
-        // Create PDF
-        const doc = new PDFDocument({ margin: 50 });
+        // Create PDF with letterhead-compatible margins - Compact layout
+        const doc = new PDFDocument({ 
+            margins: {
+                top: 100,      // Space for letterhead header
+                bottom: 60,    // Space for letterhead footer
+                left: 50,
+                right: 50
+            },
+            size: 'A4'
+        });
         
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=booking-${booking.bookingNo}.pdf`);
         
         doc.pipe(res);
 
-        // Header
-        doc.fontSize(20).text('BOOKING SLIP', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(10).text(`Booking No: ${booking.bookingNo}`, { align: 'right' });
-        doc.text(`Customer No: ${booking.customer.customerNo}`, { align: 'right' });
-        doc.text(`Date: ${new Date(booking.bookingDate).toLocaleDateString('en-IN')}`, { align: 'right' });
-        doc.moveDown();
+        // ==================== LETTERHEAD HEADER SPACE (100pt) ====================
 
-        // Applicant Details
-        doc.fontSize(14).text('Applicant Details', { underline: true });
+        // Document Title (compact)
+        doc.fontSize(16).text('BOOKING SLIP', { align: 'center' });
+        doc.moveDown(0.3);
+        doc.fontSize(9).text(`Booking No: ${booking.bookingNo}  |  Customer No: ${booking.customer.customerNo}  |  Date: ${new Date(booking.bookingDate).toLocaleDateString('en-IN')}`, { align: 'center' });
         doc.moveDown(0.5);
-        doc.fontSize(10);
-        doc.text(`Name: ${booking.customer.applicantName}`);
-        doc.text(`Father/Husband Name: ${booking.customer.fatherOrHusbandName}`);
-        doc.text(`Address: ${booking.customer.address}`);
-        doc.text(`Aadhaar No: ${booking.customer.aadhaarNo}`);
-        doc.text(`Mobile No: ${booking.customer.mobileNo}`);
-        if (booking.customer.email) {
-            doc.text(`Email: ${booking.customer.email}`);
-        }
-        doc.moveDown();
 
-        // Property Details
-        doc.fontSize(14).text('Property Details', { underline: true });
-        doc.moveDown(0.5);
-        doc.fontSize(10);
-        doc.text(`Project Name: ${booking.project.projectName}`);
-        doc.text(`Plot No: ${booking.plotNo}`);
-        doc.text(`Area: ${booking.area} sq.ft.`);
-        doc.text(`PLC: ₹${parseFloat(booking.plc).toLocaleString('en-IN')}`);
-        doc.text(`Rate: ₹${parseFloat(booking.rate).toLocaleString('en-IN')} per sq.ft.`);
-        doc.text(`Discount: ₹${parseFloat(booking.discount).toLocaleString('en-IN')}`);
-        doc.text(`Effective Rate: ₹${parseFloat(booking.effectiveRate).toLocaleString('en-IN')} per sq.ft.`);
-        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}`);
-        if (booking.legalDetails) {
-            doc.text(`Legal Details: ${booking.legalDetails}`);
-        }
-        doc.moveDown();
-
-        // Payment Summary
-        doc.fontSize(14).text('Payment Summary', { underline: true });
-        doc.moveDown(0.5);
-        doc.fontSize(10);
-        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}`);
-        doc.text(`Total Paid: ₹${totalPaid.toLocaleString('en-IN')}`);
-        doc.text(`Remaining Amount: ₹${parseFloat(booking.remainingAmount).toLocaleString('en-IN')}`);
-        doc.text(`Number of Payments: ${payments.length}`);
-        doc.moveDown();
-
-        // Terms & Conditions
-        doc.moveDown();
-        doc.fontSize(12).text('Terms & Conditions', { underline: true });
-        doc.moveDown(0.5);
+        // Applicant Details (compact)
+        doc.fontSize(11).text('Applicant Details', { underline: true });
+        doc.moveDown(0.3);
         doc.fontSize(9);
-        doc.text('1. This booking is subject to approval and verification of documents.');
-        doc.text('2. The balance amount must be paid as per the agreed payment schedule.');
-        doc.text('3. Any cancellation will be subject to cancellation charges as per company policy.');
-        doc.text('4. All disputes are subject to local jurisdiction only.');
-        doc.moveDown(2);
+        doc.text(`Name: ${booking.customer.applicantName}  |  F/H Name: ${booking.customer.fatherOrHusbandName}`);
+        doc.text(`Address: ${booking.customer.address}`);
+        doc.text(`Aadhaar: ${booking.customer.aadhaarNo}  |  Mobile: ${booking.customer.mobileNo}${booking.customer.email ? '  |  Email: ' + booking.customer.email : ''}`);
+        doc.moveDown(0.5);
 
-        // Signatures
-        doc.fontSize(10);
-        doc.text('________________________', 100, doc.y);
-        doc.text('Customer Signature', 100, doc.y);
-        doc.text('________________________', 350, doc.y - 15);
-        doc.text('Authorized Signature', 350, doc.y);
+        // Property Details (compact)
+        doc.fontSize(11).text('Property Details', { underline: true });
+        doc.moveDown(0.3);
+        doc.fontSize(9);
+        doc.text(`Project: ${booking.project.projectName}  |  Plot No: ${booking.plotNo}  |  Area: ${booking.area} sq.ft.`);
+        doc.text(`Rate: ₹${parseFloat(booking.rate).toLocaleString('en-IN')}/sq.ft.  |  Discount: ₹${parseFloat(booking.discount).toLocaleString('en-IN')}  |  PLC: ${parseFloat(booking.plc).toFixed(2)}%`);
+        doc.text(`Effective Rate: ₹${parseFloat(booking.effectiveRate).toLocaleString('en-IN')}/sq.ft.  |  Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}`);
+        doc.moveDown(0.5);
+
+        // Payment Summary (compact)
+        doc.fontSize(11).text('Payment Summary', { underline: true });
+        doc.moveDown(0.3);
+        doc.fontSize(9);
+        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}  |  Paid: ₹${totalPaid.toLocaleString('en-IN')}  |  Balance: ₹${parseFloat(booking.remainingAmount).toLocaleString('en-IN')}`);
+        doc.text(`Payments Made: ${payments.length}`);
+        doc.moveDown(0.5);
+
+        // Legal Details (if exists, compact)
+        if (booking.legalDetails) {
+            doc.fontSize(11).text('Legal Details', { underline: true });
+            doc.moveDown(0.3);
+            doc.fontSize(8);
+            doc.text(booking.legalDetails, { width: 495, lineGap: 1 });
+            doc.moveDown(0.5);
+        }
+
+        // Terms & Conditions (compact)
+        doc.fontSize(10).text('Terms & Conditions', { underline: true });
+        doc.moveDown(0.3);
+        doc.fontSize(8);
+        doc.text('1. Booking subject to document verification. 2. Balance as per agreed schedule. 3. Cancellation charges apply. 4. Subject to local jurisdiction.', { width: 495, lineGap: 1 });
+        doc.moveDown(1);
+
+        // Signatures (compact - ensure they're above footer space)
+        const pageHeight = doc.page.height;
+        const footerStart = pageHeight - 60;
+        
+        // Ensure enough space for signatures
+        if (doc.y > footerStart - 50) {
+            doc.addPage();
+        }
+        
+        doc.fontSize(9);
+        const sigY = Math.max(doc.y, footerStart - 45);
+        doc.text('______________________', 100, sigY);
+        doc.text('Customer Signature', 100, sigY + 15, { width: 150, align: 'center' });
+        doc.text('______________________', 350, sigY);
+        doc.text('Authorized Signature', 350, sigY + 15, { width: 150, align: 'center' });
+
+        // ==================== LETTERHEAD FOOTER SPACE (60pt) ====================
 
         doc.end();
     } catch (error) {

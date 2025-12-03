@@ -425,116 +425,107 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
             order: [['receiptDate', 'ASC']]
         });
 
-        // Create PDF
-        const doc = new PDFDocument({ margin: 50 });
+        // Create PDF with letterhead-compatible margins - Compact layout
+        const doc = new PDFDocument({ 
+            margins: {
+                top: 100,      // Space for letterhead header
+                bottom: 60,    // Space for letterhead footer
+                left: 50,
+                right: 50
+            },
+            size: 'A4'
+        });
         
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=receipt-${payment.receiptNo}.pdf`);
         
         doc.pipe(res);
 
-        // Header
-        doc.fontSize(20).text('PAYMENT RECEIPT', { align: 'center' });
-        doc.moveDown();
-        doc.fontSize(10).text(`Receipt No: ${payment.receiptNo}`, { align: 'right' });
-        doc.text(`Date: ${new Date(payment.receiptDate).toLocaleDateString('en-IN')}`, { align: 'right' });
-        doc.moveDown();
+        // ==================== LETTERHEAD HEADER SPACE (100pt) ====================
 
-        // Customer Details
-        doc.fontSize(14).text('Customer Details', { underline: true });
+        // Document Title (compact)
+        doc.fontSize(16).text('PAYMENT RECEIPT', { align: 'center' });
+        doc.moveDown(0.3);
+        doc.fontSize(9).text(`Receipt No: ${payment.receiptNo}  |  Date: ${new Date(payment.receiptDate).toLocaleDateString('en-IN')}`, { align: 'center' });
         doc.moveDown(0.5);
-        doc.fontSize(10);
-        doc.text(`Customer No: ${payment.booking.customer.customerNo}`);
-        doc.text(`Name: ${payment.booking.customer.applicantName}`);
-        doc.text(`Mobile: ${payment.booking.customer.mobileNo}`);
+
+        // Customer & Booking Details (compact combined)
+        doc.fontSize(11).text('Customer & Booking Details', { underline: true });
+        doc.moveDown(0.3);
+        doc.fontSize(9);
+        doc.text(`Customer: ${payment.booking.customer.applicantName} (${payment.booking.customer.customerNo})  |  Mobile: ${payment.booking.customer.mobileNo}`);
         doc.text(`Address: ${payment.booking.customer.address}`);
-        doc.moveDown();
-
-        // Booking Details
-        doc.fontSize(14).text('Booking Details', { underline: true });
+        doc.text(`Booking: ${payment.booking.bookingNo}  |  Project: ${payment.booking.project.projectName}  |  Plot: ${payment.booking.plotNo}`);
+        doc.text(`Total Booking Amount: ₹${parseFloat(payment.booking.totalAmount).toLocaleString('en-IN')}`);
         doc.moveDown(0.5);
-        doc.fontSize(10);
-        doc.text(`Booking No: ${payment.booking.bookingNo}`);
-        doc.text(`Project: ${payment.booking.project.projectName}`);
-        doc.text(`Plot No: ${payment.booking.plotNo}`);
-        doc.text(`Total Amount: ₹${parseFloat(payment.booking.totalAmount).toLocaleString('en-IN')}`);
-        doc.moveDown();
 
-        // Payment Details
-        doc.fontSize(14).text('Payment Details', { underline: true });
-        doc.moveDown(0.5);
-        doc.fontSize(10);
-        doc.text(`Payment Amount: ₹${parseFloat(payment.paymentAmount).toLocaleString('en-IN')}`);
+        // Payment Details (compact)
+        doc.fontSize(11).text('Payment Details', { underline: true });
+        doc.moveDown(0.3);
+        doc.fontSize(10).fillColor('black').text(`Payment Amount: ₹${parseFloat(payment.paymentAmount).toLocaleString('en-IN')}`, { bold: true });
+        doc.fontSize(9).fillColor('black');
         doc.text(`Amount in Words: ${numberToWords(payment.paymentAmount)} Rupees Only`);
-        doc.text(`Payment Mode: ${payment.paymentMode}`);
-        doc.text(`Payment Type: ${payment.paymentType}`);
-        if (payment.transactionNo) {
-            doc.text(`Transaction No: ${payment.transactionNo}`);
-        }
+        doc.text(`Mode: ${payment.paymentMode}  |  Type: ${payment.paymentType}${payment.transactionNo ? '  |  Txn: ' + payment.transactionNo : ''}`);
         if (payment.isRecurring && payment.installmentNumber) {
             doc.text(`Installment Number: ${payment.installmentNumber}`);
         }
         if (payment.remarks) {
             doc.text(`Remarks: ${payment.remarks}`);
         }
-        doc.moveDown();
-
-        // Balance Details
-        doc.fontSize(14).text('Balance Details', { underline: true });
         doc.moveDown(0.5);
-        doc.fontSize(10);
-        doc.text(`Balance Before Payment: ₹${parseFloat(payment.balanceBeforePayment).toLocaleString('en-IN')}`);
-        doc.text(`Balance After Payment: ₹${parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN')}`);
-        doc.moveDown();
 
-        // Previous Payments Table
+        // Balance Details (compact)
+        doc.fontSize(11).text('Balance Details', { underline: true });
+        doc.moveDown(0.3);
+        doc.fontSize(9);
+        doc.text(`Balance Before: ₹${parseFloat(payment.balanceBeforePayment).toLocaleString('en-IN')}  |  Balance After: ₹${parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN')}`);
+        doc.moveDown(0.5);
+
+        // Payment History List (compact)
         if (allPayments.length > 0) {
-            doc.fontSize(14).text('Payment History', { underline: true });
-            doc.moveDown(0.5);
-            doc.fontSize(9);
-            
-            const tableTop = doc.y;
-            const colWidths = [80, 80, 80, 80, 80];
-            const headers = ['Date', 'Receipt No', 'Amount', 'Mode', 'Balance'];
-            
-            // Table headers
-            let x = 50;
-            headers.forEach((header, i) => {
-                doc.text(header, x, tableTop, { width: colWidths[i], align: 'left' });
-                x += colWidths[i];
-            });
-            
-            doc.moveDown();
-            doc.moveTo(50, doc.y).lineTo(450, doc.y).stroke();
+            doc.fontSize(11).text('Payment History', { underline: true });
             doc.moveDown(0.3);
+            doc.fontSize(8);
             
-            // Table rows
-            allPayments.forEach(p => {
-                x = 50;
-                const rowData = [
-                    new Date(p.receiptDate).toLocaleDateString('en-IN'),
-                    p.receiptNo,
-                    `₹${parseFloat(p.paymentAmount).toLocaleString('en-IN')}`,
-                    p.paymentMode,
-                    `₹${parseFloat(p.balanceAfterPayment).toLocaleString('en-IN')}`
-                ];
+            // Show last 5 payments as a list
+            const paymentsToShow = allPayments.slice(-5);
+            paymentsToShow.forEach((p, index) => {
+                const paymentDate = new Date(p.receiptDate).toLocaleDateString('en-IN');
+                const amount = parseFloat(p.paymentAmount).toLocaleString('en-IN');
+                const balance = parseFloat(p.balanceAfterPayment).toLocaleString('en-IN');
                 
-                rowData.forEach((data, i) => {
-                    doc.text(data, x, doc.y, { width: colWidths[i], align: 'left', continued: i < rowData.length - 1 });
-                    x += colWidths[i];
+                doc.text(`${index + 1}. ${paymentDate} - ${p.receiptNo} - ₹${amount} (${p.paymentMode}) - Balance: ₹${balance}`, {
+                    width: 495,
+                    lineGap: 0
                 });
-                doc.moveDown(0.7);
+                doc.moveDown(0.3);
             });
+            
+            if (allPayments.length > 5) {
+                doc.fontSize(7).fillColor('gray').text(`(Showing last 5 of ${allPayments.length} total payments)`, { align: 'center' });
+                doc.fillColor('black');
+            }
         }
 
-        doc.moveDown(2);
+        doc.moveDown(0.8);
 
-        // Signatures
-        doc.fontSize(10);
-        doc.text('________________________', 100, doc.y);
-        doc.text('Customer Signature', 100, doc.y);
-        doc.text('________________________', 350, doc.y - 15);
-        doc.text('Authorized Signature', 350, doc.y);
+        // Signatures (compact - ensure they're above footer space)
+        const pageHeight = doc.page.height;
+        const footerStart = pageHeight - 60;
+        
+        // Ensure enough space for signatures
+        if (doc.y > footerStart - 50) {
+            doc.addPage();
+        }
+        
+        doc.fontSize(9);
+        const sigY = Math.max(doc.y, footerStart - 45);
+        doc.text('______________________', 100, sigY);
+        doc.text('Customer Signature', 100, sigY + 15, { width: 150, align: 'center' });
+        doc.text('______________________', 350, sigY);
+        doc.text('Authorized Signature', 350, sigY + 15, { width: 150, align: 'center' });
+
+        // ==================== LETTERHEAD FOOTER SPACE (60pt) ====================
 
         doc.end();
     } catch (error) {
