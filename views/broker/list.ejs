@@ -26,25 +26,55 @@
         <!-- Search & Filter -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body">
-                <form action="/broker" method="GET" class="row g-3 align-items-center">
-                    <div class="col-12 col-md-6">
-                        <input type="text" class="form-control" name="search" placeholder="Search by broker no, name, mobile, email..." value="<%= search || '' %>">
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="showDeleted" name="showDeleted" value="true" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()">
-                            <label class="form-check-label" for="showDeleted">Show Deleted</label>
+                <form action="/broker" method="GET" id="filterForm">
+                    <!-- Search Row -->
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-12 col-md-6">
+                            <input type="text" class="form-control" name="search" placeholder="Search by broker no, name, mobile, email..." value="<%= search || '' %>">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="showDeleted" name="showDeleted" value="true" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()">
+                                <label class="form-check-label" for="showDeleted">Show Deleted</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary flex-fill">
+                                    <i class="bi bi-search"></i> Search
+                                </button>
+                                <% if (search || showDeleted || paymentDateFrom || paymentDateTo) { %>
+                                <a href="/broker" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                                <% } %>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-3">
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-fill">
-                                <i class="bi bi-search"></i> Search
-                            </button>
-                            <% if (search || showDeleted) { %>
-                            <a href="/broker" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle"></i>
-                            </a>
+
+                    <!-- Date Filter Row -->
+                    <div class="row g-2 align-items-end">
+                        <div class="col-12 col-md-5">
+                            <label class="form-label fw-bold text-primary small mb-1">
+                                <i class="bi bi-calendar-event"></i> Payment Date From
+                            </label>
+                            <input type="date" class="form-control form-control-sm" 
+                                   name="paymentDateFrom" value="<%= paymentDateFrom %>"
+                                   onchange="document.getElementById('filterForm').submit()">
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label fw-bold text-primary small mb-1">
+                                <i class="bi bi-calendar-event"></i> Payment Date To
+                            </label>
+                            <input type="date" class="form-control form-control-sm" 
+                                   name="paymentDateTo" value="<%= paymentDateTo %>"
+                                   onchange="document.getElementById('filterForm').submit()">
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <% if (paymentDateFrom || paymentDateTo) { %>
+                            <small class="text-muted d-block"><i class="bi bi-funnel-fill text-warning"></i> Filtering Payments</small>
+                            <% } else { %>
+                            <small class="text-muted d-block">Filter by payment date</small>
                             <% } %>
                         </div>
                     </div>
@@ -77,8 +107,18 @@
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="p-3 bg-primary bg-opacity-10 border border-primary rounded">
-                            <label class="text-muted small d-block">Already Paid</label>
-                            <h5 class="mb-0 text-primary">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></h5>
+                            <label class="text-muted small d-block">
+                                Already Paid
+                                <% if (paymentDateFrom || paymentDateTo) { %>
+                                    <i class="bi bi-funnel-fill text-warning" title="Filtered"></i>
+                                <% } %>
+                            </label>
+                            <% if (paymentDateFrom || paymentDateTo) { %>
+                                <h5 class="mb-0 text-primary">₹<%= stats.filteredPaymentTotal.toLocaleString('en-IN') %></h5>
+                                <small class="text-muted d-block">of ₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %> total</small>
+                            <% } else { %>
+                                <h5 class="mb-0 text-primary">₹<%= stats.totalCommissionPaid.toLocaleString('en-IN') %></h5>
+                            <% } %>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
@@ -135,6 +175,12 @@
                                     <th>Name</th>
                                     <th class="d-none d-md-table-cell">Mobile</th>
                                     <th class="d-none d-lg-table-cell">Email</th>
+                                    <th class="d-none d-xl-table-cell">
+                                        Payments Done
+                                        <% if (paymentDateFrom || paymentDateTo) { %>
+                                            <i class="bi bi-funnel-fill text-warning" title="Filtered by date"></i>
+                                        <% } %>
+                                    </th>
                                     <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
@@ -146,6 +192,9 @@
                                         <td><%= broker.name %></td>
                                         <td class="d-none d-md-table-cell"><%= broker.mobileNo %></td>
                                         <td class="d-none d-lg-table-cell"><%= broker.email || 'N/A' %></td>
+                                        <td class="d-none d-xl-table-cell">
+                                            <strong class="text-success">₹<%= (broker.totalPayments || 0).toLocaleString('en-IN') %></strong>
+                                        </td>
                                         <td>
                                             <% if (broker.isDeleted) { %>
                                                 <span class="badge bg-danger">Deleted</span>

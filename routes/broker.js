@@ -7,7 +7,7 @@ const { Op } = require('sequelize');
 // List all brokers
 router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const { search, showDeleted } = req.query;
+        const { search, showDeleted, paymentDateFrom = '', paymentDateTo = '' } = req.query;
         const whereClause = {};
 
         // By default, hide deleted brokers
@@ -55,7 +55,7 @@ router.get('/', isAuthenticated, async (req, res) => {
             return sum + (parseFloat(b.brokerCommission) || 0);
         }, 0);
 
-        // Get all broker payments
+        // Get all broker payments (unfiltered)
         const allBrokerPayments = await BrokerPayment.findAll({
             where: { isDeleted: false },
             include: [
@@ -67,10 +67,58 @@ router.get('/', isAuthenticated, async (req, res) => {
             ]
         });
 
-        // Calculate total payments made to brokers
+        // Calculate total payments made to brokers (unfiltered)
         const totalCommissionPaid = allBrokerPayments.reduce((sum, p) => {
             return sum + parseFloat(p.paymentAmount);
         }, 0);
+
+        // Build where clause for filtered broker payments
+        const paymentWhereClause = { isDeleted: false };
+        
+        // Apply date filters if provided
+        if (paymentDateFrom || paymentDateTo) {
+            paymentWhereClause.paymentDate = {};
+            if (paymentDateFrom) {
+                paymentWhereClause.paymentDate[Op.gte] = new Date(paymentDateFrom);
+            }
+            if (paymentDateTo) {
+                const endDate = new Date(paymentDateTo);
+                endDate.setDate(endDate.getDate() + 1);
+                paymentWhereClause.paymentDate[Op.lt] = endDate;
+            }
+        }
+
+        // Get filtered broker payments
+        const filteredBrokerPayments = await BrokerPayment.findAll({
+            where: paymentWhereClause,
+            include: [
+                {
+                    model: Broker,
+                    as: 'broker',
+                    where: whereClause
+                }
+            ]
+        });
+
+        // Calculate filtered payment total
+        const filteredPaymentTotal = filteredBrokerPayments.reduce((sum, p) => {
+            return sum + parseFloat(p.paymentAmount);
+        }, 0);
+
+        // Calculate payments per broker (filtered)
+        const brokerPaymentsMap = {};
+        filteredBrokerPayments.forEach(payment => {
+            const brokerId = payment.brokerId;
+            if (!brokerPaymentsMap[brokerId]) {
+                brokerPaymentsMap[brokerId] = 0;
+            }
+            brokerPaymentsMap[brokerId] += parseFloat(payment.paymentAmount);
+        });
+
+        // Add payment totals to each broker
+        brokers.forEach(broker => {
+            broker.totalPayments = brokerPaymentsMap[broker.id] || 0;
+        });
 
         const commissionRemaining = totalCommission - totalCommissionPaid;
         const commissionRemainingRegistered = totalCommissionRegistered - totalCommissionPaid;
@@ -85,6 +133,7 @@ router.get('/', isAuthenticated, async (req, res) => {
             totalCommissionRegistered,
             totalCommissionNonRegistered,
             totalCommissionPaid,
+            filteredPaymentTotal,
             commissionRemaining,
             commissionRemainingRegistered
         };
@@ -94,6 +143,8 @@ router.get('/', isAuthenticated, async (req, res) => {
             stats: cumulativeStats,
             search,
             showDeleted: showDeleted === 'true',
+            paymentDateFrom: paymentDateFrom,
+            paymentDateTo: paymentDateTo,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
