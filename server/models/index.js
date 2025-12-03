@@ -69,22 +69,21 @@ User.hasMany(Broker, {
   constraints: false 
 });
 
-// Initialize database
+// Initialize database (using migrations now)
 const initializeDatabase = async () => {
   try {
     // Test connection
     await sequelize.authenticate();
-    console.log('Database connection established successfully.');
+    console.log('✅ Database connection established successfully.');
     
-    // Sync all models
-    // alter: true will update tables without dropping them
-    // force: true will drop tables and recreate (use with caution!)
-    await sequelize.sync({ alter: true });
-    console.log('All models synchronized successfully.');
+    // NOTE: Database schema changes should be done through migrations
+    // DO NOT use sequelize.sync() in production as it can cause data loss
+    // Migrations are run automatically when the server starts (see index.js)
+    // or manually with: npm run migrate
     
     return true;
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error('❌ Unable to connect to the database:', error);
     throw error;
   }
 };

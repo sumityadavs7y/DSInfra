@@ -5,7 +5,8 @@ const express = require('express');
 const session = require('express-session');
 const app = express();
 const { envConfig } = require('./config');
-const { testConnection, syncDatabase, User } = require('./models');
+const { testConnection, User } = require('./models');
+const { runMigrations } = require('./utils/migrate');
 const createAdminUser = require('./scripts/createAdmin');
 const createSampleData = require('./scripts/createSampleProjects');
 const { isDevEnvMode } = require('./utils/helpers');
@@ -88,11 +89,16 @@ const initializeDefaultData = async () => {
 // Initialize database and start server
 const startServer = async () => {
     try {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🚀 Starting Server...');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
       // Test database connection
       await testConnection();
       
-      // Sync database models (creates tables if they don't exist)
-      await syncDatabase();
+      // Run database migrations (replaces sync())
+      // This is the safe way to update database schema
+      await runMigrations();
       
       // Initialize default admin user and sample projects
       await initializeDefaultData();
@@ -100,11 +106,11 @@ const startServer = async () => {
       // Start the server
       app.listen(envConfig.port, () => {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        console.log(`🚀 Server is running on port ${envConfig.port}`);
+        console.log(`✅ Server is running on port ${envConfig.port}`);
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       });
     } catch (error) {
-      console.error('Failed to start server:', error);
+      console.error('❌ Failed to start server:', error);
       process.exit(1);
     }
   };

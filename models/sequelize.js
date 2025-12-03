@@ -44,34 +44,13 @@ const testConnection = async () => {
   }
 };
 
-// Sync database models
-// Note: For production, consider using migrations instead of sync
-// alter: true can modify existing columns, force: true will drop all tables
-const syncDatabase = async (force = false, alter = false) => {
-  try {
-    if (force) {
-      // Only use force if explicitly requested (will delete all data!)
-      await sequelize.sync({ force: true });
-      console.log('✅ Database synchronized (FORCE - tables recreated).');
-    } else if (alter) {
-      // Alter existing tables to match models (may cause data loss)
-      await sequelize.sync({ alter: true });
-      console.log('✅ Database synchronized (ALTER - tables updated).');
-    } else {
-      // Safe sync - only creates missing tables, doesn't alter existing ones
-      await sequelize.sync();
-      console.log('✅ Database synchronized successfully.');
-    }
-  } catch (error) {
-    console.error('❌ Error synchronizing database:', error);
-    throw error;
-  }
-};
+// NOTE: Database schema changes should be done through migrations
+// DO NOT use sequelize.sync() in production as it can cause data loss
+// Use migrations instead: npm run migrate
 
 module.exports = {
   sequelize,
   Sequelize,
-  testConnection,
-  syncDatabase
+  testConnection
 };
 

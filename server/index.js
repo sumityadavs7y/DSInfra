@@ -26,11 +26,11 @@ app.use(express.urlencoded({ extended: true }));
 // Static folder for uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Initialize database connection
+// Initialize database connection (migrations are run in main index.js)
 initializeDatabase()
-  .then(() => console.log('Database Connected and Synchronized Successfully'))
+  .then(() => console.log('✅ Database Connected Successfully'))
   .catch((err) => {
-    console.error('Database Connection Error:', err);
+    console.error('❌ Database Connection Error:', err);
     process.exit(1);
   });
 
