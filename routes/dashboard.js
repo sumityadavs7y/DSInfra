@@ -50,6 +50,9 @@ router.get('/', isAuthenticated, async (req, res) => {
             where: { isDeleted: false }
         }) || 0;
         
+        // Calculate pending revenue: total revenue from all bookings minus all payments received
+        const pendingRevenue = totalRevenueAllBookings - totalPaymentsReceived;
+        
         const activeCustomers = await Customer.count({
             where: { isActive: true }
         });
@@ -64,6 +67,7 @@ router.get('/', isAuthenticated, async (req, res) => {
                 totalRevenue,
                 totalRevenueAllBookings,
                 totalPaymentsReceived,
+                pendingRevenue,
                 activeCustomers
             }
         });
@@ -79,6 +83,7 @@ router.get('/', isAuthenticated, async (req, res) => {
                 totalRevenue: 0,
                 totalRevenueAllBookings: 0,
                 totalPaymentsReceived: 0,
+                pendingRevenue: 0,
                 activeCustomers: 0
             }
         });
