@@ -244,7 +244,7 @@
                             const plcPercentAmt = parseFloat(booking.plc || 0);
                             const plcAmountTotal = baseAmountTotal * (plcPercentAmt / 100);
                         %>
-                        <div class="card text-white mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <div class="card text-white mb-4" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
                             <div class="card-body">
                                 <h5 class="mb-3"><i class="bi bi-calculator"></i> Amount Breakdown</h5>
                                 <div class="row g-3 mb-3">
@@ -270,11 +270,11 @@
                                 <div class="row text-center g-3">
                                     <div class="col-12 col-md-6">
                                         <small class="d-block opacity-75">Amount Paid</small>
-                                        <h3 class="mb-0 text-success">₹<%= totalPaid.toLocaleString('en-IN') %></h3>
+                                        <h3 class="mb-0" style="color: #2ecc71;">₹<%= totalPaid.toLocaleString('en-IN') %></h3>
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <small class="d-block opacity-75">Balance Due</small>
-                                        <h3 class="mb-0 text-warning">₹<%= parseFloat(booking.remainingAmount).toLocaleString('en-IN') %></h3>
+                                        <h3 class="mb-0" style="color: #f39c12;">₹<%= parseFloat(booking.remainingAmount).toLocaleString('en-IN') %></h3>
                                     </div>
                                 </div>
                             </div>
