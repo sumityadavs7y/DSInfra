@@ -48,7 +48,7 @@ const Booking = sequelize.define('Booking', {
   plc: {
     type: DataTypes.DECIMAL(10, 2),
     defaultValue: 0,
-    comment: 'Price Level Charges'
+    comment: 'Price Level Charges (percentage)'
   },
   legalDetails: {
     type: DataTypes.TEXT,
@@ -116,6 +116,12 @@ const Booking = sequelize.define('Booking', {
     allowNull: true,
     defaultValue: 0,
     comment: 'Commission amount for broker'
+  },
+  associatePlcCommission: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: true,
+    defaultValue: 0,
+    comment: 'Associate PLC commission percentage'
   },
   // Created by user
   createdBy: {

@@ -143,9 +143,15 @@
                                 <p class="h6 mb-0">₹<%= parseFloat(booking.associateRate).toLocaleString('en-IN') %></p>
                             </div>
                             <% } %>
+                            <% if (booking.associatePlcCommission && parseFloat(booking.associatePlcCommission) > 0) { %>
+                            <div class="col-6 col-md-3">
+                                <label class="text-muted small fw-semibold text-uppercase">Associate PLC Commission</label>
+                                <p class="h6 mb-0"><%= parseFloat(booking.associatePlcCommission).toFixed(2) %>%</p>
+                            </div>
+                            <% } %>
                             <div class="col-6 col-md-3">
                                 <label class="text-muted small fw-semibold text-uppercase">PLC</label>
-                                <p class="h6 mb-0">₹<%= parseFloat(booking.plc).toLocaleString('en-IN') %></p>
+                                <p class="h6 mb-0"><%= parseFloat(booking.plc).toFixed(2) %>%</p>
                             </div>
                             <div class="col-6 col-md-3">
                                 <label class="text-muted small fw-semibold text-uppercase">Discount</label>

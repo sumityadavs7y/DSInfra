@@ -170,8 +170,11 @@ const Booking = sequelize.define('Booking', {
         booking.effectiveRate = parseFloat(booking.rate) - parseFloat(booking.discount);
       }
       
-      // Calculate total amount
-      booking.totalAmount = parseFloat(booking.effectiveRate) * parseFloat(booking.area) + parseFloat(booking.plc || 0);
+      // Calculate total amount with PLC as percentage
+      const baseAmount = parseFloat(booking.effectiveRate) * parseFloat(booking.area);
+      const plcPercent = parseFloat(booking.plc || 0);
+      const plcAmount = baseAmount * (plcPercent / 100);
+      booking.totalAmount = baseAmount + plcAmount;
       
       // Initialize total paid with booking amount
       booking.totalPaid = parseFloat(booking.bookingAmount);
@@ -188,7 +191,11 @@ const Booking = sequelize.define('Booking', {
           booking.effectiveRate = parseFloat(booking.rate) - parseFloat(booking.discount);
         }
         
-        booking.totalAmount = parseFloat(booking.effectiveRate) * parseFloat(booking.area) + parseFloat(booking.plc || 0);
+        // Calculate total amount with PLC as percentage
+        const baseAmount = parseFloat(booking.effectiveRate) * parseFloat(booking.area);
+        const plcPercent = parseFloat(booking.plc || 0);
+        const plcAmount = baseAmount * (plcPercent / 100);
+        booking.totalAmount = baseAmount + plcAmount;
         booking.remainingAmount = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid);
       }
     }

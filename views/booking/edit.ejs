@@ -83,8 +83,9 @@
                                     <div class="form-text">For associate commission</div>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label fw-semibold">PLC (₹)</label>
-                                    <input type="number" class="form-control" name="plc" id="plc" value="<%= parseFloat(booking.plc) %>" step="0.01">
+                                    <label class="form-label fw-semibold">PLC (%)</label>
+                                    <input type="number" class="form-control" name="plc" id="plc" value="<%= parseFloat(booking.plc) %>" step="0.01" min="0" max="100">
+                                    <div class="form-text">Price Level Charges percentage</div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <label class="form-label fw-semibold">Discount (₹)</label>
@@ -127,11 +128,18 @@
                                     <div class="form-text">Select if this booking was referred by an associate</div>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Associate Commission (₹)</label>
+                                    <label class="form-label fw-semibold">Associate PLC Commission (%)</label>
+                                    <input type="number" class="form-control" name="associatePlcCommission" id="associatePlcCommission" 
+                                           value="<%= parseFloat(booking.associatePlcCommission || 0) %>" 
+                                           step="0.01" min="0" max="100">
+                                    <div class="form-text">Additional PLC-based commission percentage</div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Total Associate Commission (₹)</label>
                                     <input type="number" class="form-control bg-light" name="brokerCommission" id="brokerCommission" 
                                            value="<%= parseFloat(booking.brokerCommission || 0) %>" 
                                            step="0.01" min="0" readonly>
-                                    <div class="form-text">Auto-calculated: (Rate - Associate Rate) × Area</div>
+                                    <div class="form-text">Auto-calculated: [(Effective Rate - Associate Rate) × Area] + [PLC% of (Effective Rate × Area)]</div>
                                 </div>
                             </div>
                             
@@ -194,31 +202,37 @@
         const totalAmount = document.getElementById('totalAmount');
         const brokerCommission = document.getElementById('brokerCommission');
         const brokerSelect = document.getElementById('brokerSelect');
+        const associatePlcCommission = document.getElementById('associatePlcCommission');
         
         function calculateAmounts() {
             const areaVal = parseFloat(area.value) || 0;
             const rateVal = parseFloat(rate.value) || 0;
             const associateRateVal = parseFloat(associateRate.value) || 0;
-            const plcVal = parseFloat(plc.value) || 0;
+            const plcPercent = parseFloat(plc.value) || 0;
             const discountVal = parseFloat(discount.value) || 0;
+            const associatePlcPercent = parseFloat(associatePlcCommission.value) || 0;
             
             const effRate = rateVal - discountVal;
-            const total = (areaVal * effRate) + plcVal;
+            const baseAmount = areaVal * effRate;
+            const plcAmount = baseAmount * (plcPercent / 100);
+            const total = baseAmount + plcAmount;
             
             effectiveRate.value = effRate.toFixed(2);
             totalAmount.value = total.toFixed(2);
             
-            // Auto-calculate associate commission: (rate - associateRate) * area
-            // Calculate if associate is selected, regardless of field order
+            // Auto-calculate associate commission
+            // Formula: [(effectiveRate - associateRate) × area] + [associatePlcCommission% of (effectiveRate × area)]
             if (brokerSelect.value) {
-                const commission = (rateVal - associateRateVal) * areaVal;
-                brokerCommission.value = commission > 0 ? commission.toFixed(2) : '0.00';
+                const baseCommission = (effRate - associateRateVal) * areaVal;
+                const plcCommission = baseAmount * (associatePlcPercent / 100);
+                const totalCommission = baseCommission + plcCommission;
+                brokerCommission.value = totalCommission > 0 ? totalCommission.toFixed(2) : '0.00';
             } else {
                 brokerCommission.value = '0.00';
             }
         }
         
-        [area, rate, associateRate, plc, discount].forEach(el => el.addEventListener('input', calculateAmounts));
+        [area, rate, associateRate, plc, discount, associatePlcCommission].forEach(el => el.addEventListener('input', calculateAmounts));
         calculateAmounts();
         
         // Recalculate when associate is selected/deselected

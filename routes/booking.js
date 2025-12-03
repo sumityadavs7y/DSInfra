@@ -147,6 +147,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
             associateRate,
             discount,
             brokerId,
+            associatePlcCommission,
             bookingAmount,
             paymentMode,
             transactionNo,
@@ -157,7 +158,10 @@ router.post('/create', isAuthenticated, async (req, res) => {
 
         // Calculate effective rate and total amount
         const effectiveRate = parseFloat(rate) - (parseFloat(discount) || 0);
-        const totalAmount = (parseFloat(area) * effectiveRate) + (parseFloat(plc) || 0);
+        const baseAmount = parseFloat(area) * effectiveRate;
+        const plcPercent = parseFloat(plc) || 0;
+        const plcAmount = baseAmount * (plcPercent / 100);
+        const totalAmount = baseAmount + plcAmount;
         const bookingAmountVal = parseFloat(bookingAmount);
         
         // Validate booking amount
@@ -193,13 +197,17 @@ router.post('/create', isAuthenticated, async (req, res) => {
             });
         }
         
-        // Auto-calculate broker commission: (rate - associateRate) * area
+        // Auto-calculate broker commission: [(effectiveRate - associateRate) × area] + [plc% of (effectiveRate × area)]
         const areaVal = parseFloat(area) || 0;
-        const rateVal = parseFloat(rate) || 0;
         const associateRateVal = parseFloat(associateRate) || 0;
-        const brokerCommission = brokerId && associateRateVal > 0 
-            ? Math.max(0, (rateVal - associateRateVal) * areaVal) 
-            : 0;
+        const associatePlcPercent = parseFloat(associatePlcCommission) || 0;
+        
+        let brokerCommission = 0;
+        if (brokerId) {
+            const baseCommission = (effectiveRate - associateRateVal) * areaVal;
+            const plcCommission = baseAmount * (associatePlcPercent / 100);
+            brokerCommission = Math.max(0, baseCommission + plcCommission);
+        }
 
         // Generate booking number
         const bookingCount = await Booking.count({ paranoid: false });
@@ -222,6 +230,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
             totalAmount,
             brokerId: brokerId || null,
             brokerCommission,
+            associatePlcCommission: associatePlcPercent,
             remainingAmount: totalAmount, // Initially full amount
             status: 'Active',
             createdBy: req.session.userId
@@ -400,6 +409,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             associateRate,
             discount,
             brokerId,
+            associatePlcCommission,
             status,
             bookingDate,
             registryCompleted,
@@ -408,15 +418,22 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
 
         // Calculate effective rate and total amount
         const effectiveRate = parseFloat(rate) - (parseFloat(discount) || 0);
-        const totalAmount = (parseFloat(area) * effectiveRate) + (parseFloat(plc) || 0);
+        const baseAmount = parseFloat(area) * effectiveRate;
+        const plcPercent = parseFloat(plc) || 0;
+        const plcAmount = baseAmount * (plcPercent / 100);
+        const totalAmount = baseAmount + plcAmount;
         
-        // Auto-calculate broker commission: (rate - associateRate) * area
+        // Auto-calculate broker commission: [(effectiveRate - associateRate) × area] + [plc% of (effectiveRate × area)]
         const areaVal = parseFloat(area) || 0;
-        const rateVal = parseFloat(rate) || 0;
         const associateRateVal = parseFloat(associateRate) || 0;
-        const brokerCommission = brokerId && associateRateVal > 0 
-            ? Math.max(0, (rateVal - associateRateVal) * areaVal) 
-            : 0;
+        const associatePlcPercent = parseFloat(associatePlcCommission) || 0;
+        
+        let brokerCommission = 0;
+        if (brokerId) {
+            const baseCommission = (effectiveRate - associateRateVal) * areaVal;
+            const plcCommission = baseAmount * (associatePlcPercent / 100);
+            brokerCommission = Math.max(0, baseCommission + plcCommission);
+        }
 
         // Calculate remaining amount from payments
         const totalPaid = await Payment.sum('paymentAmount', {
@@ -441,6 +458,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             totalAmount,
             brokerId: brokerId || null,
             brokerCommission,
+            associatePlcCommission: associatePlcPercent,
             remainingAmount,
             status: status || 'Active',
             registryCompleted: registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true',
