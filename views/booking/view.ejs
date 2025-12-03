@@ -159,13 +159,13 @@
                             <% } %>
                         </div>
 
-                        <!-- Broker Information (if applicable) -->
+                        <!-- Associate Information (if applicable) -->
                         <% if (booking.broker) { %>
                         <div class="alert alert-dark mb-4">
                             <div class="row align-items-center">
                                 <div class="col-12 col-md-6">
                                     <h6 class="mb-2">
-                                        <i class="bi bi-briefcase"></i> Broker Information
+                                        <i class="bi bi-briefcase"></i> Associate Information
                                     </h6>
                                     <p class="mb-0">
                                         <strong><%= booking.broker.name %></strong> (<%= booking.broker.brokerNo %>)<br>
@@ -174,7 +174,7 @@
                                 </div>
                                 <div class="col-12 col-md-3">
                                     <a href="/broker/<%= booking.broker.id %>" class="btn btn-sm btn-outline-dark w-100">
-                                        <i class="bi bi-briefcase"></i> View Broker
+                                        <i class="bi bi-briefcase"></i> View Associate
                                     </a>
                                 </div>
                                 <div class="col-12 col-md-3 text-md-end mt-2 mt-md-0">

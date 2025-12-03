@@ -80,7 +80,7 @@
                                 <div class="col-6 col-md-3">
                                     <label class="form-label fw-semibold">Associate Rate (₹)</label>
                                     <input type="number" class="form-control" name="associateRate" id="associateRate" value="<%= parseFloat(booking.associateRate || 0) %>" step="0.01">
-                                    <div class="form-text">For broker commission</div>
+                                    <div class="form-text">For associate commission</div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <label class="form-label fw-semibold">PLC (₹)</label>
@@ -111,23 +111,23 @@
                             
                             <hr class="my-4">
                             
-                            <!-- Broker Details (Optional) -->
-                            <h5 class="text-dark mb-3"><i class="bi bi-briefcase"></i> Broker Details (Optional)</h5>
+                            <!-- Associate Details (Optional) -->
+                            <h5 class="text-dark mb-3"><i class="bi bi-briefcase"></i> Associate Details (Optional)</h5>
                             <div class="row g-3 mb-4">
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Broker</label>
+                                    <label class="form-label fw-semibold">Associate</label>
                                     <select class="form-select" name="brokerId" id="brokerSelect">
-                                        <option value="">-- No Broker --</option>
+                                        <option value="">-- No Associate --</option>
                                         <% brokers.forEach(broker => { %>
                                             <option value="<%= broker.id %>" <%= booking.brokerId == broker.id ? 'selected' : '' %>>
                                                 <%= broker.name %> (<%= broker.mobileNo %>)
                                             </option>
                                         <% }) %>
                                     </select>
-                                    <div class="form-text">Select if this booking was referred by a broker</div>
+                                    <div class="form-text">Select if this booking was referred by an associate</div>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Broker Commission (₹)</label>
+                                    <label class="form-label fw-semibold">Associate Commission (₹)</label>
                                     <input type="number" class="form-control bg-light" name="brokerCommission" id="brokerCommission" 
                                            value="<%= parseFloat(booking.brokerCommission || 0) %>" 
                                            step="0.01" min="0" readonly>
@@ -208,8 +208,8 @@
             effectiveRate.value = effRate.toFixed(2);
             totalAmount.value = total.toFixed(2);
             
-            // Auto-calculate broker commission: (associateRate - rate) * area
-            // Calculate if broker is selected, regardless of field order
+            // Auto-calculate associate commission: (associateRate - rate) * area
+            // Calculate if associate is selected, regardless of field order
             if (brokerSelect.value) {
                 const commission = (associateRateVal - rateVal) * areaVal;
                 brokerCommission.value = commission > 0 ? commission.toFixed(2) : '0.00';
@@ -221,7 +221,7 @@
         [area, rate, associateRate, plc, discount].forEach(el => el.addEventListener('input', calculateAmounts));
         calculateAmounts();
         
-        // Recalculate when broker is selected/deselected
+        // Recalculate when associate is selected/deselected
         brokerSelect.addEventListener('change', function() {
             calculateAmounts();
         });
