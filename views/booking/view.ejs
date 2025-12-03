@@ -137,18 +137,6 @@
                                 <label class="text-muted small fw-semibold text-uppercase">Rate</label>
                                 <p class="h6 mb-0">₹<%= parseFloat(booking.rate).toLocaleString('en-IN') %></p>
                             </div>
-                            <% if (booking.associateRate && parseFloat(booking.associateRate) > 0) { %>
-                            <div class="col-6 col-md-3">
-                                <label class="text-muted small fw-semibold text-uppercase">Associate Rate</label>
-                                <p class="h6 mb-0">₹<%= parseFloat(booking.associateRate).toLocaleString('en-IN') %></p>
-                            </div>
-                            <% } %>
-                            <% if (booking.associatePlcCommission && parseFloat(booking.associatePlcCommission) > 0) { %>
-                            <div class="col-6 col-md-3">
-                                <label class="text-muted small fw-semibold text-uppercase">Associate PLC Commission</label>
-                                <p class="h6 mb-0"><%= parseFloat(booking.associatePlcCommission).toFixed(2) %>%</p>
-                            </div>
-                            <% } %>
                             <div class="col-6 col-md-3">
                                 <label class="text-muted small fw-semibold text-uppercase">PLC</label>
                                 <p class="h6 mb-0"><%= parseFloat(booking.plc).toFixed(2) %>%</p>
@@ -165,47 +153,128 @@
                             <% } %>
                         </div>
 
-                        <!-- Associate Information (if applicable) -->
+                        <hr class="my-4">
+
+                        <!-- Associate Details -->
                         <% if (booking.broker) { %>
-                        <div class="alert alert-dark mb-4">
-                            <div class="row align-items-center">
-                                <div class="col-12 col-md-6">
-                                    <h6 class="mb-2">
-                                        <i class="bi bi-briefcase"></i> Associate Information
-                                    </h6>
-                                    <p class="mb-0">
-                                        <strong><%= booking.broker.name %></strong> (<%= booking.broker.brokerNo %>)<br>
-                                        <small>Mobile: <%= booking.broker.mobileNo %></small>
-                                    </p>
-                                </div>
-                                <div class="col-12 col-md-3">
-                                    <a href="/broker/<%= booking.broker.id %>" class="btn btn-sm btn-outline-dark w-100">
-                                        <i class="bi bi-briefcase"></i> View Associate
-                                    </a>
-                                </div>
-                                <div class="col-12 col-md-3 text-md-end mt-2 mt-md-0">
-                                    <label class="text-muted small d-block">Commission</label>
-                                    <h4 class="mb-0 text-warning">₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %></h4>
+                        <%
+                            // Calculate commission breakdown
+                            const effRate = parseFloat(booking.effectiveRate || 0);
+                            const associateRateVal = parseFloat(booking.associateRate || 0);
+                            const areaVal = parseFloat(booking.area || 0);
+                            const baseAmountCalc = effRate * areaVal;
+                            const associatePlcPercentVal = parseFloat(booking.associatePlcCommission || 0);
+                            
+                            const baseCommCalc = Math.max(0, (effRate - associateRateVal) * areaVal);
+                            const plcCommCalc = baseAmountCalc * (associatePlcPercentVal / 100);
+                        %>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="text-success mb-0"><i class="bi bi-briefcase"></i> Associate Details</h5>
+                            <a href="/broker/<%= booking.broker.id %>" class="btn btn-sm btn-success">
+                                <i class="bi bi-person-badge"></i> View Associate Profile
+                            </a>
+                        </div>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <label class="text-muted small fw-semibold text-uppercase">Associate Name</label>
+                                <p class="h6 mb-0"><%= booking.broker.name %></p>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="text-muted small fw-semibold text-uppercase">Associate No</label>
+                                <p class="h6 mb-0"><%= booking.broker.brokerNo %></p>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="text-muted small fw-semibold text-uppercase">Mobile</label>
+                                <p class="h6 mb-0"><%= booking.broker.mobileNo %></p>
+                            </div>
+                            <% if (booking.associateRate && parseFloat(booking.associateRate) > 0) { %>
+                            <div class="col-6 col-md-4">
+                                <label class="text-muted small fw-semibold text-uppercase">Associate Rate</label>
+                                <p class="h6 mb-0">₹<%= parseFloat(booking.associateRate).toLocaleString('en-IN') %></p>
+                            </div>
+                            <% } %>
+                            <% if (booking.associatePlcCommission && parseFloat(booking.associatePlcCommission) > 0) { %>
+                            <div class="col-6 col-md-4">
+                                <label class="text-muted small fw-semibold text-uppercase">Associate PLC Commission</label>
+                                <p class="h6 mb-0"><%= parseFloat(booking.associatePlcCommission).toFixed(2) %>%</p>
+                            </div>
+                            <% } %>
+                        </div>
+
+                        <!-- Commission Breakdown Card -->
+                        <div class="card border-success mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h6 class="mb-0"><i class="bi bi-cash-stack"></i> Commission Breakdown</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-6 col-md-4">
+                                        <small class="text-muted d-block">Base Commission</small>
+                                        <h5 class="mb-0">₹<%= baseCommCalc.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></h5>
+                                        <small class="text-muted">(Eff Rate - Assoc Rate) × Area</small>
+                                    </div>
+                                    <% if (associatePlcPercentVal > 0) { %>
+                                    <div class="col-6 col-md-4">
+                                        <small class="text-muted d-block">PLC Commission (<%= associatePlcPercentVal.toFixed(2) %>%)</small>
+                                        <h5 class="mb-0">₹<%= plcCommCalc.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></h5>
+                                        <small class="text-muted">Assoc PLC% of Base Amount</small>
+                                    </div>
+                                    <% } %>
+                                    <div class="col-12 col-md-4">
+                                        <small class="text-muted d-block fw-bold">Total Commission</small>
+                                        <h3 class="mb-0 text-success">₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %></h3>
+                                        <small class="text-muted">Base + PLC Commission</small>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                        <% } else { %>
+                        <div class="alert alert-light mb-4">
+                            <i class="bi bi-info-circle"></i> No associate linked to this booking
                         </div>
                         <% } %>
 
                         <!-- Amount Summary -->
+                        <%
+                            // Calculate amount breakdown
+                            const effRateAmt = parseFloat(booking.effectiveRate || 0);
+                            const areaAmt = parseFloat(booking.area || 0);
+                            const baseAmountTotal = effRateAmt * areaAmt;
+                            const plcPercentAmt = parseFloat(booking.plc || 0);
+                            const plcAmountTotal = baseAmountTotal * (plcPercentAmt / 100);
+                        %>
                         <div class="card text-white mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                             <div class="card-body">
-                                <div class="row text-center g-3">
-                                    <div class="col-12 col-md-4">
-                                        <small class="d-block opacity-75">Total Amount</small>
+                                <h5 class="mb-3"><i class="bi bi-calculator"></i> Amount Breakdown</h5>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6 col-md-3">
+                                        <small class="d-block opacity-75">Base Amount</small>
+                                        <h5 class="mb-0">₹<%= baseAmountTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></h5>
+                                        <small class="opacity-75">(Effective Rate × Area)</small>
+                                    </div>
+                                    <% if (plcPercentAmt > 0) { %>
+                                    <div class="col-6 col-md-3">
+                                        <small class="d-block opacity-75">PLC Amount (<%= plcPercentAmt.toFixed(2) %>%)</small>
+                                        <h5 class="mb-0">₹<%= plcAmountTotal.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></h5>
+                                        <small class="opacity-75">(PLC% of Base)</small>
+                                    </div>
+                                    <% } %>
+                                    <div class="col-12 col-md-6">
+                                        <small class="d-block opacity-75 fw-bold">Total Amount</small>
                                         <h3 class="mb-0">₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></h3>
+                                        <small class="opacity-75">(Base + PLC)</small>
                                     </div>
-                                    <div class="col-12 col-md-4">
+                                </div>
+                                <hr class="opacity-25 my-3">
+                                <div class="row text-center g-3">
+                                    <div class="col-12 col-md-6">
                                         <small class="d-block opacity-75">Amount Paid</small>
-                                        <h3 class="mb-0">₹<%= totalPaid.toLocaleString('en-IN') %></h3>
+                                        <h3 class="mb-0 text-success">₹<%= totalPaid.toLocaleString('en-IN') %></h3>
                                     </div>
-                                    <div class="col-12 col-md-4">
-                                        <small class="d-block opacity-75">Balance</small>
-                                        <h3 class="mb-0">₹<%= parseFloat(booking.remainingAmount).toLocaleString('en-IN') %></h3>
+                                    <div class="col-12 col-md-6">
+                                        <small class="d-block opacity-75">Balance Due</small>
+                                        <h3 class="mb-0 text-warning">₹<%= parseFloat(booking.remainingAmount).toLocaleString('en-IN') %></h3>
                                     </div>
                                 </div>
                             </div>

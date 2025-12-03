@@ -111,13 +111,24 @@
                                     <label class="form-label fw-semibold">Discount (₹)</label>
                                     <input type="number" class="form-control" name="discount" id="discount" step="0.01" min="0" value="0">
                                 </div>
-                                <div class="col-6 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label fw-semibold">Effective Rate (₹)</label>
                                     <input type="number" class="form-control bg-light" id="effectiveRate" readonly>
                                 </div>
-                                <div class="col-6 col-md-6">
-                                    <label class="form-label fw-semibold">Total Amount (₹)</label>
-                                    <input type="number" class="form-control bg-light" id="totalAmount" readonly>
+                                <div class="col-6 col-md-4">
+                                    <label class="form-label fw-semibold">Base Amount (₹)</label>
+                                    <input type="number" class="form-control bg-light" id="baseAmount" readonly>
+                                    <div class="form-text">Effective Rate × Area</div>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="form-label fw-semibold">PLC Amount (₹)</label>
+                                    <input type="number" class="form-control bg-light" id="plcAmount" readonly>
+                                    <div class="form-text">PLC% of Base Amount</div>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold text-primary">Total Amount (₹)</label>
+                                    <input type="number" class="form-control bg-light border-primary fw-bold" id="totalAmount" readonly>
+                                    <div class="form-text">Base Amount + PLC Amount</div>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Legal Details</label>
@@ -149,11 +160,21 @@
                                            step="0.01" min="0" max="100" value="0">
                                     <div class="form-text">Additional PLC-based commission percentage</div>
                                 </div>
+                                <div class="col-6 col-md-6">
+                                    <label class="form-label fw-semibold">Base Commission (₹)</label>
+                                    <input type="number" class="form-control bg-light" id="baseCommission" readonly>
+                                    <div class="form-text">(Effective Rate - Associate Rate) × Area</div>
+                                </div>
+                                <div class="col-6 col-md-6">
+                                    <label class="form-label fw-semibold">PLC Commission (₹)</label>
+                                    <input type="number" class="form-control bg-light" id="plcCommission" readonly>
+                                    <div class="form-text">Associate PLC% of Base Amount</div>
+                                </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold">Total Associate Commission (₹)</label>
-                                    <input type="number" class="form-control bg-light" name="brokerCommission" id="brokerCommission" 
+                                    <label class="form-label fw-semibold text-success">Total Associate Commission (₹)</label>
+                                    <input type="number" class="form-control bg-light border-success fw-bold" name="brokerCommission" id="brokerCommission" 
                                            step="0.01" min="0" value="0" readonly>
-                                    <div class="form-text">Auto-calculated: [(Effective Rate - Associate Rate) × Area] + [PLC% of (Effective Rate × Area)]</div>
+                                    <div class="form-text">Base Commission + PLC Commission</div>
                                 </div>
                             </div>
                             
@@ -231,7 +252,11 @@
         const plc = document.getElementById('plc');
         const discount = document.getElementById('discount');
         const effectiveRate = document.getElementById('effectiveRate');
+        const baseAmountField = document.getElementById('baseAmount');
+        const plcAmountField = document.getElementById('plcAmount');
         const totalAmount = document.getElementById('totalAmount');
+        const baseCommissionField = document.getElementById('baseCommission');
+        const plcCommissionField = document.getElementById('plcCommission');
         const brokerCommission = document.getElementById('brokerCommission');
         const brokerSelect = document.getElementById('brokerSelect');
         const associatePlcCommission = document.getElementById('associatePlcCommission');
@@ -244,22 +269,30 @@
             const discountVal = parseFloat(discount.value) || 0;
             const associatePlcPercent = parseFloat(associatePlcCommission.value) || 0;
             
+            // Calculate effective rate and amounts
             const effRate = rateVal - discountVal;
             const baseAmount = areaVal * effRate;
             const plcAmount = baseAmount * (plcPercent / 100);
             const total = baseAmount + plcAmount;
             
+            // Update amount fields
             effectiveRate.value = effRate.toFixed(2);
+            baseAmountField.value = baseAmount.toFixed(2);
+            plcAmountField.value = plcAmount.toFixed(2);
             totalAmount.value = total.toFixed(2);
             
-            // Auto-calculate associate commission
-            // Formula: [(effectiveRate - associateRate) × area] + [associatePlcCommission% of (effectiveRate × area)]
+            // Auto-calculate associate commission breakdown
             if (brokerSelect.value) {
-                const baseCommission = (effRate - associateRateVal) * areaVal;
-                const plcCommission = baseAmount * (associatePlcPercent / 100);
-                const totalCommission = baseCommission + plcCommission;
-                brokerCommission.value = totalCommission > 0 ? totalCommission.toFixed(2) : '0.00';
+                const baseComm = Math.max(0, (effRate - associateRateVal) * areaVal);
+                const plcComm = baseAmount * (associatePlcPercent / 100);
+                const totalComm = baseComm + plcComm;
+                
+                baseCommissionField.value = baseComm.toFixed(2);
+                plcCommissionField.value = plcComm.toFixed(2);
+                brokerCommission.value = totalComm.toFixed(2);
             } else {
+                baseCommissionField.value = '0.00';
+                plcCommissionField.value = '0.00';
                 brokerCommission.value = '0.00';
             }
         }
