@@ -7,7 +7,14 @@ const { Op } = require('sequelize');
 // List all brokers
 router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const { search, showDeleted, paymentDateFrom = '', paymentDateTo = '' } = req.query;
+        const { 
+            search, 
+            showDeleted, 
+            paymentDateFrom = '', 
+            paymentDateTo = '',
+            sortBy = 'createdAt',
+            sortOrder = 'desc'
+        } = req.query;
         const whereClause = {};
 
         // By default, hide deleted brokers
@@ -24,9 +31,31 @@ router.get('/', isAuthenticated, async (req, res) => {
             ];
         }
 
+        // Determine sort column
+        let orderColumn = 'createdAt';
+        let orderDirection = sortOrder === 'asc' ? 'ASC' : 'DESC';
+        
+        switch(sortBy) {
+            case 'brokerNo':
+                orderColumn = 'brokerNo';
+                break;
+            case 'name':
+                orderColumn = 'name';
+                break;
+            case 'mobile':
+                orderColumn = 'mobileNo';
+                break;
+            case 'email':
+                orderColumn = 'email';
+                break;
+            // For payments, we'll sort in memory after calculating totals
+            default:
+                orderColumn = 'createdAt';
+        }
+
         const brokers = await Broker.findAll({
             where: whereClause,
-            order: [['createdAt', 'DESC']]
+            order: sortBy !== 'payments' ? [[orderColumn, orderDirection]] : [['createdAt', 'DESC']]
         });
 
         // Calculate cumulative statistics for all brokers
@@ -120,6 +149,17 @@ router.get('/', isAuthenticated, async (req, res) => {
             broker.totalPayments = brokerPaymentsMap[broker.id] || 0;
         });
 
+        // Sort by payments if requested
+        if (sortBy === 'payments') {
+            brokers.sort((a, b) => {
+                if (sortOrder === 'asc') {
+                    return a.totalPayments - b.totalPayments;
+                } else {
+                    return b.totalPayments - a.totalPayments;
+                }
+            });
+        }
+
         const commissionRemaining = totalCommission - totalCommissionPaid;
         const commissionRemainingRegistered = totalCommissionRegistered - totalCommissionPaid;
 
@@ -145,6 +185,8 @@ router.get('/', isAuthenticated, async (req, res) => {
             showDeleted: showDeleted === 'true',
             paymentDateFrom: paymentDateFrom,
             paymentDateTo: paymentDateTo,
+            sortBy: sortBy,
+            sortOrder: sortOrder,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
