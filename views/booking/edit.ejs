@@ -131,7 +131,7 @@
                                     <input type="number" class="form-control bg-light" name="brokerCommission" id="brokerCommission" 
                                            value="<%= parseFloat(booking.brokerCommission || 0) %>" 
                                            step="0.01" min="0" readonly>
-                                    <div class="form-text">Auto-calculated: (Associate Rate - Rate) × Area</div>
+                                    <div class="form-text">Auto-calculated: (Rate - Associate Rate) × Area</div>
                                 </div>
                             </div>
                             
@@ -208,10 +208,10 @@
             effectiveRate.value = effRate.toFixed(2);
             totalAmount.value = total.toFixed(2);
             
-            // Auto-calculate associate commission: (associateRate - rate) * area
+            // Auto-calculate associate commission: (rate - associateRate) * area
             // Calculate if associate is selected, regardless of field order
             if (brokerSelect.value) {
-                const commission = (associateRateVal - rateVal) * areaVal;
+                const commission = (rateVal - associateRateVal) * areaVal;
                 brokerCommission.value = commission > 0 ? commission.toFixed(2) : '0.00';
             } else {
                 brokerCommission.value = '0.00';

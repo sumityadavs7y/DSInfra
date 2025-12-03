@@ -193,12 +193,12 @@ router.post('/create', isAuthenticated, async (req, res) => {
             });
         }
         
-        // Auto-calculate broker commission: (associateRate - rate) * area
+        // Auto-calculate broker commission: (rate - associateRate) * area
         const areaVal = parseFloat(area) || 0;
         const rateVal = parseFloat(rate) || 0;
         const associateRateVal = parseFloat(associateRate) || 0;
         const brokerCommission = brokerId && associateRateVal > 0 
-            ? Math.max(0, (associateRateVal - rateVal) * areaVal) 
+            ? Math.max(0, (rateVal - associateRateVal) * areaVal) 
             : 0;
 
         // Generate booking number
@@ -410,12 +410,12 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         const effectiveRate = parseFloat(rate) - (parseFloat(discount) || 0);
         const totalAmount = (parseFloat(area) * effectiveRate) + (parseFloat(plc) || 0);
         
-        // Auto-calculate broker commission: (associateRate - rate) * area
+        // Auto-calculate broker commission: (rate - associateRate) * area
         const areaVal = parseFloat(area) || 0;
         const rateVal = parseFloat(rate) || 0;
         const associateRateVal = parseFloat(associateRate) || 0;
         const brokerCommission = brokerId && associateRateVal > 0 
-            ? Math.max(0, (associateRateVal - rateVal) * areaVal) 
+            ? Math.max(0, (rateVal - associateRateVal) * areaVal) 
             : 0;
 
         // Calculate remaining amount from payments
