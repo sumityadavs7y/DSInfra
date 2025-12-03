@@ -83,7 +83,7 @@ function numberToWords(num) {
 }
 
 function isDevEnvMode(){
-    return envConfig.envMode === 'dev';
+    return envConfig.envMode === 'development';
 }
 
 module.exports = {

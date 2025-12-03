@@ -209,7 +209,8 @@
             totalAmount.value = total.toFixed(2);
             
             // Auto-calculate broker commission: (associateRate - rate) * area
-            if (brokerSelect.value && associateRateVal > 0) {
+            // Calculate if broker is selected, regardless of field order
+            if (brokerSelect.value) {
                 const commission = (associateRateVal - rateVal) * areaVal;
                 brokerCommission.value = commission > 0 ? commission.toFixed(2) : '0.00';
             } else {
