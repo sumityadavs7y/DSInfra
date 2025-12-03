@@ -230,7 +230,8 @@ body {
 .btn-outline-danger,
 .btn-outline-warning,
 .btn-outline-info,
-.btn-outline-dark {
+.btn-outline-dark,
+.btn-outline-secondary {
     background: white !important;
     border: 2px solid currentColor !important;
     font-weight: 600;
@@ -254,6 +255,12 @@ body {
     color: white !important;
 }
 
+.btn-outline-warning:hover {
+    background: var(--warning-gradient) !important;
+    border-color: transparent !important;
+    color: white !important;
+}
+
 .btn-outline-info:hover {
     background: var(--info-gradient) !important;
     border-color: transparent !important;
@@ -262,6 +269,12 @@ body {
 
 .btn-outline-dark:hover {
     background: var(--dark-gradient) !important;
+    border-color: transparent !important;
+    color: white !important;
+}
+
+.btn-outline-secondary:hover {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
     border-color: transparent !important;
     color: white !important;
 }
