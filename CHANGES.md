@@ -233,3 +233,4 @@ npm run migrate:run
 
 Your project now has a robust, production-ready database migration system that will prevent the data loss and errors that were occurring with `sequelize.sync()`. All future database changes should be made through migrations!
 
+
