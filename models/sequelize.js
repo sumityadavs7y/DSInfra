@@ -1,16 +1,38 @@
 const { Sequelize } = require('sequelize');
 const { databaseConfig } = require('../config');
 
-// Initialize Sequelize with SQLite
-const sequelize = new Sequelize({
+// Initialize Sequelize with PostgreSQL or SQLite
+const sequelizeConfig = {
   dialect: databaseConfig.dialect,
-  storage: databaseConfig.storage,
   logging: databaseConfig.logging,
   define: {
     timestamps: true, // Adds createdAt and updatedAt fields
     underscored: false, // Use camelCase instead of snake_case
   },
-});
+};
+
+// Add PostgreSQL specific configuration
+if (databaseConfig.dialect === 'postgres') {
+  sequelizeConfig.host = databaseConfig.host;
+  sequelizeConfig.port = databaseConfig.port;
+  sequelizeConfig.database = databaseConfig.database;
+  sequelizeConfig.username = databaseConfig.username;
+  sequelizeConfig.password = databaseConfig.password;
+  sequelizeConfig.pool = databaseConfig.pool;
+  
+  // PostgreSQL specific options
+  sequelizeConfig.dialectOptions = {
+    ssl: process.env.DB_SSL === 'true' ? {
+      require: true,
+      rejectUnauthorized: false
+    } : false
+  };
+} else if (databaseConfig.dialect === 'sqlite') {
+  // SQLite specific configuration
+  sequelizeConfig.storage = databaseConfig.storage;
+}
+
+const sequelize = new Sequelize(sequelizeConfig);
 
 // Test database connection
 const testConnection = async () => {
@@ -23,14 +45,18 @@ const testConnection = async () => {
 };
 
 // Sync database models
-// Note: Using sync without alter to preserve data in SQLite
-// alter: true can cause data loss in SQLite as it recreates tables
-const syncDatabase = async (force = false) => {
+// Note: For production, consider using migrations instead of sync
+// alter: true can modify existing columns, force: true will drop all tables
+const syncDatabase = async (force = false, alter = false) => {
   try {
     if (force) {
       // Only use force if explicitly requested (will delete all data!)
       await sequelize.sync({ force: true });
       console.log('✅ Database synchronized (FORCE - tables recreated).');
+    } else if (alter) {
+      // Alter existing tables to match models (may cause data loss)
+      await sequelize.sync({ alter: true });
+      console.log('✅ Database synchronized (ALTER - tables updated).');
     } else {
       // Safe sync - only creates missing tables, doesn't alter existing ones
       await sequelize.sync();
@@ -38,6 +64,7 @@ const syncDatabase = async (force = false) => {
     }
   } catch (error) {
     console.error('❌ Error synchronizing database:', error);
+    throw error;
   }
 };
 
