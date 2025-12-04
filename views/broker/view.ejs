@@ -106,19 +106,19 @@
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="p-3">
-                                    <h2 class="text-success mb-1"><%= stats.activeBookings %></h2>
-                                    <small class="text-muted">Active Bookings</small>
+                                    <h2 class="text-success mb-1"><%= stats.registeredBookingsCount %></h2>
+                                    <small class="text-muted">Registered Bookings</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="p-3">
-                                    <h2 class="text-danger mb-1"><%= stats.cancelledBookings %></h2>
-                                    <small class="text-muted">Cancelled</small>
+                                    <h2 class="text-warning mb-1"><%= stats.nonRegisteredBookingsCount %></h2>
+                                    <small class="text-muted">Unregistered Bookings</small>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="p-3">
-                                    <h2 class="text-warning mb-1">₹<%= stats.totalCommission.toLocaleString('en-IN') %></h2>
+                                    <h2 class="text-info mb-1">₹<%= stats.totalCommission.toLocaleString('en-IN') %></h2>
                                     <small class="text-muted">Total Commission</small>
                                 </div>
                             </div>
