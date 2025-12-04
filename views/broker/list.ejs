@@ -267,21 +267,25 @@
                                             <% } %>
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="/broker/<%= broker.id %>" class="btn btn-dark">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="/broker/<%= broker.id %>" class="btn btn-outline-dark" title="View Associate">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 <% if (!broker.isDeleted) { %>
-                                                <a href="/broker/<%= broker.id %>/edit" class="btn btn-warning">
+                                                <a href="/broker/<%= broker.id %>/edit" class="btn btn-outline-primary" title="Edit Associate">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <% if (userRole === 'admin') { %>
-                                                <form method="POST" action="/broker/<%= broker.id %>/delete" style="display:inline;" 
-                                                      onsubmit="return confirm('Delete this associate? (Bookings will remain intact)');">
-                                                    <button type="submit" class="btn btn-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-outline-danger" title="Delete Associate"
+                                                        onclick="if(confirm('Delete this associate? (Bookings will remain intact)')) { 
+                                                            const form = document.createElement('form'); 
+                                                            form.method = 'POST'; 
+                                                            form.action = '/broker/<%= broker.id %>/delete'; 
+                                                            document.body.appendChild(form); 
+                                                            form.submit(); 
+                                                        }">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                                 <% } %>
                                                 <% } %>
                                             </div>

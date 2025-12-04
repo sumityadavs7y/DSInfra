@@ -70,6 +70,33 @@ body {
     text-decoration: none !important;
 }
 
+/* Perfect button group styling for outline buttons */
+.btn-group .btn {
+    position: relative;
+    border-right-width: 0 !important;
+}
+
+.btn-group .btn:last-child {
+    border-right-width: 1px !important;
+}
+
+.btn-group .btn:hover,
+.btn-group .btn:focus,
+.btn-group .btn:active {
+    z-index: 1;
+    border-right-width: 1px !important;
+}
+
+.btn-group .btn:hover + .btn,
+.btn-group .btn:focus + .btn,
+.btn-group .btn:active + .btn {
+    border-left-width: 0 !important;
+}
+
+.btn-group-sm .btn {
+    border-width: 1px;
+}
+
 .nav-link {
     font-weight: 500;
     transition: var(--transition-fast);

@@ -214,20 +214,24 @@
                                             <% } %>
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="/booking/<%= booking.id %>" class="btn btn-primary">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="/booking/<%= booking.id %>" class="btn btn-outline-dark" title="View Booking">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 <% if (!booking.isDeleted) { %>
-                                                <a href="/booking/<%= booking.id %>/edit" class="btn btn-warning">
+                                                <a href="/booking/<%= booking.id %>/edit" class="btn btn-outline-primary" title="Edit Booking">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                <form method="POST" action="/booking/<%= booking.id %>/delete" style="display:inline;" 
-                                                      onsubmit="return confirm('Delete this booking? This will also delete all related payments.');">
-                                                    <button type="submit" class="btn btn-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-outline-danger" title="Delete Booking"
+                                                        onclick="if(confirm('Delete this booking? This will also delete all related payments.')) { 
+                                                            const form = document.createElement('form'); 
+                                                            form.method = 'POST'; 
+                                                            form.action = '/booking/<%= booking.id %>/delete'; 
+                                                            document.body.appendChild(form); 
+                                                            form.submit(); 
+                                                        }">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                                 <% } %>
                                             </div>
                                         </td>

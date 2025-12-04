@@ -104,23 +104,27 @@
                                             <% } %>
                                         </td>
                                         <td>
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="/payment/<%= payment.id %>" class="btn btn-success">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <a href="/payment/<%= payment.id %>" class="btn btn-outline-dark" title="View Payment">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                                 <% if (!payment.isDeleted) { %>
-                                                <a href="/payment/<%= payment.id %>/edit" class="btn btn-warning">
+                                                <a href="/payment/<%= payment.id %>/edit" class="btn btn-outline-primary" title="Edit Payment">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                <a href="/payment/<%= payment.id %>/pdf" class="btn btn-danger">
+                                                <a href="/payment/<%= payment.id %>/pdf" class="btn btn-outline-info" title="Download PDF">
                                                     <i class="bi bi-file-pdf"></i>
                                                 </a>
-                                                <form method="POST" action="/payment/<%= payment.id %>/delete" style="display:inline;" 
-                                                      onsubmit="return confirm('Delete this payment?');">
-                                                    <button type="submit" class="btn btn-danger">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-outline-danger" title="Delete Payment"
+                                                        onclick="if(confirm('Delete this payment?')) { 
+                                                            const form = document.createElement('form'); 
+                                                            form.method = 'POST'; 
+                                                            form.action = '/payment/<%= payment.id %>/delete'; 
+                                                            document.body.appendChild(form); 
+                                                            form.submit(); 
+                                                        }">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                                 <% } %>
                                             </div>
                                         </td>
