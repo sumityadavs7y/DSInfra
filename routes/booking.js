@@ -348,6 +348,57 @@ router.get('/:id', isAuthenticated, async (req, res) => {
     }
 });
 
+// Generate booking slip (printable)
+router.get('/:id/slip', isAuthenticated, async (req, res) => {
+    try {
+        const booking = await Booking.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Customer,
+                    as: 'customer'
+                },
+                {
+                    model: Project,
+                    as: 'project'
+                },
+                {
+                    model: Broker,
+                    as: 'broker'
+                },
+                {
+                    model: User,
+                    as: 'creator',
+                    attributes: ['name']
+                }
+            ]
+        });
+
+        if (!booking) {
+            return res.status(404).send('Booking not found');
+        }
+
+        // Get all payments for this booking
+        const payments = await Payment.findAll({
+            where: { bookingId: booking.id, isDeleted: false },
+            order: [['receiptDate', 'ASC']]
+        });
+
+        // Calculate total paid from all payments
+        const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
+
+        res.render('booking/slip', {
+            booking,
+            payments,
+            totalPaid,
+            userName: req.session.userName,
+            userRole: req.session.userRole
+        });
+    } catch (error) {
+        console.error('Error generating booking slip:', error);
+        res.status(500).send('Error generating booking slip');
+    }
+});
+
 // Show edit booking form
 router.get('/:id/edit', isAuthenticated, async (req, res) => {
     try {

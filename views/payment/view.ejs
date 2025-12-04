@@ -17,6 +17,17 @@
         actionIcon: 'bi-pencil'
     }) %>
 
+    <!-- Action Buttons -->
+    <div class="container my-3">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                <a href="/payment/<%= payment.id %>/slip" target="_blank" class="btn btn-success">
+                    <i class="bi bi-printer"></i> Print Payment Receipt
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div class="container my-4">
         <div class="row justify-content-center">
             <div class="col-12 col-xl-10">

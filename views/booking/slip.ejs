@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Slip - <%= booking.bookingNo %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .print-container {
+                box-shadow: none !important;
+                margin: 0;
+                padding: 15px 20px;
+            }
+            .header-section {
+                display: none !important;
+            }
+        }
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Arial', sans-serif;
+            font-size: 12px;
+        }
+        .print-container {
+            max-width: 800px;
+            margin: 10px auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header-section {
+            text-align: center;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+        .company-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin-bottom: 3px;
+        }
+        .document-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-top: 8px;
+            text-decoration: underline;
+        }
+        .info-row {
+            display: flex;
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 11px;
+        }
+        .info-label {
+            font-weight: bold;
+            min-width: 140px;
+            color: #555;
+        }
+        .info-value {
+            flex: 1;
+            color: #333;
+        }
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #0d6efd;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            padding-bottom: 3px;
+            border-bottom: 1.5px solid #0d6efd;
+        }
+        .amount-highlight {
+            font-size: 15px;
+            font-weight: bold;
+            color: #198754;
+        }
+        .footer-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 10px;
+        }
+        .signature-box {
+            margin-top: 25px;
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 180px;
+            margin: 0 auto;
+            padding-top: 3px;
+            font-size: 10px;
+        }
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        table {
+            font-size: 10px;
+        }
+        table th, table td {
+            padding: 4px !important;
+        }
+        @page {
+            margin: 25mm 15mm 20mm 15mm;
+            size: A4;
+        }
+    </style>
+</head>
+<body>
+    <!-- Print Button -->
+    <button onclick="window.print()" class="btn btn-primary no-print print-button">
+        <i class="bi bi-printer"></i> Print
+    </button>
+
+    <div class="print-container">
+        <!-- Header -->
+        <div class="header-section">
+            <div class="company-name">DS INFRA DEVELOPERS</div>
+            <div style="font-size: 14px; color: #666;">Lucknow</div>
+            <div class="document-title">BOOKING SLIP</div>
+        </div>
+
+        <!-- Booking Information -->
+        <div class="info-row">
+            <div class="info-label">Booking No:</div>
+            <div class="info-value"><strong><%= booking.bookingNo %></strong></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Booking Date:</div>
+            <div class="info-value">
+                <%= new Date(booking.bookingDate).toLocaleDateString('en-IN', { 
+                    year: 'numeric', month: 'long', day: 'numeric'
+                }) %>
+            </div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Status:</div>
+            <div class="info-value">
+                <strong><%= booking.status %></strong>
+                <% if (booking.registryCompleted) { %>
+                    | Registry Completed
+                    <% if (booking.registryDate) { %>
+                        on <%= new Date(booking.registryDate).toLocaleDateString('en-IN') %>
+                    <% } %>
+                <% } else { %>
+                    | Registry Pending
+                <% } %>
+            </div>
+        </div>
+
+        <!-- Customer Details -->
+        <div class="section-title">Customer Details</div>
+        <div class="info-row">
+            <div class="info-label">Customer No:</div>
+            <div class="info-value"><%= booking.customer.customerNo %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Name:</div>
+            <div class="info-value"><strong><%= booking.customer.applicantName %></strong></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Father/Husband Name:</div>
+            <div class="info-value"><%= booking.customer.fatherOrHusbandName %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Mobile No:</div>
+            <div class="info-value"><%= booking.customer.mobileNo %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Aadhaar No:</div>
+            <div class="info-value"><%= booking.customer.aadhaarNo %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Address:</div>
+            <div class="info-value"><%= booking.customer.address %></div>
+        </div>
+
+        <!-- Property Details -->
+        <div class="section-title">Property Details</div>
+        <div class="info-row">
+            <div class="info-label">Project:</div>
+            <div class="info-value"><strong><%= booking.project.projectName %></strong></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Plot No:</div>
+            <div class="info-value"><strong style="font-size: 18px; color: #0d6efd;"><%= booking.plotNo %></strong></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Area:</div>
+            <div class="info-value"><%= booking.area %> sq. ft.</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Rate per sq. ft.:</div>
+            <div class="info-value">₹<%= parseFloat(booking.rate).toLocaleString('en-IN') %></div>
+        </div>
+
+        <!-- Financial Details -->
+        <div class="section-title">Financial Details</div>
+        <div class="info-row">
+            <div class="info-label">Total Amount:</div>
+            <div class="info-value amount-highlight">₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Total Paid:</div>
+            <div class="info-value" style="color: #198754; font-weight: bold;">₹<%= totalPaid.toLocaleString('en-IN') %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Balance Due:</div>
+            <div class="info-value" style="color: #dc3545; font-weight: bold;">₹<%= (parseFloat(booking.totalAmount) - totalPaid).toLocaleString('en-IN') %></div>
+        </div>
+
+        <% if (booking.broker) { %>
+        <!-- Broker Details -->
+        <div class="section-title">Broker Details</div>
+        <div class="info-row">
+            <div class="info-label">Broker Name:</div>
+            <div class="info-value"><%= booking.broker.name %></div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Broker Commission:</div>
+            <div class="info-value">₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %></div>
+        </div>
+        <% } %>
+
+        <% if (payments && payments.length > 0) { %>
+        <!-- Payment History -->
+        <div class="section-title">Payment History</div>
+        <table class="table table-sm table-bordered">
+            <thead>
+                <tr style="background-color: #f8f9fa;">
+                    <th>Receipt No</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Mode</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% payments.forEach(payment => { %>
+                <tr>
+                    <td><%= payment.receiptNo %></td>
+                    <td><%= new Date(payment.receiptDate).toLocaleDateString('en-IN') %></td>
+                    <td>₹<%= parseFloat(payment.paymentAmount).toLocaleString('en-IN') %></td>
+                    <td><%= payment.paymentType %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+        <% } %>
+
+        <% if (booking.remarks) { %>
+        <!-- Remarks -->
+        <div class="section-title">Remarks</div>
+        <div style="padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+            <%= booking.remarks %>
+        </div>
+        <% } %>
+
+        <!-- Footer -->
+        <div class="footer-section">
+            <div class="row">
+                <div class="col-6">
+                    <small class="text-muted">
+                        Generated on: <%= new Date().toLocaleString('en-IN') %><br>
+                        Generated by: <%= userName %>
+                    </small>
+                </div>
+                <div class="col-6">
+                    <div class="signature-box">
+                        <div class="signature-line">Authorized Signature</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
