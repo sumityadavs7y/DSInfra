@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Employee</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <%- include('../partials/page-header', { 
+        title: 'Add New Employee', 
+        icon: 'bi-person-plus', 
+        backUrl: '/employee'
+    }) %>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                <% if (errors && errors.length > 0) { %>
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            <% errors.forEach(error => { %>
+                                <li><%= error %></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                <% } %>
+
+                <form method="POST" action="/employee/create">
+                    <!-- Personal Information -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-person-badge"></i> Personal Information</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="firstName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="lastName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" name="email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Phone <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" name="phone" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Alternate Phone</label>
+                                    <input type="tel" class="form-control" name="alternatePhone">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Date of Birth</label>
+                                    <input type="date" class="form-control" name="dateOfBirth">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Gender</label>
+                                    <select class="form-select" name="gender">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" name="address" rows="2"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">City</label>
+                                    <input type="text" class="form-control" name="city">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">State</label>
+                                    <input type="text" class="form-control" name="state">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Pincode</label>
+                                    <input type="text" class="form-control" name="pincode">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employment Information -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-briefcase"></i> Employment Information</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Department <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="department" required>
+                                        <option value="">Select Department</option>
+                                        <% if (typeof departments !== 'undefined' && departments.length > 0) { %>
+                                            <% departments.forEach(dept => { %>
+                                                <option value="<%= dept %>"><%= dept %></option>
+                                            <% }); %>
+                                        <% } %>
+                                        <option value="Sales">Sales</option>
+                                        <option value="Operations">Operations</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="HR">HR</option>
+                                        <option value="Finance">Finance</option>
+                                        <option value="IT">IT</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Customer Service">Customer Service</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Designation <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="designation" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Joining Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="joiningDate" required value="<%= new Date().toISOString().split('T')[0] %>">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Employment Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="employmentType" required>
+                                        <option value="Full-Time" selected>Full-Time</option>
+                                        <option value="Part-Time">Part-Time</option>
+                                        <option value="Contract">Contract</option>
+                                        <option value="Intern">Intern</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Basic Salary (₹) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" name="basicSalary" step="0.01" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" name="status">
+                                        <option value="Active" selected>Active</option>
+                                        <option value="On Leave">On Leave</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bank & Government IDs -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-warning">
+                            <h5 class="mb-0"><i class="bi bi-bank"></i> Bank & Government IDs</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Aadhaar Number</label>
+                                    <input type="text" class="form-control" name="aadhaarNumber" maxlength="12" pattern="[0-9]{12}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">PAN Number</label>
+                                    <input type="text" class="form-control" name="panNumber" maxlength="10" style="text-transform: uppercase;">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Bank Name</label>
+                                    <input type="text" class="form-control" name="bankName">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Account Number</label>
+                                    <input type="text" class="form-control" name="accountNumber">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">IFSC Code</label>
+                                    <input type="text" class="form-control" name="ifscCode" style="text-transform: uppercase;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="bi bi-telephone-fill"></i> Emergency Contact</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Contact Name</label>
+                                    <input type="text" class="form-control" name="emergencyContactName">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Contact Phone</label>
+                                    <input type="tel" class="form-control" name="emergencyContactPhone">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Relation</label>
+                                    <input type="text" class="form-control" name="emergencyContactRelation" placeholder="e.g., Father, Spouse">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <label class="form-label">Remarks</label>
+                            <textarea class="form-control" name="remarks" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <a href="/employee" class="btn btn-secondary btn-lg me-2">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Add Employee
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

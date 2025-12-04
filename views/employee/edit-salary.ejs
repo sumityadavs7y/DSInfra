@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Salary</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <%- include('../partials/page-header', { 
+        title: 'Edit Salary Record', 
+        icon: 'bi-pencil-square', 
+        backUrl: '/employee/' + employee.id + '/salary'
+    }) %>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                <% if (errors && errors.length > 0) { %>
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            <% errors.forEach(error => { %>
+                                <li><%= error %></li>
+                            <% }); %>
+                        </ul>
+                    </div>
+                <% } %>
+
+                <form method="POST" action="/employee/<%= employee.id %>/salary/<%= salary.id %>/edit" id="salaryForm">
+                    <!-- Employee Info -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body">
+                            <h5><%= employee.firstName %> <%= employee.lastName %></h5>
+                            <p class="text-muted mb-0"><%= employee.employeeNo %> | <%= employee.department %> - <%= employee.designation %></p>
+                        </div>
+                    </div>
+
+                    <!-- Month/Year & Attendance -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-calendar3"></i> Period & Attendance</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Month</label>
+                                    <input type="text" class="form-control" value="<%= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][salary.month - 1] %>" readonly>
+                                    <input type="hidden" name="month" value="<%= salary.month %>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Year</label>
+                                    <input type="text" class="form-control" value="<%= salary.year %>" readonly>
+                                    <input type="hidden" name="year" value="<%= salary.year %>">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Present Days</label>
+                                    <input type="number" class="form-control" name="presentDays" value="<%= salary.presentDays %>" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Absent Days</label>
+                                    <input type="number" class="form-control" name="absentDays" value="<%= salary.absentDays %>" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Paid Days</label>
+                                    <input type="number" class="form-control" name="paidDays" value="<%= salary.paidDays %>" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Earnings -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Earnings</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Basic Salary</label>
+                                    <input type="number" class="form-control earnings" name="basicSalary" step="0.01" value="<%= salary.basicSalary %>" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">HRA</label>
+                                    <input type="number" class="form-control earnings" name="hra" step="0.01" value="<%= salary.hra %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Transport Allowance</label>
+                                    <input type="number" class="form-control earnings" name="transportAllowance" step="0.01" value="<%= salary.transportAllowance %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Meal Allowance</label>
+                                    <input type="number" class="form-control earnings" name="mealAllowance" step="0.01" value="<%= salary.mealAllowance %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Other Allowances</label>
+                                    <input type="number" class="form-control earnings" name="otherAllowances" step="0.01" value="<%= salary.otherAllowances %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Overtime Pay</label>
+                                    <input type="number" class="form-control earnings" name="overtimePay" step="0.01" value="<%= salary.overtimePay %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Bonus</label>
+                                    <input type="number" class="form-control earnings" name="bonus" step="0.01" value="<%= salary.bonus %>">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Deductions -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="bi bi-dash-circle"></i> Deductions</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Provident Fund</label>
+                                    <input type="number" class="form-control deductions" name="providentFund" step="0.01" value="<%= salary.providentFund %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Professional Tax</label>
+                                    <input type="number" class="form-control deductions" name="professionalTax" step="0.01" value="<%= salary.professionalTax %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">TDS</label>
+                                    <input type="number" class="form-control deductions" name="tds" step="0.01" value="<%= salary.tds %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Loan Deduction</label>
+                                    <input type="number" class="form-control deductions" name="loanDeduction" step="0.01" value="<%= salary.loanDeduction %>">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Other Deductions</label>
+                                    <input type="number" class="form-control deductions" name="otherDeductions" step="0.01" value="<%= salary.otherDeductions %>">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Details -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-warning">
+                            <h5 class="mb-0"><i class="bi bi-credit-card"></i> Payment Details</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Payment Status</label>
+                                    <select class="form-select" name="paymentStatus" required>
+                                        <option value="Pending" <%= salary.paymentStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                        <option value="Paid" <%= salary.paymentStatus === 'Paid' ? 'selected' : '' %>>Paid</option>
+                                        <option value="On-Hold" <%= salary.paymentStatus === 'On-Hold' ? 'selected' : '' %>>On-Hold</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Payment Mode</label>
+                                    <select class="form-select" name="paymentMode">
+                                        <option value="">Select Mode</option>
+                                        <option value="Bank Transfer" <%= salary.paymentMode === 'Bank Transfer' ? 'selected' : '' %>>Bank Transfer</option>
+                                        <option value="Cash" <%= salary.paymentMode === 'Cash' ? 'selected' : '' %>>Cash</option>
+                                        <option value="Cheque" <%= salary.paymentMode === 'Cheque' ? 'selected' : '' %>>Cheque</option>
+                                        <option value="UPI" <%= salary.paymentMode === 'UPI' ? 'selected' : '' %>>UPI</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Payment Date</label>
+                                    <input type="date" class="form-control" name="paymentDate" value="<%= salary.paymentDate ? new Date(salary.paymentDate).toISOString().split('T')[0] : '' %>">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Transaction Reference</label>
+                                    <input type="text" class="form-control" name="transactionReference" value="<%= salary.transactionReference || '' %>">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0"><i class="bi bi-receipt"></i> Salary Summary</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-success bg-opacity-10 border border-success rounded">
+                                        <label class="text-muted small">Gross Salary</label>
+                                        <h4 class="text-success mb-0" id="grossSalary">₹0.00</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-danger bg-opacity-10 border border-danger rounded">
+                                        <label class="text-muted small">Total Deductions</label>
+                                        <h4 class="text-danger mb-0" id="totalDeductions">₹0.00</h4>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-4 bg-primary bg-opacity-10 border border-primary rounded">
+                                        <label class="text-muted small">Net Salary (Take Home)</label>
+                                        <h3 class="text-primary mb-0 fw-bold" id="netSalary">₹0.00</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control" name="remarks" rows="2"><%= salary.remarks || '' %></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-end">
+                        <a href="/employee/<%= employee.id %>/salary" class="btn btn-secondary btn-lg me-2">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Update Salary
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function calculateSalary() {
+            // Earnings
+            const basicSalary = parseFloat(document.querySelector('[name="basicSalary"]').value) || 0;
+            const hra = parseFloat(document.querySelector('[name="hra"]').value) || 0;
+            const transport = parseFloat(document.querySelector('[name="transportAllowance"]').value) || 0;
+            const meal = parseFloat(document.querySelector('[name="mealAllowance"]').value) || 0;
+            const otherAllow = parseFloat(document.querySelector('[name="otherAllowances"]').value) || 0;
+            const overtime = parseFloat(document.querySelector('[name="overtimePay"]').value) || 0;
+            const bonus = parseFloat(document.querySelector('[name="bonus"]').value) || 0;
+
+            // Deductions
+            const pf = parseFloat(document.querySelector('[name="providentFund"]').value) || 0;
+            const pt = parseFloat(document.querySelector('[name="professionalTax"]').value) || 0;
+            const tds = parseFloat(document.querySelector('[name="tds"]').value) || 0;
+            const loan = parseFloat(document.querySelector('[name="loanDeduction"]').value) || 0;
+            const otherDed = parseFloat(document.querySelector('[name="otherDeductions"]').value) || 0;
+
+            const gross = basicSalary + hra + transport + meal + otherAllow + overtime + bonus;
+            const deductions = pf + pt + tds + loan + otherDed;
+            const net = gross - deductions;
+
+            document.getElementById('grossSalary').textContent = '₹' + gross.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('totalDeductions').textContent = '₹' + deductions.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('netSalary').textContent = '₹' + net.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        // Add event listeners to all earnings and deductions fields
+        document.querySelectorAll('.earnings, .deductions').forEach(input => {
+            input.addEventListener('input', calculateSalary);
+        });
+
+        // Calculate on page load
+        calculateSalary();
+    </script>
+</body>
+</html>
+

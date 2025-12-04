@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employees - DS Infra Developers</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .table-dark th {
+            background-color: #212529 !important;
+        }
+        .employee-photo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <%- include('../partials/page-header', { 
+        title: 'Employee Management', 
+        icon: 'bi-people-fill', 
+        backUrl: '/dashboard', 
+        actionUrl: '/employee/create', 
+        actionText: 'Add Employee', 
+        actionIcon: 'bi-person-plus'
+    }) %>
+
+    <div class="container my-4">
+        <!-- Search & Filter -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <form method="GET" action="/employee">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Search by name, email, phone..." value="<%= search %>">
+                        </div>
+                        <div class="col-12 col-md-3">
+                            <select class="form-select" name="department">
+                                <option value="">All Departments</option>
+                                <% departments.forEach(dept => { %>
+                                    <option value="<%= dept %>" <%= department === dept ? 'selected' : '' %>><%= dept %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <select class="form-select" name="status">
+                                <option value="">All Status</option>
+                                <option value="Active" <%= status === 'Active' ? 'selected' : '' %>>Active</option>
+                                <option value="On Leave" <%= status === 'On Leave' ? 'selected' : '' %>>On Leave</option>
+                                <option value="Resigned" <%= status === 'Resigned' ? 'selected' : '' %>>Resigned</option>
+                                <option value="Terminated" <%= status === 'Terminated' ? 'selected' : '' %>>Terminated</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="showDeleted" 
+                                       id="showDeleted" value="true" <%= showDeleted ? 'checked' : '' %>>
+                                <label class="form-check-label" for="showDeleted">
+                                    Show Deleted
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-1">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="h2 fw-bold text-primary"><%= employees.filter(e => e.status === 'Active' && !e.isDeleted).length %></h3>
+                        <p class="text-muted small mb-0">Active Employees</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="h2 fw-bold text-info"><%= departments.length %></h3>
+                        <p class="text-muted small mb-0">Departments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="h2 fw-bold text-warning"><%= employees.filter(e => e.status === 'On Leave').length %></h3>
+                        <p class="text-muted small mb-0">On Leave</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <h3 class="h2 fw-bold text-danger"><%= employees.filter(e => ['Resigned', 'Terminated'].includes(e.status)).length %></h3>
+                        <p class="text-muted small mb-0">Resigned/Terminated</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employee Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <% if (employees.length === 0) { %>
+                    <div class="text-center py-5">
+                        <i class="bi bi-people fs-1 text-muted"></i>
+                        <p class="text-muted mt-3">No employees found</p>
+                        <a href="/employee/create" class="btn btn-primary">Add First Employee</a>
+                    </div>
+                <% } else { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Employee No</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Department</th>
+                                    <th>Designation</th>
+                                    <th class="text-center">Joining Date</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% employees.forEach(employee => { %>
+                                    <tr class="<%= employee.isDeleted ? 'table-secondary' : '' %>">
+                                        <td>
+                                            <strong><%= employee.employeeNo %></strong>
+                                        </td>
+                                        <td>
+                                            <%= employee.firstName %> <%= employee.lastName %>
+                                        </td>
+                                        <td><%= employee.email %></td>
+                                        <td><%= employee.phone %></td>
+                                        <td><span class="badge bg-info"><%= employee.department %></span></td>
+                                        <td><%= employee.designation %></td>
+                                        <td class="text-center">
+                                            <%= new Date(employee.joiningDate).toLocaleDateString('en-IN') %>
+                                        </td>
+                                        <td class="text-center">
+                                            <% if (employee.isDeleted) { %>
+                                                <span class="badge bg-secondary">Deleted</span>
+                                            <% } else { %>
+                                                <span class="badge bg-<%= employee.status === 'Active' ? 'success' : employee.status === 'On Leave' ? 'warning' : 'danger' %>">
+                                                    <%= employee.status %>
+                                                </span>
+                                            <% } %>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="/employee/<%= employee.id %>" class="btn btn-outline-dark" title="View Details">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <% if (!employee.isDeleted) { %>
+                                                <a href="/employee/<%= employee.id %>/edit" class="btn btn-outline-primary" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } %>
+            </div>
+            <% if (employees.length > 0) { %>
+            <div class="card-footer bg-light text-muted text-center">
+                <i class="bi bi-info-circle"></i> Showing <%= employees.length %> employee(s)
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

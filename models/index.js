@@ -11,6 +11,10 @@ const Payment = require('./Payment');
 const BrokerPayment = require('./BrokerPayment');
 const Team = require('./Team');
 const TeamAssociate = require('./TeamAssociate');
+const Employee = require('./Employee');
+const Attendance = require('./Attendance');
+const EmployeeSalary = require('./EmployeeSalary');
+const EmployeeDocument = require('./EmployeeDocument');
 
 // Define relationships
 User.hasMany(Customer, { foreignKey: 'createdBy', as: 'customers' });
@@ -74,6 +78,28 @@ TeamAssociate.belongsTo(Team, { foreignKey: 'teamId', as: 'team' });
 Broker.hasMany(TeamAssociate, { foreignKey: 'brokerId', as: 'teamMemberships' });
 TeamAssociate.belongsTo(Broker, { foreignKey: 'brokerId', as: 'associate' });
 
+// Employee relationships
+User.hasMany(Employee, { foreignKey: 'createdBy', as: 'employees' });
+Employee.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+Employee.hasMany(Attendance, { foreignKey: 'employeeId', as: 'attendanceRecords' });
+Attendance.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+
+User.hasMany(Attendance, { foreignKey: 'markedBy', as: 'markedAttendance' });
+Attendance.belongsTo(User, { foreignKey: 'markedBy', as: 'marker' });
+
+Employee.hasMany(EmployeeSalary, { foreignKey: 'employeeId', as: 'salaries' });
+EmployeeSalary.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+
+User.hasMany(EmployeeSalary, { foreignKey: 'processedBy', as: 'processedSalaries' });
+EmployeeSalary.belongsTo(User, { foreignKey: 'processedBy', as: 'processor' });
+
+Employee.hasMany(EmployeeDocument, { foreignKey: 'employeeId', as: 'documents' });
+EmployeeDocument.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' });
+
+User.hasMany(EmployeeDocument, { foreignKey: 'uploadedBy', as: 'uploadedEmployeeDocuments' });
+EmployeeDocument.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploader' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -89,5 +115,9 @@ module.exports = {
   Payment,
   BrokerPayment,
   Team,
-  TeamAssociate
+  TeamAssociate,
+  Employee,
+  Attendance,
+  EmployeeSalary,
+  EmployeeDocument
 };

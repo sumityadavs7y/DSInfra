@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary - <%= employee.firstName %> <%= employee.lastName %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <%- include('../partials/page-header', { 
+        title: 'Salary Management', 
+        icon: 'bi-cash-stack', 
+        backUrl: '/employee/' + employee.id,
+        actionUrl: '/employee/' + employee.id + '/salary/process',
+        actionText: 'Process Salary',
+        actionIcon: 'bi-plus-circle'
+    }) %>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-10">
+                <!-- Employee Info -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="bi bi-person-badge"></i> <%= employee.firstName %> <%= employee.lastName %></h5>
+                                <p class="text-muted mb-0"><%= employee.employeeNo %></p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <p class="mb-0"><strong>Department:</strong> <%= employee.department %></p>
+                                <p class="mb-0"><strong>Basic Salary:</strong> <span class="text-success">₹<%= parseFloat(employee.basicSalary).toLocaleString('en-IN') %></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Salary Records -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Salary Records</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <% if (salaries.length === 0) { %>
+                            <div class="text-center py-5">
+                                <i class="bi bi-cash-stack fs-1 text-muted"></i>
+                                <p class="text-muted mt-3">No salary records found</p>
+                                <a href="/employee/<%= employee.id %>/salary/process" class="btn btn-success">
+                                    Process First Salary
+                                </a>
+                            </div>
+                        <% } else { %>
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Month/Year</th>
+                                            <th>Present Days</th>
+                                            <th>Gross Salary</th>
+                                            <th>Deductions</th>
+                                            <th>Net Salary</th>
+                                            <th>Payment Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% salaries.forEach(salary => { %>
+                                        <tr>
+                                            <td><strong><%= ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][salary.month - 1] %> <%= salary.year %></strong></td>
+                                            <td><%= salary.presentDays %>/<%= salary.paidDays %></td>
+                                            <td class="text-success">₹<%= parseFloat(salary.grossSalary).toLocaleString('en-IN') %></td>
+                                            <td class="text-danger">-₹<%= parseFloat(salary.totalDeductions).toLocaleString('en-IN') %></td>
+                                            <td class="fw-bold text-primary">₹<%= parseFloat(salary.netSalary).toLocaleString('en-IN') %></td>
+                                            <td><%= salary.paymentDate ? new Date(salary.paymentDate).toLocaleDateString('en-IN') : '-' %></td>
+                                            <td>
+                                                <span class="badge bg-<%= salary.paymentStatus === 'Paid' ? 'success' : salary.paymentStatus === 'Pending' ? 'warning' : 'secondary' %>">
+                                                    <%= salary.paymentStatus %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="/employee/<%= employee.id %>/salary/<%= salary.id %>/edit" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
