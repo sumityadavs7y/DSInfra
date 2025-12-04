@@ -33,19 +33,25 @@
     <div class="container my-4">
         <div class="row justify-content-center">
             <div class="col-lg-8">
+                <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <strong>Error:</strong> <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <% } %>
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <form action="/team/create" method="POST" id="teamForm">
                             <!-- Team Name -->
                             <div class="mb-3">
                                 <label for="name" class="form-label fw-bold">Team Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" id="name" name="name" required>
+                                <input type="text" class="form-control" id="name" name="name" value="<%= typeof formData !== 'undefined' ? formData.name : '' %>" required>
                             </div>
 
                             <!-- Description -->
                             <div class="mb-4">
                                 <label for="description" class="form-label fw-bold">Description</label>
-                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter team description (optional)"></textarea>
+                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter team description (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
                             </div>
 
                             <!-- Associates Selection -->
@@ -68,11 +74,13 @@
                                     <div class="row g-2" id="associatesContainer">
                                         <% brokers.forEach(broker => { %>
                                             <div class="col-md-6">
-                                                <div class="associate-checkbox">
+                                                <div class="associate-checkbox <%= broker.alreadyInTeam ? 'opacity-50' : '' %>">
                                                     <div class="form-check">
                                                         <input class="form-check-input associate-checkbox-input" type="checkbox" 
                                                                name="associateIds[]" value="<%= broker.id %>" 
-                                                               id="broker_<%= broker.id %>">
+                                                               id="broker_<%= broker.id %>"
+                                                               <%= broker.alreadyInTeam ? 'disabled' : '' %>
+                                                               <%= (typeof formData !== 'undefined' && formData.associateIds && formData.associateIds.includes(broker.id.toString())) ? 'checked' : '' %>>
                                                         <label class="form-check-label w-100" for="broker_<%= broker.id %>">
                                                             <div class="d-flex justify-content-between align-items-center">
                                                                 <div>
@@ -81,6 +89,12 @@
                                                                     <small class="text-muted">
                                                                         <%= broker.brokerNo %> | <%= broker.mobileNo %>
                                                                     </small>
+                                                                    <% if (broker.alreadyInTeam && broker.currentTeam) { %>
+                                                                        <br>
+                                                                        <small class="text-danger">
+                                                                            <i class="bi bi-info-circle"></i> Already in <%= broker.currentTeam.name %>
+                                                                        </small>
+                                                                    <% } %>
                                                                 </div>
                                                             </div>
                                                         </label>

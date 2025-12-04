@@ -85,9 +85,35 @@ router.get('/', isAuthenticated, async (req, res) => {
 router.get('/create', isAuthenticated, async (req, res) => {
     try {
         // Get all active brokers
-        const brokers = await Broker.findAll({
+        const allBrokers = await Broker.findAll({
             where: { isDeleted: false, isActive: true },
             order: [['name', 'ASC']]
+        });
+
+        // Get brokers already in active teams
+        const associatesInTeams = await TeamAssociate.findAll({
+            where: { isActive: true },
+            include: [
+                {
+                    model: Team,
+                    as: 'team',
+                    where: { isDeleted: false },
+                    attributes: ['id', 'name', 'teamNo']
+                }
+            ],
+            attributes: ['brokerId']
+        });
+
+        const brokerIdsInTeams = associatesInTeams.map(ta => ta.brokerId);
+
+        // Filter out brokers already in teams and add a flag
+        const brokers = allBrokers.map(broker => {
+            const inTeam = associatesInTeams.find(ta => ta.brokerId === broker.id);
+            return {
+                ...broker.toJSON(),
+                alreadyInTeam: !!inTeam,
+                currentTeam: inTeam ? inTeam.team : null
+            };
         });
 
         res.render('team/create', {
@@ -107,6 +133,52 @@ router.post('/create', isAuthenticated, async (req, res) => {
         // Handle both associateIds and associateIds[] from form submission
         const associateIds = req.body.associateIds || req.body['associateIds[]'];
 
+        // Validate that selected associates are not already in other teams
+        if (associateIds) {
+            const ids = Array.isArray(associateIds) ? associateIds : [associateIds];
+            
+            // Check if any of the selected associates are already in other teams
+            const existingTeamAssociates = await TeamAssociate.findAll({
+                where: {
+                    brokerId: { [Op.in]: ids.map(id => parseInt(id)) },
+                    isActive: true
+                },
+                include: [
+                    {
+                        model: Team,
+                        as: 'team',
+                        where: { isDeleted: false },
+                        attributes: ['id', 'name', 'teamNo']
+                    },
+                    {
+                        model: Broker,
+                        as: 'associate',
+                        attributes: ['id', 'name', 'brokerNo']
+                    }
+                ]
+            });
+
+            if (existingTeamAssociates.length > 0) {
+                // Get all brokers for the form
+                const brokers = await Broker.findAll({
+                    where: { isDeleted: false, isActive: true },
+                    order: [['name', 'ASC']]
+                });
+
+                // Build error message
+                const conflicts = existingTeamAssociates.map(ta => 
+                    `${ta.associate.name} (${ta.associate.brokerNo}) is already in team "${ta.team.name}" (${ta.team.teamNo})`
+                ).join(', ');
+
+                return res.render('team/create', {
+                    brokers,
+                    user: req.session,
+                    error: `Cannot create team: ${conflicts}. An associate can only be in one team at a time.`,
+                    formData: { name, description, associateIds: ids }
+                });
+            }
+        }
+
         // Create team
         const team = await Team.create({
             name,
@@ -115,7 +187,6 @@ router.post('/create', isAuthenticated, async (req, res) => {
         });
 
         // Add associates to team
-        // Handle both single value and array
         if (associateIds) {
             const ids = Array.isArray(associateIds) ? associateIds : [associateIds];
             for (const brokerId of ids) {
@@ -160,9 +231,36 @@ router.get('/edit/:id', isAuthenticated, async (req, res) => {
             order: [['name', 'ASC']]
         });
 
+        // Get brokers already in OTHER active teams
+        const associatesInOtherTeams = await TeamAssociate.findAll({
+            where: { 
+                isActive: true,
+                teamId: { [Op.ne]: team.id } // Exclude current team
+            },
+            include: [
+                {
+                    model: Team,
+                    as: 'team',
+                    where: { isDeleted: false },
+                    attributes: ['id', 'name', 'teamNo']
+                }
+            ],
+            attributes: ['brokerId']
+        });
+
+        // Mark brokers that are in other teams
+        const brokers = allBrokers.map(broker => {
+            const inOtherTeam = associatesInOtherTeams.find(ta => ta.brokerId === broker.id);
+            return {
+                ...broker.toJSON(),
+                alreadyInTeam: !!inOtherTeam,
+                currentTeam: inOtherTeam ? inOtherTeam.team : null
+            };
+        });
+
         res.render('team/edit', {
             team,
-            allBrokers,
+            allBrokers: brokers,
             user: req.session
         });
     } catch (error) {
@@ -178,9 +276,68 @@ router.post('/edit/:id', isAuthenticated, async (req, res) => {
         // Handle both associateIds and associateIds[] from form submission
         const associateIds = req.body.associateIds || req.body['associateIds[]'];
         
-        const team = await Team.findByPk(req.params.id);
+        const team = await Team.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Broker,
+                    as: 'associates',
+                    through: { 
+                        attributes: ['role', 'joinedDate', 'isActive', 'id']
+                    }
+                }
+            ]
+        });
+        
         if (!team) {
             return res.status(404).send('Team not found');
+        }
+
+        // Validate that selected associates are not already in other teams (excluding current team)
+        if (associateIds) {
+            const ids = Array.isArray(associateIds) ? associateIds : [associateIds];
+            
+            // Check if any of the selected associates are already in OTHER teams
+            const existingTeamAssociates = await TeamAssociate.findAll({
+                where: {
+                    brokerId: { [Op.in]: ids.map(id => parseInt(id)) },
+                    teamId: { [Op.ne]: team.id }, // Exclude current team
+                    isActive: true
+                },
+                include: [
+                    {
+                        model: Team,
+                        as: 'team',
+                        where: { isDeleted: false },
+                        attributes: ['id', 'name', 'teamNo']
+                    },
+                    {
+                        model: Broker,
+                        as: 'associate',
+                        attributes: ['id', 'name', 'brokerNo']
+                    }
+                ]
+            });
+
+            if (existingTeamAssociates.length > 0) {
+                // Get all brokers for the form
+                const allBrokers = await Broker.findAll({
+                    where: { isDeleted: false, isActive: true },
+                    order: [['name', 'ASC']]
+                });
+
+                // Build error message
+                const conflicts = existingTeamAssociates.map(ta => 
+                    `${ta.associate.name} (${ta.associate.brokerNo}) is already in team "${ta.team.name}" (${ta.team.teamNo})`
+                ).join(', ');
+
+                return res.render('team/edit', {
+                    team,
+                    allBrokers,
+                    user: req.session,
+                    error: `Cannot update team: ${conflicts}. An associate can only be in one team at a time.`,
+                    formData: { name, description, associateIds: ids }
+                });
+            }
         }
 
         // Update team details
@@ -191,7 +348,6 @@ router.post('/edit/:id', isAuthenticated, async (req, res) => {
         await TeamAssociate.destroy({ where: { teamId: team.id } });
 
         // Add new associations
-        // Handle both single value and array
         if (associateIds) {
             const ids = Array.isArray(associateIds) ? associateIds : [associateIds];
             for (const brokerId of ids) {
