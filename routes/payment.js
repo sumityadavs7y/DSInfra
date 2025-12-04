@@ -148,9 +148,11 @@ router.post('/create', isAuthenticated, async (req, res) => {
             });
         }
 
-        // Generate receipt number
-        const paymentCount = await Payment.count();
-        const receiptNo = `RCP${new Date().getFullYear()}${String(paymentCount + 1).padStart(5, '0')}`;
+        // Generate receipt number in format: DSPAY/IN/XXXX (e.g., DSPAY/IN/1025)
+        // The last 4 digits are globally incrementing (starting from 1001)
+        const paymentCount = await Payment.count({ paranoid: false });
+        const receiptNumber = 1001 + paymentCount;
+        const receiptNo = `DSPAY/IN/${String(receiptNumber).padStart(4, '0')}`;
 
         // Calculate new balance
         const newBalance = currentBalance - amount;
