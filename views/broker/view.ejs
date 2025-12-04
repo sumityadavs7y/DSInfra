@@ -55,41 +55,97 @@
                     </div>
                     <div class="card-body p-4">
                         <div class="row g-4">
-                            <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">Name</label>
-                                <p class="h5 mb-0"><%= broker.name %></p>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">Mobile</label>
-                                <p class="h5 mb-0"><%= broker.mobileNo %></p>
-                            </div>
-                            <% if (broker.email) { %>
-                            <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">Email</label>
-                                <p class="h5 mb-0"><%= broker.email %></p>
+                            <!-- Photo Column -->
+                            <% if (broker.photo) { %>
+                            <div class="col-12 col-md-3 text-center">
+                                <label class="text-muted small fw-semibold text-uppercase d-block mb-2">Photo</label>
+                                <img src="<%= broker.photo %>" alt="<%= broker.name %>" 
+                                     class="img-fluid rounded border shadow-sm" 
+                                     style="max-width: 200px; height: auto; cursor: pointer;"
+                                     data-bs-toggle="modal" data-bs-target="#photoModal">
                             </div>
                             <% } %>
-                            <% if (broker.aadhaarNo) { %>
-                            <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">Aadhaar</label>
-                                <p class="h5 mb-0"><%= broker.aadhaarNo %></p>
+                            
+                            <!-- Details Column -->
+                            <div class="col-12 <%= broker.photo ? 'col-md-9' : '' %>">
+                                <div class="row g-4">
+                                    <div class="col-12 col-md-6">
+                                        <label class="text-muted small fw-semibold text-uppercase">Name</label>
+                                        <p class="h5 mb-0"><%= broker.name %></p>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="text-muted small fw-semibold text-uppercase">Mobile</label>
+                                        <p class="h5 mb-0"><%= broker.mobileNo %></p>
+                                    </div>
+                                    <% if (broker.email) { %>
+                                    <div class="col-12 col-md-6">
+                                        <label class="text-muted small fw-semibold text-uppercase">Email</label>
+                                        <p class="h5 mb-0"><%= broker.email %></p>
+                                    </div>
+                                    <% } %>
+                                    <% if (broker.aadhaarNo) { %>
+                                    <div class="col-12 col-md-6">
+                                        <label class="text-muted small fw-semibold text-uppercase">Aadhaar</label>
+                                        <p class="h5 mb-0"><%= broker.aadhaarNo %></p>
+                                    </div>
+                                    <% } %>
+                                    <% if (broker.panNo) { %>
+                                    <div class="col-12 col-md-6">
+                                        <label class="text-muted small fw-semibold text-uppercase">PAN</label>
+                                        <p class="h5 mb-0"><%= broker.panNo %></p>
+                                    </div>
+                                    <% } %>
+                                    <% if (broker.address) { %>
+                                    <div class="col-12">
+                                        <label class="text-muted small fw-semibold text-uppercase">Address</label>
+                                        <p class="h5 mb-0"><%= broker.address %></p>
+                                    </div>
+                                    <% } %>
+                                </div>
                             </div>
-                            <% } %>
-                            <% if (broker.panNo) { %>
-                            <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">PAN</label>
-                                <p class="h5 mb-0"><%= broker.panNo %></p>
-                            </div>
-                            <% } %>
-                            <% if (broker.address) { %>
-                            <div class="col-12">
-                                <label class="text-muted small fw-semibold text-uppercase">Address</label>
-                                <p class="h5 mb-0"><%= broker.address %></p>
-                            </div>
-                            <% } %>
                         </div>
                     </div>
                 </div>
+
+                <!-- Documents Card -->
+                <% if (broker.brokerDocuments && broker.brokerDocuments.length > 0) { %>
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0"><i class="bi bi-folder2-open"></i> Documents (<%= broker.brokerDocuments.length %>)</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-2">
+                            <% broker.brokerDocuments.forEach((doc, index) => { %>
+                                <div class="col-12 col-sm-6 col-md-4">
+                                    <div class="card h-100 border">
+                                        <div class="card-body p-3">
+                                            <div class="d-flex align-items-start">
+                                                <div class="flex-shrink-0">
+                                                    <% if (doc.fileType === 'application/pdf') { %>
+                                                        <i class="bi bi-file-pdf fs-1 text-danger"></i>
+                                                    <% } else { %>
+                                                        <i class="bi bi-file-image fs-1 text-primary"></i>
+                                                    <% } %>
+                                                </div>
+                                                <div class="flex-grow-1 ms-2">
+                                                    <h6 class="mb-1 small"><%= doc.fileName %></h6>
+                                                    <p class="text-muted small mb-2">
+                                                        <%= (doc.fileSize / 1024).toFixed(1) %> KB
+                                                    </p>
+                                                    <button type="button" class="btn btn-sm btn-outline-dark" 
+                                                            onclick="viewDocument(<%= index %>)">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
 
                 <!-- Statistics Card -->
                 <div class="card border-0 shadow-sm mb-4">
@@ -548,8 +604,81 @@
         </div>
     </div>
 
+    <!-- Photo Modal -->
+    <% if (broker.photo) { %>
+    <div class="modal fade" id="photoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-circle"></i> <%= broker.name %> - Photo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="<%= broker.photo %>" alt="<%= broker.name %>" class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- Document Viewer Modal -->
+    <div class="modal fade" id="documentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentModalTitle"><i class="bi bi-file-earmark"></i> Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center" id="documentModalBody">
+                    <!-- Document content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Store documents data
+        const documentsData = <%- JSON.stringify(broker.brokerDocuments || []) %>;
+
+        // View document function
+        function viewDocument(index) {
+            const doc = documentsData[index];
+            const modalTitle = document.getElementById('documentModalTitle');
+            const modalBody = document.getElementById('documentModalBody');
+            
+            modalTitle.innerHTML = `<i class="bi bi-file-earmark"></i> ${doc.fileName}`;
+            
+            if (doc.fileType === 'application/pdf') {
+                // Display PDF in iframe
+                modalBody.innerHTML = `
+                    <iframe src="${doc.fileData}" 
+                            style="width: 100%; height: 70vh; border: none;" 
+                            type="application/pdf">
+                    </iframe>
+                    <div class="mt-3">
+                        <a href="${doc.fileData}" download="${doc.fileName}" class="btn btn-primary">
+                            <i class="bi bi-download"></i> Download PDF
+                        </a>
+                    </div>
+                `;
+            } else {
+                // Display image
+                modalBody.innerHTML = `
+                    <img src="${doc.fileData}" alt="${doc.fileName}" class="img-fluid rounded">
+                    <div class="mt-3">
+                        <a href="${doc.fileData}" download="${doc.fileName}" class="btn btn-primary">
+                            <i class="bi bi-download"></i> Download Image
+                        </a>
+                    </div>
+                `;
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('documentModal'));
+            modal.show();
+        }
+
         // Handle form submission
         document.getElementById('brokerPaymentForm').addEventListener('submit', async function(e) {
             e.preventDefault();

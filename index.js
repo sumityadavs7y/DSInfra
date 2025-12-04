@@ -34,19 +34,19 @@ app.set('views', 'views');
 
 // Auto-login middleware (for development only)
 app.use(async (req, res, next) => {
-    // if (isDevEnvMode() && !req.session.userId) {
-    //     try {
-    //         const admin = await User.findOne({ where: { email: 'admin@example.com' } });
-    //         if (admin) {
-    //             req.session.userId = admin.id;
-    //             req.session.userName = admin.name;
-    //             req.session.userEmail = admin.email;
-    //             req.session.userRole = admin.role;
-    //         }
-    //     } catch (error) {
-    //         // Silently fail - will require manual login
-    //     }
-    // }
+    if (isDevEnvMode() && !req.session.userId) {
+        try {
+            const admin = await User.findOne({ where: { email: 'admin@example.com' } });
+            if (admin) {
+                req.session.userId = admin.id;
+                req.session.userName = admin.name;
+                req.session.userEmail = admin.email;
+                req.session.userRole = admin.role;
+            }
+        } catch (error) {
+            // Silently fail - will require manual login
+        }
+    }
     next();
 });
 

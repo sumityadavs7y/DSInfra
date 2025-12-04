@@ -52,6 +52,31 @@ const Broker = sequelize.define('Broker', {
       len: [10, 10]
     }
   },
+  photo: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Base64 encoded photo'
+  },
+  documents: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    get() {
+      const rawValue = this.getDataValue('documents');
+      if (!rawValue || rawValue === '' || rawValue === 'null') {
+        return [];
+      }
+      try {
+        return JSON.parse(rawValue);
+      } catch (error) {
+        console.error('Error parsing documents JSON:', error);
+        return [];
+      }
+    },
+    set(value) {
+      this.setDataValue('documents', JSON.stringify(value || []));
+    },
+    comment: 'JSON array of documents'
+  },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true

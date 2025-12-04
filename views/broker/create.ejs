@@ -31,7 +31,7 @@
                             </div>
                         <% } %>
                         
-                        <form method="POST" action="/broker/create">
+                        <form method="POST" action="/broker/create" enctype="multipart/form-data">
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
@@ -56,6 +56,23 @@
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Address</label>
                                     <textarea class="form-control" name="address" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <hr>
+                                    <h6 class="fw-semibold mb-3"><i class="bi bi-paperclip"></i> Attachments</h6>
+                                </div>
+                                
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-person-circle"></i> Photo</label>
+                                    <input type="file" class="form-control" name="photo" accept="image/*">
+                                    <small class="text-muted">Maximum size: 5MB</small>
+                                </div>
+                                
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-file-earmark-pdf"></i> Documents</label>
+                                    <input type="file" class="form-control" name="documents" accept="image/*,.pdf" multiple>
+                                    <small class="text-muted">Multiple files allowed (max 5MB each)</small>
                                 </div>
                             </div>
                             

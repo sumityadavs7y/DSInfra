@@ -4,6 +4,7 @@ const { sequelize, Sequelize, testConnection, syncDatabase } = require('./sequel
 const User = require('./User');
 const Customer = require('./Customer');
 const Broker = require('./Broker');
+const BrokerDocument = require('./BrokerDocument');
 const Project = require('./Project');
 const Booking = require('./Booking');
 const Payment = require('./Payment');
@@ -24,6 +25,12 @@ Booking.belongsTo(Broker, { foreignKey: 'brokerId', as: 'broker' });
 
 User.hasMany(Broker, { foreignKey: 'createdBy', as: 'brokers' });
 Broker.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+Broker.hasMany(BrokerDocument, { foreignKey: 'brokerId', as: 'brokerDocuments' });
+BrokerDocument.belongsTo(Broker, { foreignKey: 'brokerId', as: 'broker' });
+
+User.hasMany(BrokerDocument, { foreignKey: 'uploadedBy', as: 'uploadedDocuments' });
+BrokerDocument.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploader' });
 
 User.hasMany(Booking, { foreignKey: 'createdBy', as: 'bookings' });
 Booking.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
@@ -49,6 +56,7 @@ module.exports = {
   User,
   Customer,
   Broker,
+  BrokerDocument,
   Project,
   Booking,
   Payment,

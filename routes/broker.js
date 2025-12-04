@@ -1,8 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const { Broker, Booking, Customer, Project, User, BrokerPayment } = require('../models');
+const multer = require('multer');
+const { Broker, BrokerDocument, Booking, Customer, Project, User, BrokerPayment } = require('../models');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 const { Op } = require('sequelize');
+
+// Configure multer for file uploads (memory storage)
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024, // 5MB limit per file
+    },
+    fileFilter: (req, file, cb) => {
+        // Accept images and PDFs
+        if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only images and PDF files are allowed'));
+        }
+    }
+});
 
 // List all brokers
 router.get('/', isAuthenticated, async (req, res) => {
@@ -206,7 +224,10 @@ router.get('/create', isAuthenticated, (req, res) => {
 });
 
 // Create new broker
-router.post('/create', isAuthenticated, async (req, res) => {
+router.post('/create', isAuthenticated, upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'documents', maxCount: 10 }
+]), async (req, res) => {
     try {
         const { name, mobileNo, email, address, aadhaarNo, panNo } = req.body;
 
@@ -234,6 +255,14 @@ router.post('/create', isAuthenticated, async (req, res) => {
             }
         }
 
+        // Handle photo upload
+        let photoData = null;
+        if (req.files && req.files.photo && req.files.photo[0]) {
+            const photo = req.files.photo[0];
+            photoData = `data:${photo.mimetype};base64,${photo.buffer.toString('base64')}`;
+            console.log(`📸 Photo uploaded: ${photo.originalname} (${(photo.size / 1024).toFixed(1)} KB)`);
+        }
+
         const broker = await Broker.create({
             name,
             mobileNo,
@@ -241,8 +270,30 @@ router.post('/create', isAuthenticated, async (req, res) => {
             address,
             aadhaarNo: aadhaarNo || null,
             panNo: panNo || null,
+            photo: photoData,
             createdBy: req.session.userId
         });
+
+        // Handle documents upload to separate table
+        if (req.files && req.files.documents && req.files.documents.length > 0) {
+            const documentsToCreate = req.files.documents.map(doc => ({
+                brokerId: broker.id,
+                fileName: doc.originalname,
+                fileType: doc.mimetype,
+                fileSize: doc.size,
+                fileData: `data:${doc.mimetype};base64,${doc.buffer.toString('base64')}`,
+                uploadedAt: new Date(),
+                uploadedBy: req.session.userId
+            }));
+            
+            await BrokerDocument.bulkCreate(documentsToCreate);
+            console.log(`📄 Documents uploaded: ${documentsToCreate.length} files`);
+            documentsToCreate.forEach(doc => {
+                console.log(`  - ${doc.fileName} (${(doc.fileSize / 1024).toFixed(1)} KB)`);
+            });
+        }
+
+        console.log(`✅ Broker created with ID: ${broker.id}, Photo: ${broker.photo ? 'Yes' : 'No'}`);
 
         res.redirect(`/broker/${broker.id}`);
     } catch (error) {
@@ -264,6 +315,11 @@ router.get('/:id', isAuthenticated, async (req, res) => {
                     model: User,
                     as: 'creator',
                     attributes: ['name']
+                },
+                {
+                    model: BrokerDocument,
+                    as: 'brokerDocuments',
+                    order: [['uploadedAt', 'DESC']]
                 }
             ]
         });
@@ -393,7 +449,15 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 // Show edit broker form
 router.get('/:id/edit', isAuthenticated, async (req, res) => {
     try {
-        const broker = await Broker.findByPk(req.params.id);
+        const broker = await Broker.findByPk(req.params.id, {
+            include: [
+                {
+                    model: BrokerDocument,
+                    as: 'brokerDocuments',
+                    order: [['uploadedAt', 'DESC']]
+                }
+            ]
+        });
 
         if (!broker) {
             return res.status(404).send('Broker not found');
@@ -412,7 +476,10 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
 });
 
 // Update broker
-router.post('/:id/edit', isAuthenticated, async (req, res) => {
+router.post('/:id/edit', isAuthenticated, upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'documents', maxCount: 10 }
+]), async (req, res) => {
     try {
         const broker = await Broker.findByPk(req.params.id);
 
@@ -420,7 +487,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             return res.status(404).send('Broker not found');
         }
 
-        const { name, mobileNo, email, address, aadhaarNo, panNo, isActive } = req.body;
+        const { name, mobileNo, email, address, aadhaarNo, panNo, isActive, deletePhoto, deleteDocuments } = req.body;
 
         // Check if Aadhaar is being changed and already exists
         if (aadhaarNo && aadhaarNo !== broker.aadhaarNo) {
@@ -460,7 +527,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             }
         }
 
-        await broker.update({
+        // Prepare update data
+        const updateData = {
             name,
             mobileNo,
             email: email || null,
@@ -468,7 +536,50 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             aadhaarNo: aadhaarNo || null,
             panNo: panNo || null,
             isActive: isActive === 'true' || isActive === true || isActive === 'on'
-        });
+        };
+
+        // Handle photo update/delete
+        if (deletePhoto === 'true') {
+            updateData.photo = null;
+            console.log('🗑️ Deleting photo');
+        } else if (req.files && req.files.photo && req.files.photo[0]) {
+            const photo = req.files.photo[0];
+            updateData.photo = `data:${photo.mimetype};base64,${photo.buffer.toString('base64')}`;
+            console.log(`📸 Photo updated: ${photo.originalname} (${(photo.size / 1024).toFixed(1)} KB)`);
+        }
+
+        // Handle documents deletion from BrokerDocument table
+        if (deleteDocuments) {
+            const deleteIds = Array.isArray(deleteDocuments) ? deleteDocuments : [deleteDocuments];
+            const deleteCount = await BrokerDocument.destroy({
+                where: {
+                    id: deleteIds,
+                    brokerId: broker.id
+                }
+            });
+            console.log(`🗑️ Deleted ${deleteCount} documents (IDs: ${deleteIds.join(', ')})`);
+        }
+        
+        // Add new documents to BrokerDocument table
+        if (req.files && req.files.documents && req.files.documents.length > 0) {
+            const documentsToCreate = req.files.documents.map(doc => ({
+                brokerId: broker.id,
+                fileName: doc.originalname,
+                fileType: doc.mimetype,
+                fileSize: doc.size,
+                fileData: `data:${doc.mimetype};base64,${doc.buffer.toString('base64')}`,
+                uploadedAt: new Date(),
+                uploadedBy: req.session.userId
+            }));
+            
+            await BrokerDocument.bulkCreate(documentsToCreate);
+            console.log(`📄 Added new documents: ${documentsToCreate.length} files`);
+            documentsToCreate.forEach(doc => {
+                console.log(`  - ${doc.fileName} (${(doc.fileSize / 1024).toFixed(1)} KB)`);
+            });
+        }
+
+        await broker.update(updateData);
 
         res.redirect(`/broker/${broker.id}`);
     } catch (error) {

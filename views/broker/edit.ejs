@@ -31,7 +31,7 @@
                             </div>
                         <% } %>
                         
-                        <form method="POST" action="/broker/<%= broker.id %>/edit">
+                        <form method="POST" action="/broker/<%= broker.id %>/edit" enctype="multipart/form-data">
                             <div class="row g-3">
                                 <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Name <span class="text-danger">*</span></label>
@@ -63,6 +63,55 @@
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Address</label>
                                     <textarea class="form-control" name="address" rows="3"><%= broker.address || '' %></textarea>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <hr>
+                                    <h6 class="fw-semibold mb-3"><i class="bi bi-paperclip"></i> Attachments</h6>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold"><i class="bi bi-person-circle"></i> Photo</label>
+                                    <% if (broker.photo) { %>
+                                        <div class="mb-2">
+                                            <img src="<%= broker.photo %>" alt="Current Photo" style="max-width: 150px; height: auto;" class="rounded border">
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" name="deletePhoto" value="true" id="deletePhoto">
+                                                <label class="form-check-label text-danger" for="deletePhoto">
+                                                    Delete current photo
+                                                </label>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                    <input type="file" class="form-control" name="photo" accept="image/*">
+                                    <small class="text-muted">Upload new photo to replace existing (max 5MB)</small>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold"><i class="bi bi-file-earmark-pdf"></i> Documents</label>
+                                    <% if (broker.brokerDocuments && broker.brokerDocuments.length > 0) { %>
+                                        <div class="mb-2">
+                                            <div class="list-group mb-2">
+                                                <% broker.brokerDocuments.forEach((doc) => { %>
+                                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <i class="bi <%= doc.fileType === 'application/pdf' ? 'bi-file-pdf text-danger' : 'bi-file-image text-primary' %>"></i>
+                                                            <%= doc.fileName %>
+                                                            <small class="text-muted">(<%= (doc.fileSize / 1024).toFixed(1) %> KB)</small>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="deleteDocuments" value="<%= doc.id %>" id="deleteDoc<%= doc.id %>">
+                                                            <label class="form-check-label text-danger small" for="deleteDoc<%= doc.id %>">
+                                                                Delete
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                <% }) %>
+                                            </div>
+                                        </div>
+                                    <% } %>
+                                    <input type="file" class="form-control" name="documents" accept="image/*,.pdf" multiple>
+                                    <small class="text-muted">Upload additional documents (max 5MB each)</small>
                                 </div>
                             </div>
                             
