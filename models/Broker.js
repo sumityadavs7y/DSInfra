@@ -62,13 +62,20 @@ const Broker = sequelize.define('Broker', {
     allowNull: true,
     get() {
       const rawValue = this.getDataValue('documents');
-      if (!rawValue || rawValue === '' || rawValue === 'null') {
+      // Handle null, undefined, empty string, or the string 'null'
+      if (!rawValue || rawValue === '' || rawValue === 'null' || rawValue === 'undefined') {
         return [];
       }
+      // If it's already an array, return it
+      if (Array.isArray(rawValue)) {
+        return rawValue;
+      }
+      // Try to parse JSON
       try {
-        return JSON.parse(rawValue);
+        const parsed = JSON.parse(rawValue);
+        return Array.isArray(parsed) ? parsed : [];
       } catch (error) {
-        console.error('Error parsing documents JSON:', error);
+        // Silently return empty array for malformed JSON
         return [];
       }
     },
