@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <title>Create Team</title>
+    <style>
+        .associate-checkbox {
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .associate-checkbox:hover {
+            background-color: #f8f9fa;
+            border-color: #0d6efd;
+        }
+        .associate-checkbox input:checked ~ label {
+            font-weight: 600;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <%- include('../partials/page-header', { 
+        title: 'Create New Team', 
+        icon: 'bi-plus-circle',
+        backUrl: '/team',
+        actionUrl: null,
+        actionText: null,
+        actionIcon: null
+    }) %>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <form action="/team/create" method="POST" id="teamForm">
+                            <!-- Team Name -->
+                            <div class="mb-3">
+                                <label for="name" class="form-label fw-bold">Team Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label for="description" class="form-label fw-bold">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter team description (optional)"></textarea>
+                            </div>
+
+                            <!-- Associates Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Select Associates <span class="text-danger">*</span></label>
+                                <div class="mb-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllAssociates()">
+                                        <i class="bi bi-check-all"></i> Select All
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllAssociates()">
+                                        <i class="bi bi-x-circle"></i> Deselect All
+                                    </button>
+                                </div>
+                                
+                                <% if (brokers.length === 0) { %>
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle"></i> No active associates found. Please <a href="/broker/create">create an associate</a> first.
+                                    </div>
+                                <% } else { %>
+                                    <div class="row g-2" id="associatesContainer">
+                                        <% brokers.forEach(broker => { %>
+                                            <div class="col-md-6">
+                                                <div class="associate-checkbox">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input associate-checkbox-input" type="checkbox" 
+                                                               name="associateIds[]" value="<%= broker.id %>" 
+                                                               id="broker_<%= broker.id %>">
+                                                        <label class="form-check-label w-100" for="broker_<%= broker.id %>">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    <strong><%= broker.name %></strong>
+                                                                    <br>
+                                                                    <small class="text-muted">
+                                                                        <%= broker.brokerNo %> | <%= broker.mobileNo %>
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <% }); %>
+                                    </div>
+                                    <small class="text-muted mt-2 d-block">
+                                        <span id="selectedCount">0</span> associate(s) selected
+                                    </small>
+                                <% } %>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="/team" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Create Team
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function selectAllAssociates() {
+            document.querySelectorAll('.associate-checkbox-input').forEach(cb => cb.checked = true);
+            updateSelectedCount();
+        }
+
+        function deselectAllAssociates() {
+            document.querySelectorAll('.associate-checkbox-input').forEach(cb => cb.checked = false);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = document.querySelectorAll('.associate-checkbox-input:checked').length;
+            document.getElementById('selectedCount').textContent = count;
+        }
+
+        // Update count on checkbox change
+        document.querySelectorAll('.associate-checkbox-input').forEach(cb => {
+            cb.addEventListener('change', updateSelectedCount);
+        });
+
+        // Form validation
+        document.getElementById('teamForm').addEventListener('submit', function(e) {
+            const selectedCount = document.querySelectorAll('.associate-checkbox-input:checked').length;
+            if (selectedCount === 0) {
+                e.preventDefault();
+                alert('Please select at least one associate for the team.');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

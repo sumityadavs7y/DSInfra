@@ -61,6 +61,7 @@ const bookingRoutes = require('./routes/booking');
 const paymentRoutes = require('./routes/payment');
 const projectRoutes = require('./routes/project');
 const brokerPaymentRoutes = require('./routes/brokerPayment');
+const teamRoutes = require('./routes/team');
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
@@ -72,6 +73,7 @@ app.use('/booking', bookingRoutes);
 app.use('/payment', paymentRoutes);
 app.use('/project', projectRoutes);
 app.use('/broker-payment', brokerPaymentRoutes);
+app.use('/team', teamRoutes);
 
 // Initialize default data using scripts
 const initializeDefaultData = async () => {

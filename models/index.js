@@ -9,6 +9,8 @@ const Project = require('./Project');
 const Booking = require('./Booking');
 const Payment = require('./Payment');
 const BrokerPayment = require('./BrokerPayment');
+const Team = require('./Team');
+const TeamAssociate = require('./TeamAssociate');
 
 // Define relationships
 User.hasMany(Customer, { foreignKey: 'createdBy', as: 'customers' });
@@ -47,6 +49,31 @@ BrokerPayment.belongsTo(Broker, { foreignKey: 'brokerId', as: 'broker' });
 User.hasMany(BrokerPayment, { foreignKey: 'createdBy', as: 'brokerPayments' });
 BrokerPayment.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 
+// Team relationships
+User.hasMany(Team, { foreignKey: 'createdBy', as: 'teams' });
+Team.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+// Many-to-many relationship between Team and Broker through TeamAssociate
+Team.belongsToMany(Broker, { 
+  through: TeamAssociate, 
+  foreignKey: 'teamId', 
+  otherKey: 'brokerId',
+  as: 'associates' 
+});
+Broker.belongsToMany(Team, { 
+  through: TeamAssociate, 
+  foreignKey: 'brokerId', 
+  otherKey: 'teamId',
+  as: 'teams' 
+});
+
+// Direct access to join table
+Team.hasMany(TeamAssociate, { foreignKey: 'teamId', as: 'teamAssociates' });
+TeamAssociate.belongsTo(Team, { foreignKey: 'teamId', as: 'team' });
+
+Broker.hasMany(TeamAssociate, { foreignKey: 'brokerId', as: 'teamMemberships' });
+TeamAssociate.belongsTo(Broker, { foreignKey: 'brokerId', as: 'associate' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -60,5 +87,7 @@ module.exports = {
   Project,
   Booking,
   Payment,
-  BrokerPayment
+  BrokerPayment,
+  Team,
+  TeamAssociate
 };
