@@ -32,20 +32,14 @@
     </style>
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark shadow-sm">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center">
-                <a href="/dashboard" class="btn btn-outline-light btn-sm me-2">
-                    <i class="bi bi-arrow-left"></i> Back
-                </a>
-                <img src="/images/logo.png" alt="Logo" style="height: 30px; width: auto; margin-right: 10px;">
-                <span class="navbar-brand mb-0 h1">Associates</span>
-            </div>
-            <a href="/broker/create" class="btn btn-light">
-                <i class="bi bi-person-plus"></i> <span class="d-none d-sm-inline">New Associate</span>
-            </a>
-        </div>
-    </nav>
+    <%- include('../partials/page-header', { 
+        title: 'Associates', 
+        icon: 'bi-people-fill',
+        backUrl: '/dashboard',
+        actionUrl: '/broker/create',
+        actionText: 'New Associate',
+        actionIcon: 'bi-person-plus'
+    }) %>
 
     <div class="container my-4">
         <!-- Search & Filter -->

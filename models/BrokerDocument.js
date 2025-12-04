@@ -55,3 +55,7 @@ const BrokerDocument = sequelize.define('BrokerDocument', {
 
 module.exports = BrokerDocument;
 
+
+
+
+

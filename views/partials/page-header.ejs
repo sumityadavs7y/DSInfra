@@ -1,0 +1,81 @@
+<%
+/**
+ * Reusable Page Header Component
+ * 
+ * Parameters:
+ * - title: Page title (required)
+ * - icon: Bootstrap icon class (optional, e.g., 'bi-people-fill')
+ * - backUrl: URL for back button (optional, defaults to '/dashboard')
+ * - actionUrl: URL for primary action button (optional)
+ * - actionText: Text for primary action button (optional)
+ * - actionIcon: Icon for primary action button (optional, e.g., 'bi-plus-circle')
+ * - isDashboard: Set to true for dashboard mode with user menu (optional)
+ * - userName: User name for dashboard mode (optional)
+ * - userRole: User role for dashboard mode (optional)
+ */
+
+const headerIcon = typeof icon !== 'undefined' ? icon : '';
+const headerBackUrl = typeof backUrl !== 'undefined' ? backUrl : '/dashboard';
+const headerActionUrl = typeof actionUrl !== 'undefined' ? actionUrl : '';
+const headerActionText = typeof actionText !== 'undefined' ? actionText : '';
+const headerActionIcon = typeof actionIcon !== 'undefined' ? actionIcon : 'bi-plus-circle';
+const showDashboardMode = typeof isDashboard !== 'undefined' ? isDashboard : false;
+const headerUserName = typeof userName !== 'undefined' ? userName : '';
+const headerUserRole = typeof userRole !== 'undefined' ? userRole : '';
+%>
+
+<nav class="navbar <%= showDashboardMode ? 'navbar-expand-lg' : '' %> navbar-light shadow-sm" style="background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%); border-bottom: 3px solid #e0e0e0;">
+    <div class="container-fluid">
+        <% if (showDashboardMode) { %>
+            <!-- Dashboard Mode -->
+            <a class="navbar-brand d-flex align-items-center" href="/dashboard">
+                <img src="/images/logo.png" alt="Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                <span>
+                    <% if (headerIcon) { %>
+                        <i class="<%= headerIcon %>"></i>
+                    <% } %>
+                    <%= title %>
+                </span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="bi bi-person-circle"></i> <%= headerUserName %> 
+                            <span class="badge bg-dark text-white"><%= headerUserRole.toUpperCase() %></span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/auth/logout">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        <% } else { %>
+            <!-- Regular Page Mode -->
+            <div class="d-flex align-items-center">
+                <a href="<%= headerBackUrl %>" class="btn btn-outline-secondary btn-sm me-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <img src="/images/logo.png" alt="Logo" style="height: 30px; width: auto; margin-right: 10px;">
+                <span class="navbar-brand mb-0 h1">
+                    <% if (headerIcon) { %>
+                        <i class="<%= headerIcon %>"></i>
+                    <% } %>
+                    <%= title %>
+                </span>
+            </div>
+            <% if (headerActionUrl) { %>
+            <a href="<%= headerActionUrl %>" class="btn btn-dark">
+                <i class="<%= headerActionIcon %>"></i> 
+                <span class="d-none d-sm-inline"><%= headerActionText %></span>
+            </a>
+            <% } %>
+        <% } %>
+    </div>
+</nav>
+
