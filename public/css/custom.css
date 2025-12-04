@@ -24,13 +24,13 @@
 /* === GLOBAL STYLES === */
 body {
     font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #ffffff;
     min-height: 100vh;
 }
 
 /* === NAVBAR ENHANCEMENT === */
 .navbar {
-    background: var(--primary-gradient) !important;
+    /* background: var(--primary-gradient) !important; */
     box-shadow: var(--shadow-md);
     padding: 1rem 0;
     backdrop-filter: blur(10px);
@@ -46,6 +46,28 @@ body {
 .navbar-brand:hover {
     transform: scale(1.05);
     filter: brightness(1.1);
+}
+
+/* Remove zoom effect from dashboard navbar-brand */
+.navbar-brand.dashboard-brand-no-zoom:hover {
+    transform: none;
+    filter: none;
+}
+
+/* Logout button with border styling */
+.logout-btn-border:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+
+/* Remove underline from dashboard header nav links */
+.navbar.navbar-expand-lg .nav-link {
+    text-decoration: none !important;
+}
+
+.navbar.navbar-expand-lg .nav-link:hover {
+    text-decoration: none !important;
 }
 
 .nav-link {
