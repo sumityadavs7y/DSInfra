@@ -209,9 +209,27 @@ router.post('/create', isAuthenticated, async (req, res) => {
             brokerCommission = Math.max(0, baseCommission + plcCommission);
         }
 
-        // Generate booking number
-        const bookingCount = await Booking.count({ paranoid: false });
-        const bookingNo = `BK${new Date().getFullYear()}${String(bookingCount + 1).padStart(5, '0')}`;
+        // Generate booking number in format: DS/YY/MM-XXXX (e.g., DS/25/11-1145)
+        const bookingDateObj = bookingDate ? new Date(bookingDate) : new Date();
+        const year = bookingDateObj.getFullYear().toString().slice(-2); // Last 2 digits
+        const month = String(bookingDateObj.getMonth() + 1).padStart(2, '0');
+        
+        // Count bookings for this specific month to determine the next number
+        const startOfMonth = new Date(bookingDateObj.getFullYear(), bookingDateObj.getMonth(), 1);
+        const endOfMonth = new Date(bookingDateObj.getFullYear(), bookingDateObj.getMonth() + 1, 0, 23, 59, 59);
+        
+        const monthlyBookingCount = await Booking.count({
+            where: {
+                bookingDate: {
+                    [require('sequelize').Op.between]: [startOfMonth, endOfMonth]
+                }
+            },
+            paranoid: false
+        });
+        
+        // Start numbering from 1001
+        const bookingNumber = 1001 + monthlyBookingCount;
+        const bookingNo = `DS/${year}/${month}-${String(bookingNumber).padStart(4, '0')}`;
 
         // Create booking (with initial remainingAmount = totalAmount)
         const booking = await Booking.create({
