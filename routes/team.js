@@ -45,6 +45,17 @@ router.get('/', isAuthenticated, async (req, res) => {
         });
 
         // Calculate statistics for each team
+        const chartData = {
+            labels: [],
+            data: [],
+            colors: []
+        };
+
+        const colors = [
+            '#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', 
+            '#0dcaf0', '#fd7e14', '#20c997', '#d63384', '#6c757d'
+        ];
+
         for (const team of teams) {
             const associateIds = team.associates.map(a => a.id);
             
@@ -61,16 +72,26 @@ router.get('/', isAuthenticated, async (req, res) => {
                 team.dataValues.registeredBookings = bookings.filter(b => b.registryCompleted).length;
                 team.dataValues.unregisteredBookings = bookings.filter(b => !b.registryCompleted).length;
                 team.dataValues.totalCommission = bookings.reduce((sum, b) => sum + parseFloat(b.brokerCommission || 0), 0);
+                team.dataValues.totalArea = bookings.reduce((sum, b) => sum + parseFloat(b.area || 0), 0);
+                
+                // Add to chart data if team has area
+                if (team.dataValues.totalArea > 0 && !team.isDeleted) {
+                    chartData.labels.push(team.name);
+                    chartData.data.push(team.dataValues.totalArea);
+                    chartData.colors.push(colors[chartData.labels.length % colors.length]);
+                }
             } else {
                 team.dataValues.totalBookings = 0;
                 team.dataValues.registeredBookings = 0;
                 team.dataValues.unregisteredBookings = 0;
                 team.dataValues.totalCommission = 0;
+                team.dataValues.totalArea = 0;
             }
         }
 
         res.render('team/list', {
             teams,
+            chartData: JSON.stringify(chartData),
             search: search || '',
             showDeleted: showDeleted === 'true',
             user: req.session
@@ -403,7 +424,8 @@ router.get('/view/:id', isAuthenticated, async (req, res) => {
             totalCommissionRegistered: 0,
             totalCommissionUnregistered: 0,
             totalPaymentsMade: 0,
-            pendingCommission: 0
+            pendingCommission: 0,
+            totalArea: 0
         };
 
         let bookingsList = [];
@@ -447,6 +469,7 @@ router.get('/view/:id', isAuthenticated, async (req, res) => {
             stats.totalCommission = bookingsList.reduce((sum, b) => sum + parseFloat(b.brokerCommission || 0), 0);
             stats.totalCommissionRegistered = registeredBookings.reduce((sum, b) => sum + parseFloat(b.brokerCommission || 0), 0);
             stats.totalCommissionUnregistered = unregisteredBookings.reduce((sum, b) => sum + parseFloat(b.brokerCommission || 0), 0);
+            stats.totalArea = bookingsList.reduce((sum, b) => sum + parseFloat(b.area || 0), 0);
 
             // Get all broker payments for team associates
             const brokerPayments = await BrokerPayment.findAll({
