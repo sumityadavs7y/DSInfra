@@ -40,6 +40,7 @@
                                         <option value="">-- Select Booking --</option>
                                         <% bookings.forEach(booking => { %>
                                             <option value="<%= booking.id %>" 
+                                                <%= selectedBookingId === booking.id ? 'selected' : '' %>
                                                 data-booking-no="<%= booking.bookingNo %>"
                                                 data-customer="<%= booking.customer.applicantName %>"
                                                 data-project="<%= booking.project.projectName %>"
@@ -171,6 +172,13 @@
                 } else {
                     this.setCustomValidity('');
                 }
+            }
+        });
+        
+        // Trigger change event on page load if a booking is pre-selected
+        document.addEventListener('DOMContentLoaded', function() {
+            if (bookingSelect && bookingSelect.value) {
+                bookingSelect.dispatchEvent(new Event('change'));
             }
         });
     </script>

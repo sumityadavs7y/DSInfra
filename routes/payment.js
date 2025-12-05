@@ -60,6 +60,8 @@ router.get('/', isAuthenticated, getAccessibleBrokerIds, async (req, res) => {
 // Show create payment form
 router.get('/create', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
+        const { bookingId } = req.query;
+        
         // Get bookings with remaining balance (only non-deleted bookings)
         const bookings = await Booking.findAll({
             where: { 
@@ -74,8 +76,21 @@ router.get('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             order: [['bookingDate', 'DESC']]
         });
 
+        // If bookingId is provided, fetch the booking details
+        let selectedBooking = null;
+        if (bookingId) {
+            selectedBooking = await Booking.findByPk(bookingId, {
+                include: [
+                    { model: Customer, as: 'customer' },
+                    { model: Project, as: 'project' }
+                ]
+            });
+        }
+
         res.render('payment/create', {
             bookings,
+            selectedBookingId: bookingId ? parseInt(bookingId) : null,
+            selectedBooking,
             userName: req.session.userName,
             userRole: req.session.userRole,
             error: null
