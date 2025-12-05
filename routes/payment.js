@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { Payment, Booking, Customer, Project, User } = require('../models');
-const { isAuthenticated } = require('../middleware/auth');
+const { Payment, Booking, Customer, Project, User, Broker } = require('../models');
+const { isAuthenticated, isNotAssociate, getAccessibleBrokerIds } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 const { numberToWords } = require('../utils/helpers');
+const { Op } = require('sequelize');
 
 // List all payments
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', isAuthenticated, getAccessibleBrokerIds, async (req, res) => {
     try {
         const { showDeleted } = req.query;
         const whereClause = {};
@@ -16,15 +17,23 @@ router.get('/', isAuthenticated, async (req, res) => {
             whereClause.isDeleted = false;
         }
 
+        // Build booking filter for accessible brokers
+        const bookingWhere = {};
+        if (req.accessibleBrokerIds !== null) {
+            bookingWhere.brokerId = { [Op.in]: req.accessibleBrokerIds };
+        }
+
         const payments = await Payment.findAll({
             where: whereClause,
             include: [
                 {
                     model: Booking,
                     as: 'booking',
+                    where: bookingWhere,
                     include: [
                         { model: Customer, as: 'customer' },
-                        { model: Project, as: 'project' }
+                        { model: Project, as: 'project' },
+                        { model: Broker, as: 'broker' }
                     ]
                 },
                 {
@@ -49,7 +58,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 });
 
 // Show create payment form
-router.get('/create', isAuthenticated, async (req, res) => {
+router.get('/create', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         // Get bookings with remaining balance (only non-deleted bookings)
         const bookings = await Booking.findAll({
@@ -78,7 +87,7 @@ router.get('/create', isAuthenticated, async (req, res) => {
 });
 
 // Create new payment
-router.post('/create', isAuthenticated, async (req, res) => {
+router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
     const transaction = await require('../models').sequelize.transaction();
     
     try {
@@ -283,7 +292,7 @@ router.get('/:id/slip', isAuthenticated, async (req, res) => {
 });
 
 // Show edit payment form
-router.get('/:id/edit', isAuthenticated, async (req, res) => {
+router.get('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         const payment = await Payment.findByPk(req.params.id, {
             include: [
@@ -315,7 +324,7 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
 });
 
 // Update payment
-router.post('/:id/edit', isAuthenticated, async (req, res) => {
+router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
     const transaction = await require('../models').sequelize.transaction();
     
     try {
@@ -577,7 +586,7 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
 });
 
 // Delete Payment (Soft Delete)
-router.post('/:id/delete', isAuthenticated, async (req, res) => {
+router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         const payment = await Payment.findByPk(req.params.id);
         

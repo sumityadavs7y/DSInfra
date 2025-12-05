@@ -26,10 +26,15 @@
         <div class="card border-0 shadow-sm mb-4 animate-fade-in-up">
             <div class="card-body p-4">
                 <h2 class="h3 mb-2">Welcome back, <span class="text-gradient"><%= userName %></span>! 👋</h2>
-                <p class="text-muted mb-0">Here's what's happening with your real estate business today.</p>
+                <% if (userRole === 'associate') { %>
+                    <p class="text-muted mb-0">View your assigned associates' bookings and payments.</p>
+                <% } else { %>
+                    <p class="text-muted mb-0">Here's what's happening with your real estate business today.</p>
+                <% } %>
             </div>
         </div>
 
+        <% if (userRole !== 'associate') { %>
         <!-- Stats Cards Row 1 -->
         <div class="row g-3 mb-3">
             <div class="col-6 col-md-4">
@@ -105,6 +110,36 @@
             </div>
         </div>
 
+        <% } else { %>
+        <!-- Associate Quick Actions -->
+        <div class="card border-0 shadow-sm animate-fade-in-up">
+            <div class="card-body p-4">
+                <h3 class="h5 mb-4"><i class="bi bi-lightning-fill text-warning"></i> Quick Access</h3>
+                <div class="row g-3 quick-actions-grid">
+                    <div class="col-6 col-md-4">
+                        <a href="/broker" class="btn btn-outline-dark w-100 py-3">
+                            <i class="bi bi-briefcase fs-4 d-block mb-2"></i>
+                            <small>My Associates</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <a href="/booking" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
+                            <small>Bookings</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <a href="/payment" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-receipt fs-4 d-block mb-2"></i>
+                            <small>Payments</small>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+        
+        <% if (userRole !== 'associate') { %>
         <!-- Quick Actions -->
         <div class="card border-0 shadow-sm animate-fade-in-up" style="animation-delay: 0.8s">
             <div class="card-body p-4">
@@ -220,6 +255,7 @@
                 </div>
             </div>
         </div>
+        <% } %>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

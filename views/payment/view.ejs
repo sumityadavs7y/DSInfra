@@ -12,8 +12,8 @@
         title: 'Payment Details', 
         icon: 'bi-receipt-cutoff', 
         backUrl: '/payment', 
-        actionUrl: '/payment/' + payment.id + '/edit', 
-        actionText: 'Edit', 
+        actionUrl: userRole !== 'associate' ? '/payment/' + payment.id + '/edit' : '', 
+        actionText: userRole !== 'associate' ? 'Edit' : '', 
         actionIcon: 'bi-pencil'
     }) %>
 

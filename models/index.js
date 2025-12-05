@@ -15,6 +15,7 @@ const Employee = require('./Employee');
 const Attendance = require('./Attendance');
 const EmployeeSalary = require('./EmployeeSalary');
 const EmployeeDocument = require('./EmployeeDocument');
+const UserBrokerAccess = require('./UserBrokerAccess');
 
 // Define relationships
 User.hasMany(Customer, { foreignKey: 'createdBy', as: 'customers' });
@@ -100,6 +101,27 @@ EmployeeDocument.belongsTo(Employee, { foreignKey: 'employeeId', as: 'employee' 
 User.hasMany(EmployeeDocument, { foreignKey: 'uploadedBy', as: 'uploadedEmployeeDocuments' });
 EmployeeDocument.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploader' });
 
+// User-Broker Access relationships (for associate role)
+User.belongsToMany(Broker, {
+  through: UserBrokerAccess,
+  foreignKey: 'userId',
+  otherKey: 'brokerId',
+  as: 'accessibleBrokers'
+});
+Broker.belongsToMany(User, {
+  through: UserBrokerAccess,
+  foreignKey: 'brokerId',
+  otherKey: 'userId',
+  as: 'authorizedUsers'
+});
+
+// Direct access to join table
+User.hasMany(UserBrokerAccess, { foreignKey: 'userId', as: 'brokerAccess' });
+UserBrokerAccess.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+Broker.hasMany(UserBrokerAccess, { foreignKey: 'brokerId', as: 'userAccess' });
+UserBrokerAccess.belongsTo(Broker, { foreignKey: 'brokerId', as: 'broker' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -119,5 +141,6 @@ module.exports = {
   Employee,
   Attendance,
   EmployeeSalary,
-  EmployeeDocument
+  EmployeeDocument,
+  UserBrokerAccess
 };

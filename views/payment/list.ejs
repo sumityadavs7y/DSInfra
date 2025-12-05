@@ -12,13 +12,14 @@
         title: 'Payments', 
         icon: 'bi-cash-stack', 
         backUrl: '/dashboard', 
-        actionUrl: '/payment/create', 
-        actionText: 'New Payment', 
+        actionUrl: userRole !== 'associate' ? '/payment/create' : '', 
+        actionText: userRole !== 'associate' ? 'New Payment' : '', 
         actionIcon: 'bi-plus-circle'
     }) %>
 
     <div class="container my-4">
         <!-- Show/Hide Deleted Toggle -->
+        <% if (userRole !== 'associate') { %>
         <div class="mb-3">
             <% if (showDeleted) { %>
                 <a href="/payment" class="btn btn-outline-danger">
@@ -30,6 +31,7 @@
                 </a>
             <% } %>
         </div>
+        <% } %>
 
         <!-- Stats -->
         <div class="row g-3 mb-4">
@@ -108,7 +110,7 @@
                                                 <a href="/payment/<%= payment.id %>" class="btn btn-outline-dark" title="View Payment">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <% if (!payment.isDeleted) { %>
+                                                <% if (userRole !== 'associate' && !payment.isDeleted) { %>
                                                 <a href="/payment/<%= payment.id %>/edit" class="btn btn-outline-primary" title="Edit Payment">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>

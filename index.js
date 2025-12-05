@@ -34,19 +34,19 @@ app.set('views', 'views');
 
 // Auto-login middleware (for development only)
 app.use(async (req, res, next) => {
-    if (isDevEnvMode() && !req.session.userId) {
-        try {
-            const admin = await User.findOne({ where: { email: 'admin@example.com' } });
-            if (admin) {
-                req.session.userId = admin.id;
-                req.session.userName = admin.name;
-                req.session.userEmail = admin.email;
-                req.session.userRole = admin.role;
-            }
-        } catch (error) {
-            // Silently fail - will require manual login
-        }
-    }
+    // if (isDevEnvMode() && !req.session.userId) {
+    //     try {
+    //         const admin = await User.findOne({ where: { email: 'admin@example.com' } });
+    //         if (admin) {
+    //             req.session.userId = admin.id;
+    //             req.session.userName = admin.name;
+    //             req.session.userEmail = admin.email;
+    //             req.session.userRole = admin.role;
+    //         }
+    //     } catch (error) {
+    //         // Silently fail - will require manual login
+    //     }
+    // }
     next();
 });
 
@@ -63,19 +63,20 @@ const projectRoutes = require('./routes/project');
 const brokerPaymentRoutes = require('./routes/brokerPayment');
 const teamRoutes = require('./routes/team');
 const employeeRoutes = require('./routes/employee');
+const { blockAssociateAccess } = require('./middleware/auth');
 
 app.use('/', indexRoutes);
 app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
-app.use('/user', userRoutes);
-app.use('/customer', customerRoutes);
+app.use('/user', blockAssociateAccess, userRoutes);
+app.use('/customer', blockAssociateAccess, customerRoutes);
 app.use('/broker', brokerRoutes);
 app.use('/booking', bookingRoutes);
 app.use('/payment', paymentRoutes);
-app.use('/project', projectRoutes);
+app.use('/project', blockAssociateAccess, projectRoutes);
 app.use('/broker-payment', brokerPaymentRoutes);
-app.use('/team', teamRoutes);
-app.use('/employee', employeeRoutes);
+app.use('/team', blockAssociateAccess, teamRoutes);
+app.use('/employee', blockAssociateAccess, employeeRoutes);
 
 // Initialize default data using scripts
 const initializeDefaultData = async () => {

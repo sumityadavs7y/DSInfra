@@ -36,8 +36,8 @@
         title: 'Associates', 
         icon: 'bi-people-fill',
         backUrl: '/dashboard',
-        actionUrl: '/broker/create',
-        actionText: 'New Associate',
+        actionUrl: userRole !== 'associate' ? '/broker/create' : '',
+        actionText: userRole !== 'associate' ? 'New Associate' : '',
         actionIcon: 'bi-person-plus'
     }) %>
 
@@ -51,12 +51,14 @@
                         <div class="col-12 col-md-6">
                             <input type="text" class="form-control" name="search" placeholder="Search by associate no, name, mobile, email..." value="<%= search || '' %>">
                         </div>
+                        <% if (userRole !== 'associate') { %>
                         <div class="col-12 col-md-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="showDeleted" name="showDeleted" value="true" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()">
                                 <label class="form-check-label" for="showDeleted">Show Deleted</label>
                             </div>
                         </div>
+                        <% } %>
                         <div class="col-12 col-md-3">
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary flex-fill">
@@ -181,9 +183,11 @@
                     <div class="text-center py-5">
                         <i class="bi bi-person-x fs-1 text-muted"></i>
                         <p class="text-muted mt-3">No associates found</p>
+                        <% if (userRole !== 'associate') { %>
                         <a href="/broker/create" class="btn btn-dark">
                             <i class="bi bi-person-plus"></i> Add First Associate
                         </a>
+                        <% } %>
                     </div>
                 <% } else { %>
                     <div class="table-responsive">
@@ -271,7 +275,7 @@
                                                 <a href="/broker/<%= broker.id %>" class="btn btn-outline-dark" title="View Associate">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <% if (!broker.isDeleted) { %>
+                                                <% if (userRole !== 'associate' && !broker.isDeleted) { %>
                                                 <a href="/broker/<%= broker.id %>/edit" class="btn btn-outline-primary" title="Edit Associate">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>

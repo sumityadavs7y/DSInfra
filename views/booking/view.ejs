@@ -12,8 +12,8 @@
         title: 'Booking Details', 
         icon: 'bi-receipt', 
         backUrl: '/booking', 
-        actionUrl: '/booking/' + booking.id + '/edit', 
-        actionText: 'Edit', 
+        actionUrl: userRole !== 'associate' ? '/booking/' + booking.id + '/edit' : '', 
+        actionText: userRole !== 'associate' ? 'Edit' : '', 
         actionIcon: 'bi-pencil'
     }) %>
 
@@ -358,7 +358,7 @@
                             </table>
                         </div>
                         
-                        <% if (booking.remainingAmount > 0) { %>
+                        <% if (userRole !== 'associate' && booking.remainingAmount > 0) { %>
                         <div class="mt-3">
                             <a href="/payment/create" class="btn btn-success">
                                 <i class="bi bi-plus-circle"></i> Record New Payment
@@ -372,9 +372,11 @@
                     <div class="card-body p-4 text-center">
                         <i class="bi bi-receipt fs-1 text-muted"></i>
                         <p class="text-muted mt-3">No payments recorded yet</p>
+                        <% if (userRole !== 'associate') { %>
                         <a href="/payment/create" class="btn btn-success">
                             <i class="bi bi-plus-circle"></i> Record First Payment
                         </a>
+                        <% } %>
                     </div>
                 </div>
                 <% } %>

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { Broker, BrokerDocument, Booking, Customer, Project, User, BrokerPayment } = require('../models');
-const { isAuthenticated, isAdmin } = require('../middleware/auth');
+const { isAuthenticated, isAdmin, isNotAssociate, getAccessibleBrokerIds, canAccessBroker } = require('../middleware/auth');
 const { Op } = require('sequelize');
 
 // Configure multer for file uploads (memory storage)
@@ -23,7 +23,7 @@ const upload = multer({
 });
 
 // List all brokers
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', isAuthenticated, getAccessibleBrokerIds, async (req, res) => {
     try {
         const { 
             search, 
@@ -34,6 +34,11 @@ router.get('/', isAuthenticated, async (req, res) => {
             sortOrder = 'desc'
         } = req.query;
         const whereClause = {};
+
+        // Filter by accessible broker IDs for associates
+        if (req.accessibleBrokerIds !== null) {
+            whereClause.id = { [Op.in]: req.accessibleBrokerIds };
+        }
 
         // By default, hide deleted brokers
         if (showDeleted !== 'true') {
@@ -215,7 +220,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 });
 
 // Show create broker form
-router.get('/create', isAuthenticated, (req, res) => {
+router.get('/create', isAuthenticated, isNotAssociate, (req, res) => {
     res.render('broker/create', {
         userName: req.session.userName,
         userRole: req.session.userRole,
@@ -224,7 +229,7 @@ router.get('/create', isAuthenticated, (req, res) => {
 });
 
 // Create new broker
-router.post('/create', isAuthenticated, upload.fields([
+router.post('/create', isAuthenticated, isNotAssociate, upload.fields([
     { name: 'photo', maxCount: 1 },
     { name: 'documents', maxCount: 10 }
 ]), async (req, res) => {
@@ -307,7 +312,7 @@ router.post('/create', isAuthenticated, upload.fields([
 });
 
 // View broker details
-router.get('/:id', isAuthenticated, async (req, res) => {
+router.get('/:id', isAuthenticated, canAccessBroker, async (req, res) => {
     try {
         const broker = await Broker.findByPk(req.params.id, {
             include: [
@@ -447,7 +452,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Show edit broker form
-router.get('/:id/edit', isAuthenticated, async (req, res) => {
+router.get('/:id/edit', isAuthenticated, isNotAssociate, canAccessBroker, async (req, res) => {
     try {
         const broker = await Broker.findByPk(req.params.id, {
             include: [
@@ -476,7 +481,7 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
 });
 
 // Update broker
-router.post('/:id/edit', isAuthenticated, upload.fields([
+router.post('/:id/edit', isAuthenticated, isNotAssociate, upload.fields([
     { name: 'photo', maxCount: 1 },
     { name: 'documents', maxCount: 10 }
 ]), async (req, res) => {

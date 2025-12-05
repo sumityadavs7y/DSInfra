@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { Booking, Project, User, Customer, Broker, Payment, BrokerPayment, sequelize } = require('../models');
-const { isAuthenticated } = require('../middleware/auth');
+const { isAuthenticated, isNotAssociate, getAccessibleBrokerIds, canAccessBooking } = require('../middleware/auth');
 const PDFDocument = require('pdfkit');
 const { numberToWords } = require('../utils/helpers');
 const { Op } = require('sequelize');
 
 // List all bookings
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', isAuthenticated, getAccessibleBrokerIds, async (req, res) => {
     try {
         const { 
             showDeleted, 
@@ -18,6 +18,11 @@ router.get('/', isAuthenticated, async (req, res) => {
             registryDateTo = ''
         } = req.query;
         const whereClause = {};
+
+        // Filter by accessible broker IDs for associates
+        if (req.accessibleBrokerIds !== null) {
+            whereClause.brokerId = { [Op.in]: req.accessibleBrokerIds };
+        }
 
         // By default, hide deleted bookings
         if (showDeleted !== 'true') {
@@ -100,7 +105,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 });
 
 // Show create booking form
-router.get('/create', isAuthenticated, async (req, res) => {
+router.get('/create', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         const customers = await Customer.findAll({
             where: { isActive: true, isDeleted: false },
@@ -132,7 +137,7 @@ router.get('/create', isAuthenticated, async (req, res) => {
 });
 
 // Create new booking
-router.post('/create', isAuthenticated, async (req, res) => {
+router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
     const transaction = await sequelize.transaction();
     
     try {
@@ -295,7 +300,7 @@ router.post('/create', isAuthenticated, async (req, res) => {
 });
 
 // View booking details
-router.get('/:id', isAuthenticated, async (req, res) => {
+router.get('/:id', isAuthenticated, canAccessBooking, async (req, res) => {
     try {
         const booking = await Booking.findByPk(req.params.id, {
             include: [
@@ -349,7 +354,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Generate booking slip (printable)
-router.get('/:id/slip', isAuthenticated, async (req, res) => {
+router.get('/:id/slip', isAuthenticated, canAccessBooking, async (req, res) => {
     try {
         const booking = await Booking.findByPk(req.params.id, {
             include: [
@@ -400,7 +405,7 @@ router.get('/:id/slip', isAuthenticated, async (req, res) => {
 });
 
 // Show edit booking form
-router.get('/:id/edit', isAuthenticated, async (req, res) => {
+router.get('/:id/edit', isAuthenticated, isNotAssociate, canAccessBooking, async (req, res) => {
     try {
         const booking = await Booking.findByPk(req.params.id, {
             include: [
@@ -449,7 +454,7 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
 });
 
 // Update booking
-router.post('/:id/edit', isAuthenticated, async (req, res) => {
+router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
     const transaction = await sequelize.transaction();
     
     try {
@@ -553,7 +558,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
 });
 
 // Download booking slip as PDF
-router.get('/:id/pdf', isAuthenticated, async (req, res) => {
+router.get('/:id/pdf', isAuthenticated, canAccessBooking, async (req, res) => {
     try {
         const booking = await Booking.findByPk(req.params.id, {
             include: [
@@ -673,7 +678,7 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
 });
 
 // Delete Booking (Soft Delete with Cascade)
-router.post('/:id/delete', isAuthenticated, async (req, res) => {
+router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => {
     const transaction = await require('../models').sequelize.transaction();
     
     try {

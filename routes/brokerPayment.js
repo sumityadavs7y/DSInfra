@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { BrokerPayment, Booking, Broker, User, sequelize } = require('../models');
-const { isAuthenticated } = require('../middleware/auth');
+const { isAuthenticated, isNotAssociate, canAccessBroker } = require('../middleware/auth');
 
 // Create broker payment (completely independent of bookings)
-router.post('/create', isAuthenticated, async (req, res) => {
+router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         const { brokerId, paymentAmount, paymentDate, paymentMode, transactionNo, remarks } = req.body;
 
@@ -67,7 +67,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Edit broker payment
-router.post('/:id/edit', isAuthenticated, async (req, res) => {
+router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         const { paymentAmount, paymentDate, paymentMode, transactionNo, remarks } = req.body;
 
@@ -104,7 +104,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
 });
 
 // Delete broker payment (soft delete)
-router.post('/:id/delete', isAuthenticated, async (req, res) => {
+router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         const brokerPayment = await BrokerPayment.findByPk(req.params.id);
 
