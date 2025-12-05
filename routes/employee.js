@@ -136,18 +136,55 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             return res.status(404).send('Employee not found');
         }
 
-        // Get recent attendance (last 30 days)
+        // Get recent attendance (last 30 days) with auto-present generation
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const recentAttendance = await Attendance.findAll({
+        const attendanceRecords = await Attendance.findAll({
             where: {
                 employeeId: employee.id,
                 date: { [Op.gte]: thirtyDaysAgo }
             },
-            order: [['date', 'DESC']],
-            limit: 30
+            order: [['date', 'DESC']]
         });
+
+        // Create a map of existing attendance records
+        const attendanceMap = {};
+        attendanceRecords.forEach(record => {
+            const dateKey = new Date(record.date).toISOString().split('T')[0];
+            attendanceMap[dateKey] = record;
+        });
+
+        // Generate full attendance including auto-present for unmarked days (till today only)
+        const recentAttendance = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const joiningDate = employee.joiningDate ? new Date(employee.joiningDate) : thirtyDaysAgo;
+        const startDate = joiningDate > thirtyDaysAgo ? joiningDate : thirtyDaysAgo;
+
+        // Generate attendance for each day from startDate to today
+        for (let d = new Date(startDate); d <= today; d.setDate(d.getDate() + 1)) {
+            const dateKey = d.toISOString().split('T')[0];
+            
+            if (attendanceMap[dateKey]) {
+                // Use existing record
+                recentAttendance.push(attendanceMap[dateKey]);
+            } else {
+                // Auto-mark as present (virtual record, not in DB)
+                recentAttendance.push({
+                    date: new Date(d),
+                    status: 'Present',
+                    checkIn: null,
+                    checkOut: null,
+                    workingHours: 8,
+                    isAutoMarked: true
+                });
+            }
+        }
+
+        // Sort by date descending and limit to 30 most recent
+        recentAttendance.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const limitedAttendance = recentAttendance.slice(0, 30);
 
         // Get recent salaries
         const recentSalaries = await EmployeeSalary.findAll({
@@ -158,7 +195,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 
         res.render('employee/view', {
             employee,
-            recentAttendance,
+            recentAttendance: limitedAttendance,
             recentSalaries,
             user: req.session
         });
@@ -236,7 +273,7 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
     }
 });
 
-// Delete Employee
+// Delete Employee (cascade delete all related data)
 router.post('/:id/delete', isAuthenticated, async (req, res) => {
     try {
         const employee = await Employee.findByPk(req.params.id);
@@ -245,7 +282,25 @@ router.post('/:id/delete', isAuthenticated, async (req, res) => {
             return res.status(404).send('Employee not found');
         }
 
+        // Delete all related attendance records
+        await Attendance.destroy({
+            where: { employeeId: employee.id }
+        });
+
+        // Delete all related salary records
+        await EmployeeSalary.destroy({
+            where: { employeeId: employee.id }
+        });
+
+        // Delete all related documents (soft delete)
+        await EmployeeDocument.update(
+            { isDeleted: true },
+            { where: { employeeId: employee.id } }
+        );
+
+        // Soft delete the employee
         await employee.update({ isDeleted: true });
+        
         res.redirect('/employee');
     } catch (error) {
         console.error('Error deleting employee:', error);
@@ -304,16 +359,16 @@ router.get('/:id/attendance', isAuthenticated, async (req, res) => {
             attendanceMap[dateKey] = record;
         });
 
-        // Generate full month calendar with auto-present for unmarked days
+        // Generate full month calendar with auto-present for unmarked days (till today only)
         const daysInMonth = new Date(selectedYear, selectedMonth, 0).getDate();
         const fullAttendance = [];
         const joiningDate = employee.joiningDate ? new Date(employee.joiningDate) : null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         
         for (let day = 1; day <= daysInMonth; day++) {
             const date = new Date(selectedYear, selectedMonth - 1, day);
             const dateKey = date.toISOString().split('T')[0];
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
             
             // Skip if date is in future
             if (date > today) continue;

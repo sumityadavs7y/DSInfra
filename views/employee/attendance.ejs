@@ -27,7 +27,7 @@
 
                 <!-- Info Alert -->
                 <div class="alert alert-info border-0 shadow-sm mb-4">
-                    <i class="bi bi-info-circle"></i> <strong>Auto-Attendance:</strong> All employees are automatically marked as <strong>Present</strong> every day. You only need to mark <strong>Absences</strong>, <strong>Leaves</strong>, or <strong>Holidays</strong>.
+                    <i class="bi bi-calendar-check"></i> <strong>Attendance Management:</strong> Employees are auto-marked as <strong>Present</strong> for all working days up to today. Click the action button (<i class="bi bi-calendar-plus"></i> or <i class="bi bi-pencil-square"></i>) to mark or edit attendance as <strong>Present</strong>, <strong>Absent</strong>, <strong>Leave</strong>, <strong>Half-Day</strong>, <strong>Holiday</strong>, or <strong>Week-Off</strong> with custom times.
                 </div>
 
                 <!-- Month Selector -->
@@ -54,8 +54,8 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">&nbsp;</label>
-                                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#markAttendanceModal">
-                                    <i class="bi bi-x-circle"></i> Mark Absent/Leave
+                                <button type="button" class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#markAttendanceModal" onclick="markAttendance('<%= new Date().toISOString().split('T')[0] %>', 'Present', '', '', 8, '', '')">
+                                    <i class="bi bi-calendar-plus"></i> Mark Attendance
                                 </button>
                             </div>
                         </form>
@@ -137,13 +137,11 @@
                                             </td>
                                             <td><small><%= att.remarks || '-' %></small></td>
                                             <td>
-                                                <% if (att.isAutoMarked) { %>
-                                                    <button class="btn btn-sm btn-outline-danger" onclick="markAbsent('<%= new Date(att.date).toISOString().split('T')[0] %>')">
-                                                        <i class="bi bi-x-circle"></i>
-                                                    </button>
-                                                <% } else { %>
-                                                    <small class="text-muted">Marked</small>
-                                                <% } %>
+                                                <button class="btn btn-sm btn-outline-<%= att.status === 'Present' ? 'success' : att.status === 'Absent' ? 'danger' : att.status === 'Leave' ? 'warning' : att.status === 'Half-Day' ? 'info' : 'secondary' %>" 
+                                                        onclick="markAttendance('<%= new Date(att.date).toISOString().split('T')[0] %>', '<%= att.status %>', '<%= att.checkIn || '' %>', '<%= att.checkOut || '' %>', '<%= att.workingHours || 0 %>', '<%= att.remarks || '' %>', '<%= att.leaveType || '' %>')"
+                                                        title="<%= att.isAutoMarked ? 'Mark/Edit Attendance' : 'Edit Attendance' %>">
+                                                    <i class="bi bi-<%= att.isAutoMarked ? 'calendar-plus' : 'pencil-square' %>"></i>
+                                                </button>
                                             </td>
                                         </tr>
                                         <% }); %>
@@ -161,14 +159,14 @@
     <div class="modal fade" id="markAttendanceModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title"><i class="bi bi-x-circle"></i> Mark Absent/Leave</h5>
+                <div class="modal-header bg-primary text-white" id="modalHeader">
+                    <h5 class="modal-title"><i class="bi bi-calendar-check"></i> Mark Attendance</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST" action="/employee/<%= employee.id %>/attendance/mark">
                     <div class="modal-body">
-                        <div class="alert alert-warning">
-                            <i class="bi bi-info-circle"></i> Employees are auto-marked as <strong>Present</strong>. Only mark if employee is absent, on leave, or holiday.
+                        <div class="alert alert-info" id="modalAlert">
+                            <i class="bi bi-info-circle"></i> Mark the attendance status for the selected date.
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Date <span class="text-danger">*</span></label>
@@ -177,12 +175,12 @@
                         <div class="mb-3">
                             <label class="form-label">Status <span class="text-danger">*</span></label>
                             <select class="form-select" name="status" id="statusSelect" required>
+                                <option value="Present">Present</option>
                                 <option value="Absent">Absent</option>
                                 <option value="Leave">Leave</option>
                                 <option value="Half-Day">Half-Day</option>
                                 <option value="Holiday">Holiday</option>
                                 <option value="Week-Off">Week-Off</option>
-                                <option value="Present">Present (Override)</option>
                             </select>
                         </div>
                         <div class="row mb-3" id="timeFields">
@@ -227,11 +225,40 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('statusSelect')?.addEventListener('change', function() {
+        const statusSelect = document.getElementById('statusSelect');
+        const modalHeader = document.getElementById('modalHeader');
+        const modalAlert = document.getElementById('modalAlert');
+        
+        statusSelect?.addEventListener('change', function() {
             const status = this.value;
             const timeFields = document.getElementById('timeFields');
             const leaveTypeField = document.getElementById('leaveTypeField');
             
+            // Update modal header color based on status
+            modalHeader.className = 'modal-header text-white';
+            if (status === 'Present') {
+                modalHeader.classList.add('bg-success');
+                modalAlert.className = 'alert alert-success';
+                modalAlert.innerHTML = '<i class="bi bi-check-circle"></i> Marking employee as <strong>Present</strong>.';
+            } else if (status === 'Absent') {
+                modalHeader.classList.add('bg-danger');
+                modalAlert.className = 'alert alert-danger';
+                modalAlert.innerHTML = '<i class="bi bi-x-circle"></i> Marking employee as <strong>Absent</strong>.';
+            } else if (status === 'Leave') {
+                modalHeader.classList.add('bg-warning');
+                modalAlert.className = 'alert alert-warning';
+                modalAlert.innerHTML = '<i class="bi bi-calendar-x"></i> Marking employee on <strong>Leave</strong>.';
+            } else if (status === 'Half-Day') {
+                modalHeader.classList.add('bg-info');
+                modalAlert.className = 'alert alert-info';
+                modalAlert.innerHTML = '<i class="bi bi-clock"></i> Marking employee as <strong>Half-Day</strong>.';
+            } else {
+                modalHeader.classList.add('bg-secondary');
+                modalAlert.className = 'alert alert-secondary';
+                modalAlert.innerHTML = '<i class="bi bi-info-circle"></i> Marking status as <strong>' + status + '</strong>.';
+            }
+            
+            // Show/hide fields based on status
             if (status === 'Leave') {
                 timeFields.style.display = 'none';
                 leaveTypeField.style.display = 'block';
@@ -239,21 +266,24 @@
                 timeFields.style.display = 'none';
                 leaveTypeField.style.display = 'none';
             } else {
-                timeFields.style.display = 'block';
+                timeFields.style.display = 'flex';
                 leaveTypeField.style.display = 'none';
             }
         });
 
-        // Quick mark absent function
-        function markAbsent(date) {
-            const modal = new bootstrap.Modal(document.getElementById('markAttendanceModal'));
+        function markAttendance(date, status, checkIn, checkOut, workingHours, remarks, leaveType) {
             document.getElementById('dateInput').value = date;
-            document.getElementById('statusSelect').value = 'Absent';
+            document.getElementById('statusSelect').value = status || 'Present';
+            document.querySelector('[name="checkIn"]').value = checkIn || '';
+            document.querySelector('[name="checkOut"]').value = checkOut || '';
+            document.querySelector('[name="workingHours"]').value = workingHours || 8;
+            document.querySelector('[name="remarks"]').value = remarks || '';
+            document.querySelector('[name="leaveType"]').value = leaveType || '';
             
-            // Trigger status change to hide time fields
-            const event = new Event('change');
-            document.getElementById('statusSelect').dispatchEvent(event);
+            // Trigger change event to update UI
+            statusSelect.dispatchEvent(new Event('change'));
             
+            const modal = new bootstrap.Modal(document.getElementById('markAttendanceModal'));
             modal.show();
         }
 
