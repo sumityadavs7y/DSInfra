@@ -110,6 +110,7 @@
             <div class="card-body p-4">
                 <h3 class="h5 mb-4"><i class="bi bi-lightning-fill text-warning"></i> Quick Actions</h3>
                 <div class="row g-3 quick-actions-grid">
+                    <!-- Projects Section -->
                     <div class="col-6 col-md-4 col-xl-3">
                         <a href="/project" class="btn btn-outline-info w-100 py-3">
                             <i class="bi bi-grid-3x3-gap fs-4 d-block mb-2"></i>
@@ -124,22 +125,54 @@
                         </a>
                     </div>
                     <% } %>
+                    
+                    <!-- Bookings Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/customer" class="btn btn-outline-primary w-100 py-3">
+                        <a href="/booking" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
+                            <small>Bookings</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <a href="/booking/create" class="btn btn-outline-primary w-100 py-3">
+                            <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                            <small>New Booking</small>
+                        </a>
+                    </div>
+                    
+                    <!-- Payments Section -->
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <a href="/payment" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-receipt fs-4 d-block mb-2"></i>
+                            <small>Payments</small>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <a href="/payment/create" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-credit-card fs-4 d-block mb-2"></i>
+                            <small>Record Payment</small>
+                        </a>
+                    </div>
+                    
+                    <!-- Customers Section -->
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <a href="/customer" class="btn btn-outline-warning w-100 py-3">
                             <i class="bi bi-people fs-4 d-block mb-2"></i>
                             <small>Customers</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
+                        <a href="/customer/create" class="btn btn-outline-warning w-100 py-3">
+                            <i class="bi bi-person-plus fs-4 d-block mb-2"></i>
+                            <small>Add Customer</small>
+                        </a>
+                    </div>
+                    
+                    <!-- Associates & Teams Section -->
+                    <div class="col-6 col-md-4 col-xl-3">
                         <a href="/broker" class="btn btn-outline-dark w-100 py-3">
                             <i class="bi bi-briefcase fs-4 d-block mb-2"></i>
                             <small>Associates</small>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/employee" class="btn btn-outline-secondary w-100 py-3">
-                            <i class="bi bi-person-workspace fs-4 d-block mb-2"></i>
-                            <small>Employees</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
@@ -149,51 +182,31 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/team" class="btn btn-outline-primary w-100 py-3">
+                        <a href="/team" class="btn btn-outline-dark w-100 py-3">
                             <i class="bi bi-people-fill fs-4 d-block mb-2"></i>
                             <small>Teams</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/team/create" class="btn btn-outline-primary w-100 py-3">
+                        <a href="/team/create" class="btn btn-outline-dark w-100 py-3">
                             <i class="bi bi-plus-circle-fill fs-4 d-block mb-2"></i>
                             <small>New Team</small>
                         </a>
                     </div>
+                    
+                    <!-- Employees Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/customer/create" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-person-plus fs-4 d-block mb-2"></i>
-                            <small>Add Customer</small>
+                        <a href="/employee" class="btn btn-outline-secondary w-100 py-3">
+                            <i class="bi bi-person-workspace fs-4 d-block mb-2"></i>
+                            <small>Employees</small>
                         </a>
                     </div>
-                    <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/booking" class="btn btn-outline-primary w-100 py-3">
-                            <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
-                            <small>Bookings</small>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/booking/create" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
-                            <small>New Booking</small>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/payment" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-receipt fs-4 d-block mb-2"></i>
-                            <small>Payments</small>
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/payment/create" class="btn btn-outline-warning w-100 py-3">
-                            <i class="bi bi-credit-card fs-4 d-block mb-2"></i>
-                            <small>Record Payment</small>
-                        </a>
-                    </div>
+                    
+                    <!-- Admin Section -->
                     <% if (userRole === 'admin') { %>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/user" class="btn btn-outline-dark w-100 py-3">
-                            <i class="bi bi-people-fill fs-4 d-block mb-2"></i>
+                        <a href="/user" class="btn btn-outline-danger w-100 py-3">
+                            <i class="bi bi-shield-lock fs-4 d-block mb-2"></i>
                             <small>User Management</small>
                         </a>
                     </div>
