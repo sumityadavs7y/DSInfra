@@ -198,9 +198,21 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             createdBy: req.session.userId
         }, { transaction });
 
-        // Update booking remaining amount
+        // Update booking totalPaid and remaining amount
+        const newTotalPaid = parseFloat(booking.totalPaid || 0) + amount;
+        
+        // Update booking status based on remaining amount
+        let bookingStatus = booking.status;
+        if (newBalance <= 0) {
+            bookingStatus = 'Completed';
+        } else if (newBalance < booking.totalAmount) {
+            bookingStatus = 'Active';
+        }
+        
         await booking.update({
-            remainingAmount: newBalance
+            totalPaid: newTotalPaid,
+            remainingAmount: newBalance,
+            status: bookingStatus
         }, { transaction });
 
         await transaction.commit();
@@ -432,9 +444,10 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
             balanceAfterPayment: balanceAfterThisPayment
         }, { transaction });
 
-        // Recalculate booking's remaining amount
+        // Recalculate booking's totalPaid and remaining amount
         const newBookingBalance = totalBookingAmount - totalPayments;
         await payment.booking.update({
+            totalPaid: totalPayments,
             remainingAmount: newBookingBalance
         }, { transaction });
 
@@ -611,6 +624,33 @@ router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => 
 
         // Soft delete payment
         await payment.update({ isDeleted: true });
+
+        // Recalculate booking's totalPaid and remainingAmount
+        const Booking = require('../models').Booking;
+        const booking = await Booking.findByPk(payment.bookingId);
+        
+        if (booking) {
+            // Calculate total paid from all non-deleted payments
+            const totalPaid = await Payment.sum('paymentAmount', {
+                where: { 
+                    bookingId: payment.bookingId, 
+                    isDeleted: false 
+                }
+            }) || 0;
+            
+            // Update booking
+            booking.totalPaid = totalPaid;
+            booking.remainingAmount = parseFloat(booking.totalAmount) - totalPaid;
+            
+            // Update status based on remaining amount
+            if (booking.remainingAmount <= 0) {
+                booking.status = 'Completed';
+            } else if (booking.remainingAmount < booking.totalAmount) {
+                booking.status = 'Active';
+            }
+            
+            await booking.save();
+        }
 
         res.redirect('/payment?message=deleted');
     } catch (error) {
