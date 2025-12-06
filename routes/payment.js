@@ -616,22 +616,8 @@ router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => 
 
         // Recalculate booking's totalPaid
         const Booking = require('../models').Booking;
-        const booking = await Booking.findByPk(payment.bookingId);
-        
-        if (booking) {
-            // Note: totalPaid is now calculated at runtime, not stored
-            // Balance is calculated as: booking.totalAmount - SUM(payments.paymentAmount)
-            
-            // Update status based on remaining amount (if needed in future)
-            const remainingAmount = parseFloat(booking.totalAmount) - totalPaid;
-            if (remainingAmount <= 0) {
-                booking.status = 'Completed';
-            } else if (remainingAmount < booking.totalAmount) {
-                booking.status = 'Active';
-            }
-            
-            await booking.save();
-        }
+        // Note: Booking status is managed independently
+        // totalPaid is calculated at runtime when needed, not stored
 
         res.redirect('/payment?message=deleted');
     } catch (error) {
