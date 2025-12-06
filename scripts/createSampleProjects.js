@@ -108,12 +108,16 @@ const createSampleData = async () => {
         const project = projects[0];
         const area = 1200; // sq.ft.
         const rate = 3500; // per sq.ft.
-        const associateRate = 3800; // per sq.ft. (broker's rate)
-        const plc = 50000;
+        const associateRate = 3300; // per sq.ft. (broker's rate - lower for commission calculation)
+        const plc = 10; // PLC percentage (10%)
+        const associatePlcCommission = 5; // Associate PLC commission percentage (5%)
         const discount = 100;
         const effectiveRate = rate - discount;
-        const totalAmount = (area * effectiveRate) + plc;
-        const brokerCommission = (associateRate - rate) * area; // (3800-3500)*1200 = 360000
+        // totalAmount and brokerCommission are now calculated at runtime via virtual getters
+        // totalAmount Formula: baseAmount = area × effectiveRate, plcAmount = baseAmount × (plc/100), totalAmount = baseAmount + plcAmount
+        // Example: 1200 × 3400 = 4,080,000, PLC = 4,080,000 × 0.10 = 408,000, Total = 4,488,000
+        // brokerCommission Formula: baseCommission = (effectiveRate - associateRate) × area, plcCommission = baseAmount × (associatePlcCommission/100)
+        // Example: (3400-3300)×1200 = 120,000 + 4,080,000×0.05 = 120,000 + 204,000 = 324,000
         
         const bookingCount = await Booking.count({ paranoid: false });
         const bookingNo = `BK${new Date().getFullYear()}${String(bookingCount + 1).padStart(5, '0')}`;
@@ -131,9 +135,9 @@ const createSampleData = async () => {
             associateRate,
             discount,
             effectiveRate,
-            totalAmount,
+            // totalAmount and brokerCommission are NOT stored - calculated at runtime
             brokerId: broker.id,
-            brokerCommission,
+            associatePlcCommission,
             status: 'Active',
             registryCompleted: true,
             registryDate: new Date()

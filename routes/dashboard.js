@@ -20,29 +20,28 @@ router.get('/', isAuthenticated, async (req, res) => {
                 registryCompleted: true,
                 isDeleted: false
             },
-            attributes: ['id']
+            attributes: ['id', 'area', 'effectiveRate', 'plc']
         });
         
-        const registeredBookingIds = registeredBookings.map(b => b.id);
-        
         // Calculate total revenue only from registered properties (booking value)
-        const totalRevenue = registeredBookingIds.length > 0 
-            ? await Booking.sum('totalAmount', {
-                where: { 
-                    id: registeredBookingIds,
-                    isDeleted: false 
-                }
-            }) || 0
-            : 0;
+        // totalAmount is now calculated at runtime, so we sum it manually
+        const totalRevenue = registeredBookings.reduce((sum, booking) => {
+            return sum + parseFloat(booking.totalAmount || 0);
+        }, 0);
         
         // Calculate total revenue from ALL bookings (registered + non-registered)
         // This represents the total booking value from all properties
-        const totalRevenueAllBookings = await Booking.sum('totalAmount', {
+        const allActiveBookings = await Booking.findAll({
             where: { 
                 isDeleted: false,
                 status: 'Active'
-            }
-        }) || 0;
+            },
+            attributes: ['id', 'area', 'effectiveRate', 'plc']
+        });
+        
+        const totalRevenueAllBookings = allActiveBookings.reduce((sum, booking) => {
+            return sum + parseFloat(booking.totalAmount || 0);
+        }, 0);
         
         // Calculate total payments actually received (cash collected)
         // This is the sum of all payment transactions

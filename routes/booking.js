@@ -225,18 +225,6 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             });
         }
         
-        // Auto-calculate broker commission: [(effectiveRate - associateRate) × area] + [plc% of (effectiveRate × area)]
-        const areaVal = parseFloat(area) || 0;
-        const associateRateVal = parseFloat(associateRate) || 0;
-        const associatePlcPercent = parseFloat(associatePlcCommission) || 0;
-        
-        let brokerCommission = 0;
-        if (brokerId) {
-            const baseCommission = (effectiveRate - associateRateVal) * areaVal;
-            const plcCommission = baseAmount * (associatePlcPercent / 100);
-            brokerCommission = Math.max(0, baseCommission + plcCommission);
-        }
-
         // Generate booking number in format: DS/YY/MM-XXXX (e.g., DS/25/11-1145)
         // The last 4 digits are globally incrementing (not reset per month)
         const bookingDateObj = bookingDate ? new Date(bookingDate) : new Date();
@@ -250,7 +238,7 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
         const bookingNumber = 1001 + totalBookingCount;
         const bookingNo = `DS/${year}/${month}-${String(bookingNumber).padStart(4, '0')}`;
 
-        // Create booking (with initial remainingAmount = totalAmount)
+        // Create booking (totalAmount and brokerCommission are calculated at runtime via virtual getters)
         const booking = await Booking.create({
             bookingNo,
             bookingDate: bookingDate || new Date(),
@@ -264,10 +252,8 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             associateRate: associateRate || 0,
             discount: discount || 0,
             effectiveRate,
-            totalAmount,
             brokerId: brokerId || null,
-            brokerCommission,
-            associatePlcCommission: associatePlcPercent,
+            associatePlcCommission: associatePlcCommission || 0,
             status: 'Active',
             createdBy: req.session.userId
         }, { transaction });
@@ -505,18 +491,6 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
         const plcAmount = baseAmount * (plcPercent / 100);
         const totalAmount = baseAmount + plcAmount;
         
-        // Auto-calculate broker commission: [(effectiveRate - associateRate) × area] + [plc% of (effectiveRate × area)]
-        const areaVal = parseFloat(area) || 0;
-        const associateRateVal = parseFloat(associateRate) || 0;
-        const associatePlcPercent = parseFloat(associatePlcCommission) || 0;
-        
-        let brokerCommission = 0;
-        if (brokerId) {
-            const baseCommission = (effectiveRate - associateRateVal) * areaVal;
-            const plcCommission = baseAmount * (associatePlcPercent / 100);
-            brokerCommission = Math.max(0, baseCommission + plcCommission);
-        }
-
         // Calculate remaining amount from payments
         const totalPaid = await Payment.sum('paymentAmount', {
             where: { bookingId: booking.id, isDeleted: false },
@@ -524,7 +498,7 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
         }) || 0;
         const remainingAmount = totalAmount - totalPaid;
 
-        // Update booking
+        // Update booking (totalAmount and brokerCommission are calculated at runtime via virtual getters)
         await booking.update({
             bookingDate: bookingDate || booking.bookingDate,
             customerId,
@@ -537,10 +511,8 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
             associateRate: associateRate || 0,
             discount: discount || 0,
             effectiveRate,
-            totalAmount,
             brokerId: brokerId || null,
-            brokerCommission,
-            associatePlcCommission: associatePlcPercent,
+            associatePlcCommission: associatePlcCommission || 0,
             status: status || 'Active',
             registryCompleted: registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true',
             registryDate: (registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true') && registryDate ? new Date(registryDate) : null

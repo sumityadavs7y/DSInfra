@@ -138,12 +138,29 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             order: [['bookingDate', 'DESC']]
         });
 
+        // Get all payments for bookings in this project
+        const { Payment } = require('../models');
+        const bookingIds = bookings.map(b => b.id);
+        const payments = bookingIds.length > 0 ? await Payment.findAll({
+            where: { 
+                bookingId: bookingIds,
+                isDeleted: false
+            },
+            attributes: ['bookingId', 'paymentAmount']
+        }) : [];
+
+        // Group payments by bookingId and calculate totalPaid for each
+        const paymentsByBooking = payments.reduce((acc, p) => {
+            acc[p.bookingId] = (acc[p.bookingId] || 0) + parseFloat(p.paymentAmount);
+            return acc;
+        }, {});
+
         // Calculate statistics
         const totalBookings = bookings.length;
         const activeBookings = bookings.filter(b => b.status === 'Active').length;
         const cancelledBookings = bookings.filter(b => b.status === 'Cancelled').length;
         const totalRevenue = bookings.reduce((sum, b) => sum + parseFloat(b.totalAmount), 0);
-        const collectedAmount = bookings.reduce((sum, b) => sum + (parseFloat(b.totalAmount) - parseFloat(b.remainingAmount)), 0);
+        const collectedAmount = bookings.reduce((sum, b) => sum + (paymentsByBooking[b.id] || 0), 0);
 
         res.render('project/view', {
             project,

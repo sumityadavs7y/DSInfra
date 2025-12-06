@@ -74,11 +74,6 @@ const Booking = sequelize.define('Booking', {
     allowNull: false,
     comment: 'Rate after discount'
   },
-  totalAmount: {
-    type: DataTypes.DECIMAL(15, 2),
-    allowNull: false,
-    comment: 'Total booking amount'
-  },
   // Status
   status: {
     type: DataTypes.ENUM('Active', 'Cancelled'),
@@ -104,12 +99,6 @@ const Booking = sequelize.define('Booking', {
       key: 'id'
     }
   },
-  brokerCommission: {
-    type: DataTypes.DECIMAL(12, 2),
-    allowNull: true,
-    defaultValue: 0,
-    comment: 'Commission amount for broker'
-  },
   associatePlcCommission: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: true,
@@ -132,6 +121,46 @@ const Booking = sequelize.define('Booking', {
 }, {
   tableName: 'bookings',
   timestamps: true
+});
+
+// Virtual getter to calculate totalAmount at runtime
+// Formula: totalAmount = (area × effectiveRate) + (area × effectiveRate × plc / 100)
+Object.defineProperty(Booking.prototype, 'totalAmount', {
+  get: function() {
+    const area = parseFloat(this.area) || 0;
+    const effectiveRate = parseFloat(this.effectiveRate) || 0;
+    const plcPercent = parseFloat(this.plc) || 0;
+    
+    const baseAmount = area * effectiveRate;
+    const plcAmount = baseAmount * (plcPercent / 100);
+    return baseAmount + plcAmount;
+  },
+  enumerable: true,
+  configurable: true
+});
+
+// Virtual getter to calculate brokerCommission at runtime
+// Formula: brokerCommission = [(effectiveRate - associateRate) × area] + [associatePlcCommission% of (effectiveRate × area)]
+Object.defineProperty(Booking.prototype, 'brokerCommission', {
+  get: function() {
+    // Only calculate if broker is assigned
+    if (!this.brokerId) {
+      return 0;
+    }
+    
+    const area = parseFloat(this.area) || 0;
+    const effectiveRate = parseFloat(this.effectiveRate) || 0;
+    const associateRate = parseFloat(this.associateRate) || 0;
+    const associatePlcPercent = parseFloat(this.associatePlcCommission) || 0;
+    
+    const baseAmount = area * effectiveRate;
+    const baseCommission = (effectiveRate - associateRate) * area;
+    const plcCommission = baseAmount * (associatePlcPercent / 100);
+    
+    return Math.max(0, baseCommission + plcCommission);
+  },
+  enumerable: true,
+  configurable: true
 });
 
 // Virtual field to calculate remaining amount at runtime
