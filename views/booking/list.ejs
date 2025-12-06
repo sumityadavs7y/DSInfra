@@ -200,7 +200,7 @@
                                         <td class="d-none d-xl-table-cell"><%= booking.project.projectName %></td>
                                         <td><%= booking.plotNo %></td>
                                         <td class="d-none d-lg-table-cell">₹<%= parseFloat(booking.totalAmount).toLocaleString('en-IN') %></td>
-                                        <td class="d-none d-xl-table-cell">₹<%= parseFloat(booking.remainingAmount).toLocaleString('en-IN') %></td>
+                                        <td class="d-none d-xl-table-cell">₹<%= (parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid || 0)).toLocaleString('en-IN') %></td>
                                         <td>
                                             <% if (booking.isDeleted) { %>
                                             <span class="badge bg-danger">Deleted</span>

@@ -236,6 +236,9 @@
                             const baseAmountTotal = effRateAmt * areaAmt;
                             const plcPercentAmt = parseFloat(booking.plc || 0);
                             const plcAmountTotal = baseAmountTotal * (plcPercentAmt / 100);
+                            
+                            // Calculate remaining amount for the entire page
+                            const bookingRemainingAmount = parseFloat(booking.totalAmount) - parseFloat(totalPaid || 0);
                         %>
                         <div class="card text-white mb-4" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
                             <div class="card-body">
@@ -267,7 +270,7 @@
                                     </div>
                                     <div class="col-12 col-md-6">
                                         <small class="d-block opacity-75">Balance Due</small>
-                                        <h3 class="mb-0" style="color: #f39c12;">₹<%= parseFloat(booking.remainingAmount).toLocaleString('en-IN') %></h3>
+                                        <h3 class="mb-0" style="color: #f39c12;">₹<%= bookingRemainingAmount.toLocaleString('en-IN') %></h3>
                                     </div>
                                 </div>
                             </div>
@@ -370,7 +373,7 @@
                             </table>
                         </div>
                         
-                        <% if (userRole !== 'associate' && booking.remainingAmount > 0) { %>
+                        <% if (userRole !== 'associate' && bookingRemainingAmount > 0) { %>
                         <div class="mt-3">
                             <a href="/payment/create?bookingId=<%= booking.id %>" class="btn btn-success">
                                 <i class="bi bi-plus-circle"></i> Record New Payment
@@ -379,7 +382,7 @@
                         <% } %>
                     </div>
                 </div>
-                <% } else if (booking.remainingAmount > 0) { %>
+                <% } else if (bookingRemainingAmount > 0) { %>
                 <div class="card border-0 shadow-sm mt-4">
                     <div class="card-body p-4 text-center">
                         <i class="bi bi-receipt fs-1 text-muted"></i>

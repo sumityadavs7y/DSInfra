@@ -134,7 +134,6 @@ const createSampleData = async () => {
             totalAmount,
             brokerId: broker.id,
             brokerCommission,
-            remainingAmount: totalAmount, // Will update after payment
             status: 'Active',
             registryCompleted: true,
             registryDate: new Date()
@@ -160,11 +159,6 @@ const createSampleData = async () => {
             balanceAfterPayment: totalAmount - bookingAmount
         }, { transaction });
         console.log('✅ Sample payment created: ₹' + bookingAmount.toLocaleString('en-IN'));
-
-        // Update booking remaining amount
-        await booking.update({
-            remainingAmount: totalAmount - bookingAmount
-        }, { transaction });
 
         await transaction.commit();
         

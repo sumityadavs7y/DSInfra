@@ -46,7 +46,7 @@
                                                 data-project="<%= booking.project.projectName %>"
                                                 data-plot="<%= booking.plotNo %>"
                                                 data-total="<%= parseFloat(booking.totalAmount) %>"
-                                                data-remaining="<%= parseFloat(booking.remainingAmount) %>">
+                                                data-remaining="<%= parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid || 0) %>">
                                                 <%= booking.bookingNo %> - <%= booking.customer.applicantName %> - <%= booking.project.projectName %> (Plot: <%= booking.plotNo %>)
                                             </option>
                                         <% }); %>

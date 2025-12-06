@@ -124,10 +124,6 @@ const Booking = sequelize.define('Booking', {
     type: DataTypes.DECIMAL(12, 2),
     defaultValue: 0
   },
-  remainingAmount: {
-    type: DataTypes.DECIMAL(12, 2),
-    allowNull: false
-  },
   // Status
   status: {
     type: DataTypes.ENUM('booked', 'payment_pending', 'completed', 'cancelled'),
@@ -178,9 +174,6 @@ const Booking = sequelize.define('Booking', {
       
       // Initialize total paid with booking amount
       booking.totalPaid = parseFloat(booking.bookingAmount);
-      
-      // Calculate remaining amount
-      booking.remainingAmount = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid);
     },
     beforeUpdate: (booking) => {
       // Recalculate if relevant fields changed
@@ -196,10 +189,14 @@ const Booking = sequelize.define('Booking', {
         const plcPercent = parseFloat(booking.plc || 0);
         const plcAmount = baseAmount * (plcPercent / 100);
         booking.totalAmount = baseAmount + plcAmount;
-        booking.remainingAmount = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid);
       }
     }
   }
 });
+
+// Virtual method to calculate remaining amount at runtime
+Booking.prototype.getRemainingAmount = function() {
+  return parseFloat(this.totalAmount || 0) - parseFloat(this.totalPaid || 0);
+};
 
 module.exports = Booking;

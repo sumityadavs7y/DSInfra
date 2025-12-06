@@ -61,10 +61,6 @@ const Payment = sequelize.define('Payment', {
     type: DataTypes.DECIMAL(12, 2),
     allowNull: false
   },
-  remainingAmount: {
-    type: DataTypes.DECIMAL(12, 2),
-    allowNull: false
-  },
   // Payment type
   paymentType: {
     type: DataTypes.ENUM('booking', 'installment', 'final'),
@@ -111,9 +107,9 @@ const Payment = sequelize.define('Payment', {
       
       if (booking) {
         booking.totalPaid = parseFloat(booking.totalPaid) + parseFloat(payment.paymentAmount);
-        booking.remainingAmount = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid);
+        const remainingAmount = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid);
         
-        if (booking.remainingAmount <= 0) {
+        if (remainingAmount <= 0) {
           booking.status = 'completed';
         } else {
           booking.status = 'payment_pending';

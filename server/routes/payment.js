@@ -124,7 +124,6 @@ router.post('/', authenticate, checkPermission('canManagePayments'), async (req,
       remarks,
       previousPaid: booking.totalPaid,
       totalAmount: booking.totalAmount,
-      remainingAmount: parseFloat(booking.totalAmount) - (parseFloat(booking.totalPaid) + parseFloat(paymentAmount)),
       emiDetails,
       collectedBy: req.user.id
     });

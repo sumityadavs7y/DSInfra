@@ -62,11 +62,10 @@ router.get('/create', isAuthenticated, isNotAssociate, async (req, res) => {
     try {
         const { bookingId } = req.query;
         
-        // Get bookings with remaining balance (only non-deleted bookings)
-        const bookings = await Booking.findAll({
+        // Get active bookings (only non-deleted bookings)
+        const allBookings = await Booking.findAll({
             where: { 
                 status: 'Active',
-                remainingAmount: { [require('sequelize').Op.gt]: 0 },
                 isDeleted: false
             },
             include: [
@@ -74,6 +73,12 @@ router.get('/create', isAuthenticated, isNotAssociate, async (req, res) => {
                 { model: Project, as: 'project' }
             ],
             order: [['bookingDate', 'DESC']]
+        });
+        
+        // Filter bookings with remaining balance (calculate at runtime)
+        const bookings = allBookings.filter(booking => {
+            const remainingAmount = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid || 0);
+            return remainingAmount > 0;
         });
 
         // If bookingId is provided, fetch the booking details
@@ -128,10 +133,11 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
 
         if (!booking) {
             await transaction.rollback();
-            const bookings = await Booking.findAll({
-                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
+            const allBookings = await Booking.findAll({
+                where: { status: 'Active', isDeleted: false },
                 include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
             });
+            const bookings = allBookings.filter(b => (parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0)) > 0);
             return res.render('payment/create', {
                 bookings,
                 userName: req.session.userName,
@@ -141,15 +147,16 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
         }
 
         const amount = parseFloat(paymentAmount);
-        const currentBalance = parseFloat(booking.remainingAmount);
+        const currentBalance = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid || 0);
 
         // Validate payment amount
         if (amount <= 0) {
             await transaction.rollback();
-            const bookings = await Booking.findAll({
-                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
+            const allBookings = await Booking.findAll({
+                where: { status: 'Active', isDeleted: false },
                 include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
             });
+            const bookings = allBookings.filter(b => (parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0)) > 0);
             return res.render('payment/create', {
                 bookings,
                 userName: req.session.userName,
@@ -160,10 +167,11 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
 
         if (amount > currentBalance) {
             await transaction.rollback();
-            const bookings = await Booking.findAll({
-                where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
+            const allBookings = await Booking.findAll({
+                where: { status: 'Active', isDeleted: false },
                 include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
             });
+            const bookings = allBookings.filter(b => (parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0)) > 0);
             return res.render('payment/create', {
                 bookings,
                 userName: req.session.userName,
@@ -211,7 +219,6 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
         
         await booking.update({
             totalPaid: newTotalPaid,
-            remainingAmount: newBalance,
             status: bookingStatus
         }, { transaction });
 
@@ -222,10 +229,11 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
         await transaction.rollback();
         console.error('Error creating payment:', error);
         
-        const bookings = await Booking.findAll({
-            where: { status: 'Active', remainingAmount: { [require('sequelize').Op.gt]: 0 }, isDeleted: false },
+        const allBookings = await Booking.findAll({
+            where: { status: 'Active', isDeleted: false },
             include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
         });
+        const bookings = allBookings.filter(b => (parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0)) > 0);
         res.render('payment/create', {
             bookings,
             userName: req.session.userName,
@@ -444,11 +452,9 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
             balanceAfterPayment: balanceAfterThisPayment
         }, { transaction });
 
-        // Recalculate booking's totalPaid and remaining amount
-        const newBookingBalance = totalBookingAmount - totalPayments;
+        // Recalculate booking's totalPaid
         await payment.booking.update({
-            totalPaid: totalPayments,
-            remainingAmount: newBookingBalance
+            totalPaid: totalPayments
         }, { transaction });
 
         await transaction.commit();
@@ -625,7 +631,7 @@ router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => 
         // Soft delete payment
         await payment.update({ isDeleted: true });
 
-        // Recalculate booking's totalPaid and remainingAmount
+        // Recalculate booking's totalPaid
         const Booking = require('../models').Booking;
         const booking = await Booking.findByPk(payment.bookingId);
         
@@ -640,12 +646,12 @@ router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => 
             
             // Update booking
             booking.totalPaid = totalPaid;
-            booking.remainingAmount = parseFloat(booking.totalAmount) - totalPaid;
             
             // Update status based on remaining amount
-            if (booking.remainingAmount <= 0) {
+            const remainingAmount = parseFloat(booking.totalAmount) - totalPaid;
+            if (remainingAmount <= 0) {
                 booking.status = 'Completed';
-            } else if (booking.remainingAmount < booking.totalAmount) {
+            } else if (remainingAmount < booking.totalAmount) {
                 booking.status = 'Active';
             }
             

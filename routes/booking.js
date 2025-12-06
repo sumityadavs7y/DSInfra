@@ -245,7 +245,6 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             brokerId: brokerId || null,
             brokerCommission,
             associatePlcCommission: associatePlcPercent,
-            remainingAmount: totalAmount, // Initially full amount
             status: 'Active',
             createdBy: req.session.userId
         }, { transaction });
@@ -271,11 +270,6 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             balanceBeforePayment: totalAmount,
             balanceAfterPayment: totalAmount - bookingAmountVal,
             createdBy: req.session.userId
-        }, { transaction });
-
-        // Update booking's remaining amount
-        await booking.update({
-            remainingAmount: totalAmount - bookingAmountVal
         }, { transaction });
 
         await transaction.commit();
@@ -526,7 +520,6 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
             brokerId: brokerId || null,
             brokerCommission,
             associatePlcCommission: associatePlcPercent,
-            remainingAmount,
             status: status || 'Active',
             registryCompleted: registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true',
             registryDate: (registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true') && registryDate ? new Date(registryDate) : null
@@ -632,7 +625,8 @@ router.get('/:id/pdf', isAuthenticated, canAccessBooking, async (req, res) => {
         doc.fontSize(11).text('Payment Summary', { underline: true });
         doc.moveDown(0.3);
         doc.fontSize(9);
-        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}  |  Paid: ₹${totalPaid.toLocaleString('en-IN')}  |  Balance: ₹${parseFloat(booking.remainingAmount).toLocaleString('en-IN')}`);
+        const remainingAmount = parseFloat(booking.totalAmount) - totalPaid;
+        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}  |  Paid: ₹${totalPaid.toLocaleString('en-IN')}  |  Balance: ₹${remainingAmount.toLocaleString('en-IN')}`);
         doc.text(`Payments Made: ${payments.length}`);
         doc.moveDown(0.5);
 

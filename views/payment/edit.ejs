@@ -31,7 +31,8 @@
                                 <strong>Customer:</strong> <%= payment.booking.customer.applicantName %><br>
                                 <strong>Project:</strong> <%= payment.booking.project.projectName %> - Plot: <%= payment.booking.plotNo %><br>
                                 <strong>Total Amount:</strong> ₹<%= parseFloat(payment.booking.totalAmount).toLocaleString('en-IN') %><br>
-                                <strong>Current Remaining:</strong> ₹<%= parseFloat(payment.booking.remainingAmount).toLocaleString('en-IN') %>
+                                <% const editRemainingAmount = parseFloat(payment.booking.totalAmount) - parseFloat(payment.booking.totalPaid || 0); %>
+                                <strong>Current Remaining:</strong> ₹<%= editRemainingAmount.toLocaleString('en-IN') %>
                             </small>
                         </div>
                         

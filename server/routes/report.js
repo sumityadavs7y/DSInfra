@@ -19,10 +19,14 @@ router.get('/dashboard', authenticate, async (req, res) => {
     
     const totalCollection = await Payment.sum('paymentAmount') || 0;
     
-    const pendingAmountResult = await Booking.sum('remainingAmount', { 
-      where: { status: { [Op.ne]: 'cancelled' } } 
+    // Calculate pending amount (totalAmount - totalPaid for all non-cancelled bookings)
+    const activeBookingsForPending = await Booking.findAll({ 
+      where: { status: { [Op.ne]: 'cancelled' } },
+      attributes: ['totalAmount', 'totalPaid']
     });
-    const pendingAmount = pendingAmountResult || 0;
+    const pendingAmount = activeBookingsForPending.reduce((sum, b) => {
+      return sum + (parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0));
+    }, 0);
     
     const totalProjects = await Project.count({ where: { isActive: true } });
     
@@ -109,7 +113,7 @@ router.get('/bookings', authenticate, checkPermission('canViewReports'), async (
       totalBookings: bookings.length,
       totalAmount: bookings.reduce((sum, b) => sum + parseFloat(b.totalAmount), 0),
       totalPaid: bookings.reduce((sum, b) => sum + parseFloat(b.totalPaid), 0),
-      totalRemaining: bookings.reduce((sum, b) => sum + parseFloat(b.remainingAmount), 0)
+      totalRemaining: bookings.reduce((sum, b) => sum + (parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0)), 0)
     };
     
     res.json({
@@ -176,21 +180,29 @@ router.get('/collections', authenticate, checkPermission('canViewReports'), asyn
 // Remaining payment report
 router.get('/remaining-payments', authenticate, checkPermission('canViewReports'), async (req, res) => {
   try {
-    const bookings = await Booking.findAll({ 
+    const allBookings = await Booking.findAll({ 
       where: { 
-        status: { [Op.ne]: 'cancelled' },
-        remainingAmount: { [Op.gt]: 0 }
+        status: { [Op.ne]: 'cancelled' }
       },
       include: [
         { model: Project, as: 'project', attributes: ['id', 'name'] },
         { model: Broker, as: 'broker', attributes: ['id', 'name'] }
       ],
-      order: [['remainingAmount', 'DESC']]
+      attributes: ['id', 'bookingNo', 'bookingDate', 'applicantName', 'totalAmount', 'totalPaid', 'projectId', 'brokerId']
     });
+    
+    // Filter bookings with remaining amount > 0 and sort by remaining amount
+    const bookings = allBookings
+      .map(b => {
+        b.remainingAmount = parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0);
+        return b;
+      })
+      .filter(b => b.remainingAmount > 0)
+      .sort((a, b) => b.remainingAmount - a.remainingAmount);
     
     const summary = {
       totalBookings: bookings.length,
-      totalRemaining: bookings.reduce((sum, b) => sum + parseFloat(b.remainingAmount), 0)
+      totalRemaining: bookings.reduce((sum, b) => sum + b.remainingAmount, 0)
     };
     
     res.json({
@@ -325,7 +337,7 @@ router.get('/export/bookings', authenticate, checkPermission('canViewReports'), 
         area: `${booking.area} ${booking.areaUnit}`,
         totalAmount: parseFloat(booking.totalAmount),
         totalPaid: parseFloat(booking.totalPaid),
-        remainingAmount: parseFloat(booking.remainingAmount),
+        remainingAmount: parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid || 0),
         status: booking.status,
         broker: booking.broker?.name || 'N/A'
       });

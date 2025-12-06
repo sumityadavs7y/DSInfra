@@ -95,13 +95,6 @@ const Booking = sequelize.define('Booking', {
     allowNull: true,
     comment: 'Date when registry was completed'
   },
-  // Remaining amount (calculated from payments)
-  remainingAmount: {
-    type: DataTypes.DECIMAL(15, 2),
-    allowNull: false,
-    defaultValue: 0,
-    comment: 'Remaining amount to be paid (totalAmount - sum of payments)'
-  },
   // Broker Reference (Optional - refers to Broker entity)
   brokerId: {
     type: DataTypes.INTEGER,
@@ -140,6 +133,11 @@ const Booking = sequelize.define('Booking', {
   tableName: 'bookings',
   timestamps: true
 });
+
+// Virtual field to calculate remaining amount at runtime
+Booking.prototype.getRemainingAmount = function() {
+  return parseFloat(this.totalAmount || 0) - parseFloat(this.totalPaid || 0);
+};
 
 module.exports = Booking;
 
