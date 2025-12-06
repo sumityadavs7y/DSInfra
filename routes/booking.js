@@ -87,6 +87,29 @@ router.get('/', isAuthenticated, getAccessibleBrokerIds, async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
+        // Calculate totalPaid for each booking at runtime
+        for (const booking of bookings) {
+            const totalPaid = await Payment.sum('paymentAmount', {
+                where: { 
+                    bookingId: booking.id, 
+                    isDeleted: false 
+                }
+            }) || 0;
+            
+            // Force override totalPaid (even if database column exists with old value)
+            // Set it in multiple ways to ensure it's accessible in the view
+            Object.defineProperty(booking, 'totalPaid', {
+                value: totalPaid,
+                writable: true,
+                enumerable: true,
+                configurable: true
+            });
+            booking.dataValues.totalPaid = totalPaid;
+            booking.setDataValue('totalPaid', totalPaid);
+            
+            console.log(`Booking ${booking.bookingNo}: totalAmount=${booking.totalAmount}, calculated totalPaid=${totalPaid}, balance=${parseFloat(booking.totalAmount) - totalPaid}`);
+        }
+
         res.render('booking/list', {
             bookings,
             showDeleted: showDeleted === 'true',
@@ -267,8 +290,6 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             paymentType: 'Booking',
             isRecurring: false,
             installmentNumber: null,
-            balanceBeforePayment: totalAmount,
-            balanceAfterPayment: totalAmount - bookingAmountVal,
             createdBy: req.session.userId
         }, { transaction });
 

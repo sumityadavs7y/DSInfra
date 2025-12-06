@@ -201,26 +201,11 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             paymentType: paymentType || 'Installment',
             isRecurring: isRecurring === 'true' || isRecurring === true,
             installmentNumber: installmentNumber || null,
-            balanceBeforePayment: currentBalance,
-            balanceAfterPayment: newBalance,
             createdBy: req.session.userId
         }, { transaction });
 
-        // Update booking totalPaid and remaining amount
-        const newTotalPaid = parseFloat(booking.totalPaid || 0) + amount;
-        
-        // Update booking status based on remaining amount
-        let bookingStatus = booking.status;
-        if (newBalance <= 0) {
-            bookingStatus = 'Completed';
-        } else if (newBalance < booking.totalAmount) {
-            bookingStatus = 'Active';
-        }
-        
-        await booking.update({
-            totalPaid: newTotalPaid,
-            status: bookingStatus
-        }, { transaction });
+        // Note: totalPaid is now calculated at runtime, not stored
+        // Balance is calculated as: booking.totalAmount - SUM(payments.paymentAmount)
 
         await transaction.commit();
 
@@ -447,15 +432,11 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
             remarks,
             paymentType: paymentType || 'Installment',
             isRecurring: isRecurring === 'true' || isRecurring === true,
-            installmentNumber: installmentNumber || null,
-            balanceBeforePayment: balanceBeforeThisPayment,
-            balanceAfterPayment: balanceAfterThisPayment
+            installmentNumber: installmentNumber || null
         }, { transaction });
 
-        // Recalculate booking's totalPaid
-        await payment.booking.update({
-            totalPaid: totalPayments
-        }, { transaction });
+        // Note: totalPaid is now calculated at runtime, not stored
+        // No need to update booking record
 
         await transaction.commit();
 
@@ -560,10 +541,13 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
         doc.moveDown(0.5);
 
         // Balance Details (compact)
+        const totalPaidSoFar = parseFloat(booking.totalPaid || 0);
+        const remainingBalance = parseFloat(booking.totalAmount) - totalPaidSoFar;
+        
         doc.fontSize(11).text('Balance Details', { underline: true });
         doc.moveDown(0.3);
         doc.fontSize(9);
-        doc.text(`Balance Before: ₹${parseFloat(payment.balanceBeforePayment).toLocaleString('en-IN')}  |  Balance After: ₹${parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN')}`);
+        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}  |  Total Paid: ₹${totalPaidSoFar.toLocaleString('en-IN')}  |  Balance Due: ₹${remainingBalance.toLocaleString('en-IN')}`);
         doc.moveDown(0.5);
 
         // Payment History List (compact)
@@ -577,9 +561,8 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
             paymentsToShow.forEach((p, index) => {
                 const paymentDate = new Date(p.receiptDate).toLocaleDateString('en-IN');
                 const amount = parseFloat(p.paymentAmount).toLocaleString('en-IN');
-                const balance = parseFloat(p.balanceAfterPayment).toLocaleString('en-IN');
                 
-                doc.text(`${index + 1}. ${paymentDate} - ${p.receiptNo} - ₹${amount} (${p.paymentMode}) - Balance: ₹${balance}`, {
+                doc.text(`${index + 1}. ${paymentDate} - ${p.receiptNo} - ₹${amount} (${p.paymentMode})`, {
                     width: 495,
                     lineGap: 0
                 });
@@ -636,18 +619,10 @@ router.post('/:id/delete', isAuthenticated, isNotAssociate, async (req, res) => 
         const booking = await Booking.findByPk(payment.bookingId);
         
         if (booking) {
-            // Calculate total paid from all non-deleted payments
-            const totalPaid = await Payment.sum('paymentAmount', {
-                where: { 
-                    bookingId: payment.bookingId, 
-                    isDeleted: false 
-                }
-            }) || 0;
+            // Note: totalPaid is now calculated at runtime, not stored
+            // Balance is calculated as: booking.totalAmount - SUM(payments.paymentAmount)
             
-            // Update booking
-            booking.totalPaid = totalPaid;
-            
-            // Update status based on remaining amount
+            // Update status based on remaining amount (if needed in future)
             const remainingAmount = parseFloat(booking.totalAmount) - totalPaid;
             if (remainingAmount <= 0) {
                 booking.status = 'Completed';

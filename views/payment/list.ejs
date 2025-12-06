@@ -83,7 +83,6 @@
                                     <th class="d-none d-lg-table-cell">Booking No</th>
                                     <th>Amount</th>
                                     <th class="d-none d-md-table-cell">Mode</th>
-                                    <th class="d-none d-xl-table-cell">Balance After</th>
                                     <th>Status</th>
                                     <th>Action</th>
                                 </tr>
@@ -97,7 +96,6 @@
                                         <td class="d-none d-lg-table-cell"><%= payment.booking.bookingNo %></td>
                                         <td class="fw-bold text-success">₹<%= parseFloat(payment.paymentAmount).toLocaleString('en-IN') %></td>
                                         <td class="d-none d-md-table-cell"><%= payment.paymentMode %></td>
-                                        <td class="d-none d-xl-table-cell">₹<%= parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN') %></td>
                                         <td>
                                             <% if (payment.isDeleted) { %>
                                             <span class="badge bg-danger">Deleted</span>

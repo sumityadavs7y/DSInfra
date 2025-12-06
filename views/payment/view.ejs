@@ -153,21 +153,30 @@
                         <hr>
 
                         <!-- Balance Details -->
+                        <%
+                            const totalPaid = parseFloat(payment.booking.totalPaid || 0);
+                            const totalAmount = parseFloat(payment.booking.totalAmount);
+                            const remainingBalance = totalAmount - totalPaid;
+                        %>
                         <h5 class="text-success mb-3"><i class="bi bi-wallet"></i> Balance Details</h5>
                         <div class="row g-3 mb-4">
                             <div class="col-6 col-md-4">
-                                <label class="text-muted small fw-semibold text-uppercase">Before Payment</label>
-                                <p class="h5 mb-0">₹<%= parseFloat(payment.balanceBeforePayment).toLocaleString('en-IN') %></p>
+                                <label class="text-muted small fw-semibold text-uppercase">Total Amount</label>
+                                <p class="h5 mb-0">₹<%= totalAmount.toLocaleString('en-IN') %></p>
                             </div>
                             <div class="col-6 col-md-4">
-                                <label class="text-muted small fw-semibold text-uppercase">After Payment</label>
-                                <p class="h5 mb-0 text-<%= payment.balanceAfterPayment == 0 ? 'success' : 'warning' %>">
-                                    ₹<%= parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN') %>
+                                <label class="text-muted small fw-semibold text-uppercase">Total Paid</label>
+                                <p class="h5 mb-0 text-success">₹<%= totalPaid.toLocaleString('en-IN') %></p>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="text-muted small fw-semibold text-uppercase">Balance Due</label>
+                                <p class="h5 mb-0 text-<%= remainingBalance == 0 ? 'success' : 'warning' %>">
+                                    ₹<%= remainingBalance.toLocaleString('en-IN') %>
                                 </p>
                             </div>
                         </div>
 
-                        <% if (payment.balanceAfterPayment == 0) { %>
+                        <% if (remainingBalance == 0) { %>
                         <div class="alert alert-success">
                             <i class="bi bi-check-circle"></i> <strong>Booking Completed!</strong> All payments have been received.
                         </div>
@@ -189,7 +198,6 @@
                                         <th>Amount</th>
                                         <th>Mode</th>
                                         <th>Type</th>
-                                        <th>Balance After</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -200,9 +208,6 @@
                                             <td>₹<%= parseFloat(p.paymentAmount).toLocaleString('en-IN') %></td>
                                             <td><%= p.paymentMode %></td>
                                             <td><%= p.paymentType %></td>
-                                            <td class="<%= p.balanceAfterPayment == 0 ? 'text-success fw-bold' : '' %>">
-                                                ₹<%= parseFloat(p.balanceAfterPayment).toLocaleString('en-IN') %>
-                                            </td>
                                         </tr>
                                     <% }); %>
                                 </tbody>

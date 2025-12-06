@@ -329,7 +329,6 @@
                                         <th class="d-none d-md-table-cell">Date</th>
                                         <th>Amount</th>
                                         <th class="d-none d-lg-table-cell">Mode</th>
-                                        <th class="d-none d-md-table-cell">Balance After</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -340,7 +339,6 @@
                                             <td class="d-none d-md-table-cell"><%= new Date(payment.receiptDate).toLocaleDateString('en-IN') %></td>
                                             <td class="text-success fw-bold">₹<%= parseFloat(payment.paymentAmount).toLocaleString('en-IN') %></td>
                                             <td class="d-none d-lg-table-cell"><%= payment.paymentMode %></td>
-                                            <td class="d-none d-md-table-cell">₹<%= parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN') %></td>
                                             <td>
                                                 <a href="/payment/<%= payment.id %>" class="btn btn-sm btn-success" title="View Payment">
                                                     <i class="bi bi-receipt"></i>
@@ -367,7 +365,7 @@
                                         <th class="d-md-none">Total:</th>
                                         <th></th>
                                         <th class="text-success">₹<%= payments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0).toLocaleString('en-IN') %></th>
-                                        <th colspan="3"></th>
+                                        <th colspan="2"></th>
                                     </tr>
                                 </tfoot>
                             </table>

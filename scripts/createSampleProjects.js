@@ -154,9 +154,7 @@ const createSampleData = async () => {
             transactionNo: 'DEMO' + Date.now(),
             remarks: 'Initial booking payment (Sample Data)',
             paymentType: 'Booking',
-            isRecurring: false,
-            balanceBeforePayment: totalAmount,
-            balanceAfterPayment: totalAmount - bookingAmount
+            isRecurring: false
         }, { transaction });
         console.log('✅ Sample payment created: ₹' + bookingAmount.toLocaleString('en-IN'));
 

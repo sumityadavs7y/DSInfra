@@ -62,17 +62,6 @@ const Payment = sequelize.define('Payment', {
     allowNull: true,
     comment: 'Installment number if recurring'
   },
-  // Balance tracking
-  balanceBeforePayment: {
-    type: DataTypes.DECIMAL(15, 2),
-    allowNull: false,
-    comment: 'Remaining balance before this payment'
-  },
-  balanceAfterPayment: {
-    type: DataTypes.DECIMAL(15, 2),
-    allowNull: false,
-    comment: 'Remaining balance after this payment'
-  },
   // Created by
   createdBy: {
     type: DataTypes.INTEGER,
