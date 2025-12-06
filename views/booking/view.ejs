@@ -339,9 +339,21 @@
                                             <td class="d-none d-lg-table-cell"><%= payment.paymentMode %></td>
                                             <td class="d-none d-md-table-cell">₹<%= parseFloat(payment.balanceAfterPayment).toLocaleString('en-IN') %></td>
                                             <td>
-                                                <a href="/payment/<%= payment.id %>" class="btn btn-sm btn-success">
+                                                <a href="/payment/<%= payment.id %>" class="btn btn-sm btn-success" title="View Payment">
                                                     <i class="bi bi-receipt"></i>
                                                 </a>
+                                                <% if (userRole === 'admin') { %>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ms-1" title="Delete Payment"
+                                                        onclick="if(confirm('Are you sure you want to delete this payment? The booking balance will be recalculated.')) { 
+                                                            const form = document.createElement('form'); 
+                                                            form.method = 'POST'; 
+                                                            form.action = '/payment/<%= payment.id %>/delete'; 
+                                                            document.body.appendChild(form); 
+                                                            form.submit(); 
+                                                        }">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                <% } %>
                                             </td>
                                         </tr>
                                     <% }); %>

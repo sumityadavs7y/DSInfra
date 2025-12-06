@@ -260,9 +260,9 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             return res.status(404).send('Payment not found');
         }
 
-        // Get all payments for this booking for history
+        // Get all payments for this booking for history (exclude deleted)
         const allPayments = await Payment.findAll({
-            where: { bookingId: payment.bookingId },
+            where: { bookingId: payment.bookingId, isDeleted: false },
             order: [['receiptDate', 'ASC']]
         });
 
