@@ -98,20 +98,8 @@ const { runMigrations } = require('./utils/migrate');
 await runMigrations();
 ```
 
-### `server/models/index.js`
-**Before:**
-```javascript
-await sequelize.sync({ alter: true });  // DANGEROUS!
-```
-
-**After:**
-```javascript
-// NOTE: Database schema changes should be done through migrations
-// Migrations are run automatically when the server starts
-```
-
-### `server/index.js`
-Updated initialization message to reflect migration usage.
+### `server/` directory
+**REMOVED:** Entire duplicate `/server/` directory with API implementation has been deleted to eliminate code redundancy.
 
 ## 🎯 Key Changes
 

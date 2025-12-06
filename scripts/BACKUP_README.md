@@ -4,36 +4,7 @@ This folder contains scripts to backup your PostgreSQL database.
 
 ## 📦 Available Scripts
 
-### 1. `backup-postgres.sh` (Interactive)
-Full-featured backup script with prompts and detailed output.
-
-**Features:**
-- ✅ Interactive confirmation
-- ✅ Checks disk space
-- ✅ Detailed progress and summary
-- ✅ Creates ~/backup directory automatically
-- ✅ Sets secure permissions (600)
-
-**Usage:**
-```bash
-sudo ./scripts/backup-postgres.sh
-```
-
-### 2. `backup-postgres-simple.sh` (Non-Interactive)
-Quick backup without prompts - perfect for cron jobs.
-
-**Features:**
-- ✅ No prompts (automated)
-- ✅ Fast execution
-- ✅ Good for cron jobs
-- ✅ Creates ~/backup directory automatically
-
-**Usage:**
-```bash
-sudo ./scripts/backup-postgres-simple.sh
-```
-
-### 3. `backup-postgres-db.sh` (Recommended for Database Backup)
+### 1. `backup-postgres-db.sh` (Recommended for Database Backup)
 Uses `pg_dump` for logical database backup (RECOMMENDED).
 
 **Features:**
@@ -42,6 +13,7 @@ Uses `pg_dump` for logical database backup (RECOMMENDED).
 - ✅ Easier to restore
 - ✅ Can restore to different PostgreSQL version
 - ✅ Compressed output
+- ✅ No need to stop PostgreSQL
 
 **Usage:**
 ```bash
@@ -53,34 +25,44 @@ export DB_PASSWORD=your_password
 ./scripts/backup-postgres-db.sh
 ```
 
+### 2. `backup-postgres-quick.sh` (Quick Backup from .env)
+Quick backup that loads credentials from .env file.
+
+**Features:**
+- ✅ Loads config from .env automatically
+- ✅ No prompts (automated)
+- ✅ Good for cron jobs
+- ✅ Auto-cleanup of old backups (30+ days)
+- ✅ Creates ~/backup directory automatically
+
+**Usage:**
+```bash
+./scripts/backup-postgres-quick.sh
+```
+
 ## 🎯 Which Script Should I Use?
 
 ### For Regular Backups (RECOMMENDED):
 Use `backup-postgres-db.sh` - It's the PostgreSQL-recommended way to backup databases.
 
-### For Full Data Directory Backup:
-Use `backup-postgres.sh` or `backup-postgres-simple.sh` if you need to backup the entire data directory (includes all databases, WAL files, etc.)
+### For Quick Automated Backups:
+Use `backup-postgres-quick.sh` if you have credentials in your .env file and want automatic cleanup
 
 ## 📝 Manual Usage
-
-### Interactive Backup (Data Directory)
-```bash
-sudo ./scripts/backup-postgres.sh
-```
-
-Output location: `~/backup/postgres_backup_YYYYMMDD_HHMMSS.zip`
-
-### Automated Backup (Data Directory)
-```bash
-sudo ./scripts/backup-postgres-simple.sh
-```
 
 ### Database Backup (Recommended)
 ```bash
 ./scripts/backup-postgres-db.sh
 ```
 
-Output location: `~/backup/db_backup_dsinfra_YYYYMMDD_HHMMSS.sql.gz`
+Output location: `~/backup/db_backup_dsinfra_YYYYMMDD_HHMMSS.dump`
+
+### Quick Backup (from .env)
+```bash
+./scripts/backup-postgres-quick.sh
+```
+
+Output location: `~/backup/db_backup_dsinfra_YYYYMMDD_HHMMSS.dump`
 
 ## ⏰ Automated Backups (Cron)
 
@@ -95,13 +77,13 @@ crontab -e
 0 2 * * * cd /workspaces/ds && ./scripts/backup-postgres-db.sh >> ~/backup/backup.log 2>&1
 ```
 
-**For Data Directory Backup:**
+**For Quick Backup (from .env):**
 ```bash
-# Edit root crontab (requires sudo)
-sudo crontab -e
+# Edit crontab
+crontab -e
 
 # Add this line for daily backup at 2 AM
-0 2 * * * cd /workspaces/ds && ./scripts/backup-postgres-simple.sh >> /root/backup/backup.log 2>&1
+0 2 * * * cd /workspaces/ds && ./scripts/backup-postgres-quick.sh >> ~/backup/backup.log 2>&1
 ```
 
 ### Cron Schedule Examples
@@ -125,25 +107,13 @@ sudo crontab -e
 
 ## 🔄 Restore Backups
 
-### Restore Data Directory Backup
+### Restore Database Backup
 ```bash
-# Stop PostgreSQL
-sudo systemctl stop postgresql
+# Using pg_restore (for .dump files)
+pg_restore -U dsuser -d dsinfra ~/backup/db_backup_dsinfra_20240101_120000.dump
 
-# Extract backup
-sudo unzip ~/backup/postgres_backup_20240101_120000.zip -d /
-
-# Start PostgreSQL
-sudo systemctl start postgresql
-```
-
-### Restore Database Backup (Recommended)
-```bash
-# Using pg_restore
-pg_restore -U dsuser -d dsinfra ~/backup/db_backup_dsinfra_20240101_120000.sql.gz
-
-# Or using psql if plain SQL
-gunzip -c ~/backup/db_backup_dsinfra_20240101_120000.sql.gz | psql -U dsuser -d dsinfra
+# Or with host and password
+PGPASSWORD=your_password pg_restore -U dsuser -h localhost -d dsinfra ~/backup/db_backup_dsinfra_20240101_120000.dump
 ```
 
 ## 🗑️ Cleanup Old Backups
@@ -151,50 +121,34 @@ gunzip -c ~/backup/db_backup_dsinfra_20240101_120000.sql.gz | psql -U dsuser -d 
 To keep only the last 7 days of backups:
 
 ```bash
-# For data directory backups
-find ~/backup -name "postgres_backup_*.zip" -mtime +7 -delete
-
 # For database backups
-find ~/backup -name "db_backup_*.sql.gz" -mtime +7 -delete
+find ~/backup -name "db_backup_*.dump" -mtime +7 -delete
 ```
 
 Add to cron for automatic cleanup:
 ```bash
 # Daily cleanup at 3 AM
-0 3 * * * find ~/backup -name "postgres_backup_*.zip" -mtime +7 -delete
+0 3 * * * find ~/backup -name "db_backup_*.dump" -mtime +7 -delete
 ```
+
+**Note:** `backup-postgres-quick.sh` automatically cleans up backups older than 30 days.
 
 ## 📊 Backup Size Estimation
 
-**Data Directory Backup:**
-- Full backup of `/var/lib/postgresql/16/main`
-- Size: Typically 2-5x the database size
-- Includes all databases, WAL files, config
-
 **Database Backup (pg_dump):**
 - Logical backup of specific database
-- Size: Smaller, compressed
+- Size: Smaller, compressed (custom format)
 - Only includes database content
+- Typical size: 50-80% of actual database size
 
 ## ⚠️ Important Notes
 
-### Data Directory Backup:
-1. **Stop PostgreSQL** before backup for consistency:
-   ```bash
-   sudo systemctl stop postgresql
-   # Run backup
-   sudo systemctl start postgresql
-   ```
-
-2. **Requires root access** to read PostgreSQL data directory
-
-3. **Large backups** - Can take significant time and space
-
-### Database Backup:
+### Database Backup (pg_dump):
 1. **No need to stop PostgreSQL** - safe while running
 2. **Smaller backups** - Only database content
 3. **Easier to restore** - Standard PostgreSQL format
 4. **Cross-version compatible** - Can restore to different versions
+5. **Recommended approach** by PostgreSQL documentation
 
 ## 🔒 Security
 
@@ -211,28 +165,26 @@ For production:
 
 ## 🆘 Troubleshooting
 
-### "Permission denied"
-Run with sudo for data directory backups:
-```bash
-sudo ./scripts/backup-postgres.sh
-```
-
-### "PostgreSQL data directory not found"
-Update the path in the script:
-```bash
-POSTGRES_DATA_DIR="/var/lib/postgresql/16/main"
-```
-
-### "zip command not found"
-Install zip:
-```bash
-sudo apt-get install zip
-```
-
 ### "pg_dump command not found"
 Install PostgreSQL client:
 ```bash
 sudo apt-get install postgresql-client
+```
+
+### "Password authentication failed"
+Make sure your credentials are correct:
+```bash
+export DB_PASSWORD=your_actual_password
+./scripts/backup-postgres-db.sh
+```
+
+Or add them to your `.env` file for `backup-postgres-quick.sh`
+
+### "Permission denied to backup directory"
+Create the backup directory:
+```bash
+mkdir -p ~/backup
+chmod 755 ~/backup
 ```
 
 ## 📚 Related Documentation
