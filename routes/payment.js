@@ -75,6 +75,25 @@ router.get('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             order: [['bookingDate', 'DESC']]
         });
         
+        // Calculate totalPaid for each booking at runtime
+        for (const booking of allBookings) {
+            const totalPaid = await Payment.sum('paymentAmount', {
+                where: { 
+                    bookingId: booking.id, 
+                    isDeleted: false 
+                }
+            }) || 0;
+            
+            // Set totalPaid as a property on the booking instance
+            booking.dataValues.totalPaid = totalPaid;
+            Object.defineProperty(booking, 'totalPaid', {
+                value: totalPaid,
+                writable: true,
+                enumerable: true,
+                configurable: true
+            });
+        }
+        
         // Filter bookings with remaining balance (calculate at runtime)
         const bookings = allBookings.filter(booking => {
             const remainingAmount = parseFloat(booking.totalAmount) - parseFloat(booking.totalPaid || 0);
@@ -218,6 +237,25 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             where: { status: 'Active', isDeleted: false },
             include: [{ model: Customer, as: 'customer' }, { model: Project, as: 'project' }]
         });
+        
+        // Calculate totalPaid for each booking at runtime
+        for (const booking of allBookings) {
+            const totalPaid = await Payment.sum('paymentAmount', {
+                where: { 
+                    bookingId: booking.id, 
+                    isDeleted: false 
+                }
+            }) || 0;
+            
+            booking.dataValues.totalPaid = totalPaid;
+            Object.defineProperty(booking, 'totalPaid', {
+                value: totalPaid,
+                writable: true,
+                enumerable: true,
+                configurable: true
+            });
+        }
+        
         const bookings = allBookings.filter(b => (parseFloat(b.totalAmount) - parseFloat(b.totalPaid || 0)) > 0);
         res.render('payment/create', {
             bookings,
@@ -330,6 +368,23 @@ router.get('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
         if (!payment) {
             return res.status(404).send('Payment not found');
         }
+
+        // Calculate totalPaid for the booking at runtime
+        const totalPaid = await Payment.sum('paymentAmount', {
+            where: { 
+                bookingId: payment.booking.id, 
+                isDeleted: false 
+            }
+        }) || 0;
+        
+        // Set totalPaid as a property on the booking instance
+        payment.booking.dataValues.totalPaid = totalPaid;
+        Object.defineProperty(payment.booking, 'totalPaid', {
+            value: totalPaid,
+            writable: true,
+            enumerable: true,
+            configurable: true
+        });
 
         res.render('payment/edit', {
             payment,
