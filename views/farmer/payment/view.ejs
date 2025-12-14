@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Payment Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <%- include('../../partials/page-header', { 
+        title: 'Payment #' + payment.serialNo, 
+        icon: 'bi-cash-stack', 
+        backUrl: '/farmer/payments', 
+        actionUrl: userRole !== 'associate' && !payment.isDeleted ? '/farmer/payments/' + payment.id + '/edit' : null, 
+        actionText: 'Edit Payment', 
+        actionIcon: 'bi-pencil'
+    }) %>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Payment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">Serial No:</th>
+                                <td><strong>#<%= payment.serialNo %></strong></td>
+                            </tr>
+                            <tr>
+                                <th>Project:</th>
+                                <td><%= payment.project.name %></td>
+                            </tr>
+                            <tr>
+                                <th>Date:</th>
+                                <td><%= new Date(payment.date).toLocaleDateString('en-IN') %></td>
+                            </tr>
+                            <tr>
+                                <th>Given By:</th>
+                                <td><%= payment.givenBy %></td>
+                            </tr>
+                            <tr>
+                                <th>Received To:</th>
+                                <td><%= payment.receivedTo %></td>
+                            </tr>
+                            <tr>
+                                <th>Mode:</th>
+                                <td><span class="badge bg-info"><%= payment.mode %></span></td>
+                            </tr>
+                            <tr>
+                                <th>Amount:</th>
+                                <td><strong class="h5 text-success">₹<%= parseFloat(payment.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></strong></td>
+                            </tr>
+                            <% if (payment.remarks) { %>
+                            <tr>
+                                <th>Remarks:</th>
+                                <td><%= payment.remarks %></td>
+                            </tr>
+                            <% } %>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <% if (payment.isDeleted) { %>
+                                    <span class="badge bg-danger">Deleted</span>
+                                    <% } else { %>
+                                    <span class="badge bg-success">Active</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created At:</th>
+                                <td><%= new Date(payment.createdAt).toLocaleString('en-IN') %></td>
+                            </tr>
+                            <tr>
+                                <th>Last Updated:</th>
+                                <td><%= new Date(payment.updatedAt).toLocaleString('en-IN') %></td>
+                            </tr>
+                        </table>
+
+                        <% if (userRole !== 'associate' && !payment.isDeleted) { %>
+                        <div class="mt-4">
+                            <form method="POST" action="/farmer/payments/<%= payment.id %>/delete" 
+                                  onsubmit="return confirm('Are you sure you want to delete this payment?');">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Delete Payment
+                                </button>
+                            </form>
+                        </div>
+                        <% } %>
+
+                        <% if (userRole !== 'associate' && payment.isDeleted) { %>
+                        <div class="mt-4">
+                            <form method="POST" action="/farmer/payments/<%= payment.id %>/restore">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Restore Payment
+                                </button>
+                            </form>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

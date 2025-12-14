@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Registry Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <%- include('../../partials/page-header', { 
+        title: 'Registry #' + registry.serialNo, 
+        icon: 'bi-file-earmark-text', 
+        backUrl: '/farmer/registries', 
+        actionUrl: userRole !== 'associate' && !registry.isDeleted ? '/farmer/registries/' + registry.id + '/edit' : null, 
+        actionText: 'Edit Registry', 
+        actionIcon: 'bi-pencil'
+    }) %>
+
+    <div class="container my-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Registry Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">Serial No:</th>
+                                <td><strong>#<%= registry.serialNo %></strong></td>
+                            </tr>
+                            <tr>
+                                <th>Project:</th>
+                                <td><%= registry.project.name %></td>
+                            </tr>
+                            <tr>
+                                <th>Registry Done By:</th>
+                                <td><%= registry.registryDoneBy %></td>
+                            </tr>
+                            <tr>
+                                <th>Date:</th>
+                                <td><%= new Date(registry.date).toLocaleDateString('en-IN') %></td>
+                            </tr>
+                            <tr>
+                                <th>Rate:</th>
+                                <td>₹<%= parseFloat(registry.rate).toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></td>
+                            </tr>
+                            <tr>
+                                <th>Area:</th>
+                                <td><%= parseFloat(registry.area).toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></td>
+                            </tr>
+                            <tr>
+                                <th>Total (Rate × Area):</th>
+                                <td><strong class="h5 text-danger">₹<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></strong></td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <% if (registry.isDeleted) { %>
+                                    <span class="badge bg-danger">Deleted</span>
+                                    <% } else { %>
+                                    <span class="badge bg-success">Active</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Created At:</th>
+                                <td><%= new Date(registry.createdAt).toLocaleString('en-IN') %></td>
+                            </tr>
+                            <tr>
+                                <th>Last Updated:</th>
+                                <td><%= new Date(registry.updatedAt).toLocaleString('en-IN') %></td>
+                            </tr>
+                        </table>
+
+                        <% if (userRole !== 'associate' && !registry.isDeleted) { %>
+                        <div class="mt-4">
+                            <form method="POST" action="/farmer/registries/<%= registry.id %>/delete" 
+                                  onsubmit="return confirm('Are you sure you want to delete this registry?');">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="bi bi-trash"></i> Delete Registry
+                                </button>
+                            </form>
+                        </div>
+                        <% } %>
+
+                        <% if (userRole !== 'associate' && registry.isDeleted) { %>
+                        <div class="mt-4">
+                            <form method="POST" action="/farmer/registries/<%= registry.id %>/restore">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Restore Registry
+                                </button>
+                            </form>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

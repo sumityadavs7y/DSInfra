@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Payments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <%- include('../../partials/page-header', { 
+        title: 'Farmer Payments', 
+        icon: 'bi-cash-stack', 
+        backUrl: '/farmer', 
+        actionUrl: '/farmer/payments/create' + (projectId ? '?projectId=' + projectId : ''), 
+        actionText: 'New Payment', 
+        actionIcon: 'bi-plus-circle'
+    }) %>
+
+    <div class="container my-4">
+        <!-- Show/Hide Deleted Toggle -->
+        <div class="mb-3">
+            <% if (showDeleted) { %>
+                <a href="/farmer/payments?projectId=<%= projectId %>" class="btn btn-outline-danger">
+                    <i class="bi bi-eye-slash"></i> Hide Deleted
+                </a>
+            <% } else { %>
+                <a href="/farmer/payments?projectId=<%= projectId %>&showDeleted=true" class="btn btn-outline-secondary">
+                    <i class="bi bi-trash"></i> Show Deleted
+                </a>
+            <% } %>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <form action="/farmer/payments" method="GET" class="row g-3">
+                    <input type="hidden" name="showDeleted" value="<%= showDeleted ? 'true' : '' %>">
+                    
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small">Project Filter</label>
+                        <select class="form-select" name="projectId">
+                            <option value="">All Projects</option>
+                            <% projects.forEach(project => { %>
+                            <option value="<%= project.id %>" <%= projectId == project.id ? 'selected' : '' %>>
+                                <%= project.name %>
+                            </option>
+                            <% }) %>
+                        </select>
+                    </div>
+
+                    <div class="col-12 col-md-3">
+                        <label class="form-label small">Search</label>
+                        <input type="text" class="form-control" placeholder="Given by / Received to" 
+                               name="search" value="<%= search || '' %>">
+                    </div>
+
+                    <div class="col-12 col-md-2">
+                        <label class="form-label small">Start Date</label>
+                        <input type="date" class="form-control" name="startDate" value="<%= startDate %>">
+                    </div>
+
+                    <div class="col-12 col-md-2">
+                        <label class="form-label small">End Date</label>
+                        <input type="date" class="form-control" name="endDate" value="<%= endDate %>">
+                    </div>
+
+                    <div class="col-12 col-md-2 d-flex align-items-end">
+                        <div class="d-flex gap-2 w-100">
+                            <button type="submit" class="btn btn-primary flex-fill">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                            <% if (search || projectId || startDate || endDate) { %>
+                            <a href="/farmer/payments" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i>
+                            </a>
+                            <% } %>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Total Summary -->
+        <div class="card border-0 shadow-sm mb-4 bg-success text-white">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">Total Payments: <%= payments.length %></h5>
+                    </div>
+                    <div class="col text-end">
+                        <h4 class="mb-0">₹<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Table -->
+        <% if (payments.length === 0) { %>
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-cash-stack fs-1 text-muted"></i>
+                <p class="text-muted mt-3">No payments found</p>
+                <% if (userRole !== 'associate') { %>
+                <a href="/farmer/payments/create<%= projectId ? '?projectId=' + projectId : '' %>" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Create First Payment
+                </a>
+                <% } %>
+            </div>
+        </div>
+        <% } else { %>
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>S.No.</th>
+                            <th>Project</th>
+                            <th>Date</th>
+                            <th>Given By</th>
+                            <th>Received To</th>
+                            <th>Mode</th>
+                            <th class="text-end">Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% payments.forEach(payment => { %>
+                        <tr class="<%= payment.isDeleted ? 'table-danger' : '' %>">
+                            <td><%= payment.serialNo %></td>
+                            <td>
+                                <small class="text-muted">
+                                    <i class="bi bi-folder"></i> <%= payment.project.name %>
+                                </small>
+                            </td>
+                            <td><%= new Date(payment.date).toLocaleDateString('en-IN') %></td>
+                            <td><%= payment.givenBy %></td>
+                            <td><%= payment.receivedTo %></td>
+                            <td><span class="badge bg-info"><%= payment.mode %></span></td>
+                            <td class="text-end"><strong>₹<%= parseFloat(payment.amount).toLocaleString('en-IN') %></strong></td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="/farmer/payments/<%= payment.id %>" class="btn btn-outline-dark" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <% if (userRole !== 'associate' && !payment.isDeleted) { %>
+                                    <a href="/farmer/payments/<%= payment.id %>/edit" class="btn btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" title="Delete" 
+                                            onclick="if(confirm('Are you sure you want to delete this payment?')) { document.getElementById('delete-form-<%= payment.id %>').submit(); }">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                    <% } %>
+                                </div>
+                                <% if (userRole !== 'associate' && !payment.isDeleted) { %>
+                                <form id="delete-form-<%= payment.id %>" method="POST" action="/farmer/payments/<%= payment.id %>/delete" style="display:none;"></form>
+                                <% } %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

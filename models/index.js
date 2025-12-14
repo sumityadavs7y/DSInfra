@@ -16,6 +16,9 @@ const Attendance = require('./Attendance');
 const EmployeeSalary = require('./EmployeeSalary');
 const EmployeeDocument = require('./EmployeeDocument');
 const UserBrokerAccess = require('./UserBrokerAccess');
+const FarmerProject = require('./FarmerProject');
+const FarmerPayment = require('./FarmerPayment');
+const FarmerRegistry = require('./FarmerRegistry');
 
 // Define relationships
 User.hasMany(Customer, { foreignKey: 'createdBy', as: 'customers' });
@@ -122,6 +125,13 @@ UserBrokerAccess.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 Broker.hasMany(UserBrokerAccess, { foreignKey: 'brokerId', as: 'userAccess' });
 UserBrokerAccess.belongsTo(Broker, { foreignKey: 'brokerId', as: 'broker' });
 
+// Farmer Management relationships
+FarmerProject.hasMany(FarmerPayment, { foreignKey: 'projectId', as: 'payments' });
+FarmerPayment.belongsTo(FarmerProject, { foreignKey: 'projectId', as: 'project' });
+
+FarmerProject.hasMany(FarmerRegistry, { foreignKey: 'projectId', as: 'registries' });
+FarmerRegistry.belongsTo(FarmerProject, { foreignKey: 'projectId', as: 'project' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -142,5 +152,9 @@ module.exports = {
   Attendance,
   EmployeeSalary,
   EmployeeDocument,
-  UserBrokerAccess
+  UserBrokerAccess,
+  // Farmer Management Models
+  FarmerProject,
+  FarmerPayment,
+  FarmerRegistry
 };

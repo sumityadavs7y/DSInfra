@@ -64,6 +64,9 @@ const brokerPaymentRoutes = require('./routes/brokerPayment');
 const teamRoutes = require('./routes/team');
 const employeeRoutes = require('./routes/employee');
 const farmerRoutes = require('./routes/farmer');
+const farmerProjectRoutes = require('./routes/farmerProject');
+const farmerPaymentRoutes = require('./routes/farmerPayment');
+const farmerRegistryRoutes = require('./routes/farmerRegistry');
 const { blockAssociateAccess } = require('./middleware/auth');
 
 app.use('/', indexRoutes);
@@ -79,6 +82,9 @@ app.use('/broker-payment', brokerPaymentRoutes);
 app.use('/team', blockAssociateAccess, teamRoutes);
 app.use('/employee', blockAssociateAccess, employeeRoutes);
 app.use('/farmer', farmerRoutes);
+app.use('/farmer/projects', farmerProjectRoutes);
+app.use('/farmer/payments', farmerPaymentRoutes);
+app.use('/farmer/registries', farmerRegistryRoutes);
 
 // Initialize default data using scripts
 const initializeDefaultData = async () => {
