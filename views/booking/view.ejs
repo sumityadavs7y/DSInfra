@@ -276,6 +276,42 @@
                             </div>
                         </div>
 
+                        <!-- Additional Booking Info -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="card border-info">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-2"><i class="bi bi-bank"></i> Loan Status</h6>
+                                        <h5 class="mb-0">
+                                            <% if (booking.loan === 'Yes') { %>
+                                                <span class="badge bg-primary">Yes</span>
+                                            <% } else if (booking.loan === 'No') { %>
+                                                <span class="badge bg-secondary">No</span>
+                                            <% } else { %>
+                                                <span class="badge bg-light text-dark">N/A</span>
+                                            <% } %>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-warning">
+                                    <div class="card-body">
+                                        <h6 class="text-muted mb-2"><i class="bi bi-calendar-event"></i> Expected Registry Date</h6>
+                                        <h5 class="mb-0">
+                                            <% if (booking.expectedRegistryDate) { %>
+                                                <%= new Date(booking.expectedRegistryDate).toLocaleDateString('en-IN', { 
+                                                    year: 'numeric', month: 'short', day: 'numeric'
+                                                }) %>
+                                            <% } else { %>
+                                                <span class="text-muted">Not Set</span>
+                                            <% } %>
+                                        </h5>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Registry Status -->
                         <div class="alert <%= booking.registryCompleted ? 'alert-success' : 'alert-warning' %> mb-0">
                             <div class="row align-items-center">
@@ -296,7 +332,13 @@
                                     <% } else { %>
                                         <p class="mb-0 text-warning">
                                             <strong>Registry Pending</strong><br>
-                                            <small>Property registration/registry is not yet completed</small>
+                                            <small>Property registration/registry is not yet completed
+                                            <% if (booking.expectedRegistryDate) { %>
+                                                - Expected by <%= new Date(booking.expectedRegistryDate).toLocaleDateString('en-IN', { 
+                                                    year: 'numeric', month: 'short', day: 'numeric'
+                                                }) %>
+                                            <% } %>
+                                            </small>
                                         </p>
                                     <% } %>
                                 </div>

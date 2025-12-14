@@ -181,7 +181,9 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             transactionNo,
             paymentRemarks,
             bookingDate,
-            receiptDate
+            receiptDate,
+            expectedRegistryDate,
+            loan
         } = req.body;
 
         // Calculate effective rate and total amount
@@ -255,6 +257,8 @@ router.post('/create', isAuthenticated, isNotAssociate, async (req, res) => {
             brokerId: brokerId || null,
             associatePlcCommission: associatePlcCommission || 0,
             status: 'Active',
+            expectedRegistryDate: expectedRegistryDate ? new Date(expectedRegistryDate) : null,
+            loan: loan || 'N/A',
             createdBy: req.session.userId
         }, { transaction });
 
@@ -481,7 +485,9 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
             status,
             bookingDate,
             registryCompleted,
-            registryDate
+            registryDate,
+            expectedRegistryDate,
+            loan
         } = req.body;
 
         // Calculate effective rate and total amount
@@ -515,7 +521,9 @@ router.post('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
             associatePlcCommission: associatePlcCommission || 0,
             status: status || 'Active',
             registryCompleted: registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true',
-            registryDate: (registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true') && registryDate ? new Date(registryDate) : null
+            registryDate: (registryCompleted === 'on' || registryCompleted === true || registryCompleted === 'true') && registryDate ? new Date(registryDate) : null,
+            expectedRegistryDate: expectedRegistryDate ? new Date(expectedRegistryDate) : null,
+            loan: loan || 'N/A'
         }, { transaction });
 
         await transaction.commit();

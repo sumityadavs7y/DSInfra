@@ -90,6 +90,17 @@ const Booking = sequelize.define('Booking', {
     allowNull: true,
     comment: 'Date when registry was completed'
   },
+  expectedRegistryDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    comment: 'Expected date for registry completion'
+  },
+  loan: {
+    type: DataTypes.ENUM('N/A', 'Yes', 'No'),
+    defaultValue: 'N/A',
+    allowNull: false,
+    comment: 'Loan status for the booking'
+  },
   // Broker Reference (Optional - refers to Broker entity)
   brokerId: {
     type: DataTypes.INTEGER,

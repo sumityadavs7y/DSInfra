@@ -172,10 +172,25 @@
                                     </select>
                                 </div>
                                 <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">Loan</label>
+                                    <select class="form-select" name="loan">
+                                        <option value="N/A" <%= (booking.loan || 'N/A') === 'N/A' ? 'selected' : '' %>>N/A</option>
+                                        <option value="Yes" <%= booking.loan === 'Yes' ? 'selected' : '' %>>Yes</option>
+                                        <option value="No" <%= booking.loan === 'No' ? 'selected' : '' %>>No</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-semibold">Expected Registry Date</label>
+                                    <input type="date" class="form-control" name="expectedRegistryDate"
+                                           value="<%= booking.expectedRegistryDate ? new Date(booking.expectedRegistryDate).toISOString().split('T')[0] : '' %>">
+                                    <small class="text-muted">Expected date for registry completion</small>
+                                </div>
+                                <div class="col-12 col-md-6">
                                     <label class="form-label fw-semibold">Registry Date</label>
                                     <input type="date" class="form-control" name="registryDate" id="registryDate"
                                            value="<%= booking.registryDate ? new Date(booking.registryDate).toISOString().split('T')[0] : '' %>"
                                            <%= booking.registryCompleted ? '' : 'disabled' %>>
+                                    <small class="text-muted">Actual registry completion date</small>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-check form-switch">
