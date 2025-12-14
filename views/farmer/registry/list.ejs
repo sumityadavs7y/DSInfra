@@ -53,7 +53,7 @@
 
                                     <div class="col-12 col-md-3">
                                         <label class="form-label small">Search</label>
-                                        <input type="text" class="form-control" placeholder="Name / Registry done by" 
+                                        <input type="text" class="form-control" placeholder="Name / Plot / Registry done by" 
                                                name="search" value="<%= search || '' %>">
                                     </div>
 
@@ -133,6 +133,7 @@
                             <th>S.No.</th>
                             <th>Project</th>
                             <th>Name</th>
+                            <th>Plot Number</th>
                             <th>Registry Done By</th>
                             <th>Date</th>
                             <th class="text-end">Rate</th>
@@ -151,6 +152,7 @@
                                 </small>
                             </td>
                             <td><strong><%= registry.name %></strong></td>
+                            <td><%= registry.plotNumber %></td>
                             <td><%= registry.registryDoneBy %></td>
                             <td><%= new Date(registry.date).toLocaleDateString('en-IN') %></td>
                             <td class="text-end">₹<%= parseFloat(registry.rate).toLocaleString('en-IN') %></td>

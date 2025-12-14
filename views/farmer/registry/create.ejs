@@ -56,6 +56,15 @@
                                 </div>
 
                                 <div class="col-12">
+                                    <label for="plotNumber" class="form-label">Plot Number <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control <%= errors.plotNumber ? 'is-invalid' : '' %>" 
+                                           id="plotNumber" name="plotNumber" value="<%= registry.plotNumber || '' %>" required>
+                                    <% if (errors.plotNumber) { %>
+                                    <div class="invalid-feedback"><%= errors.plotNumber.msg %></div>
+                                    <% } %>
+                                </div>
+
+                                <div class="col-12">
                                     <label for="registryDoneBy" class="form-label">Registry Done By <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control <%= errors.registryDoneBy ? 'is-invalid' : '' %>" 
                                            id="registryDoneBy" name="registryDoneBy" value="<%= registry.registryDoneBy || '' %>" required>

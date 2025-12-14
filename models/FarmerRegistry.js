@@ -27,6 +27,13 @@ const FarmerRegistry = sequelize.define('FarmerRegistry', {
       notEmpty: true
     }
   },
+  plotNumber: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
+  },
   registryDoneBy: {
     type: DataTypes.STRING,
     allowNull: false,
