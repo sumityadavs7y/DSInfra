@@ -20,6 +20,13 @@ const FarmerRegistry = sequelize.define('FarmerRegistry', {
       key: 'id'
     }
   },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    validate: {
+      notEmpty: true
+    }
+  },
   registryDoneBy: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -38,6 +45,10 @@ const FarmerRegistry = sequelize.define('FarmerRegistry', {
   area: {
     type: DataTypes.DECIMAL(15, 2),
     allowNull: false
+  },
+  remarks: {
+    type: DataTypes.TEXT,
+    allowNull: true
   },
   isDeleted: {
     type: DataTypes.BOOLEAN,

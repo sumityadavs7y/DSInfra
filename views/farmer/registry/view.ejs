@@ -35,6 +35,10 @@
                                 <td><%= registry.project.name %></td>
                             </tr>
                             <tr>
+                                <th>Name:</th>
+                                <td><strong><%= registry.name %></strong></td>
+                            </tr>
+                            <tr>
                                 <th>Registry Done By:</th>
                                 <td><%= registry.registryDoneBy %></td>
                             </tr>
@@ -54,6 +58,12 @@
                                 <th>Total (Rate × Area):</th>
                                 <td><strong class="h5 text-danger">₹<%= total.toLocaleString('en-IN', { minimumFractionDigits: 2 }) %></strong></td>
                             </tr>
+                            <% if (registry.remarks) { %>
+                            <tr>
+                                <th>Remarks:</th>
+                                <td><%= registry.remarks %></td>
+                            </tr>
+                            <% } %>
                             <tr>
                                 <th>Status:</th>
                                 <td>

@@ -49,11 +49,11 @@
                         </select>
                     </div>
 
-                    <div class="col-12 col-md-3">
-                        <label class="form-label small">Search</label>
-                        <input type="text" class="form-control" placeholder="Registry done by" 
-                               name="search" value="<%= search || '' %>">
-                    </div>
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label small">Search</label>
+                                        <input type="text" class="form-control" placeholder="Name / Registry done by" 
+                                               name="search" value="<%= search || '' %>">
+                                    </div>
 
                     <div class="col-12 col-md-2">
                         <label class="form-label small">Start Date</label>
@@ -130,6 +130,7 @@
                         <tr>
                             <th>S.No.</th>
                             <th>Project</th>
+                            <th>Name</th>
                             <th>Registry Done By</th>
                             <th>Date</th>
                             <th class="text-end">Rate</th>
@@ -147,6 +148,7 @@
                                     <i class="bi bi-folder"></i> <%= registry.project.name %>
                                 </small>
                             </td>
+                            <td><strong><%= registry.name %></strong></td>
                             <td><%= registry.registryDoneBy %></td>
                             <td><%= new Date(registry.date).toLocaleDateString('en-IN') %></td>
                             <td class="text-end">₹<%= parseFloat(registry.rate).toLocaleString('en-IN') %></td>

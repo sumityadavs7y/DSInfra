@@ -22,9 +22,12 @@ router.get('/', isAuthenticated, async (req, res) => {
             whereClause.projectId = projectId;
         }
 
-        // Search in registryDoneBy
+        // Search in name or registryDoneBy
         if (search) {
-            whereClause.registryDoneBy = { [Op.like]: `%${search}%` };
+            whereClause[Op.or] = [
+                { name: { [Op.like]: `%${search}%` } },
+                { registryDoneBy: { [Op.like]: `%${search}%` } }
+            ];
         }
 
         // Date range filter
@@ -116,6 +119,7 @@ router.get('/create', isAuthenticated, blockAssociateAccess, async (req, res) =>
 // Create Registry POST
 router.post('/create', isAuthenticated, blockAssociateAccess, [
     body('projectId').notEmpty().withMessage('Project is required'),
+    body('name').notEmpty().withMessage('Name is required'),
     body('registryDoneBy').notEmpty().withMessage('Registry done by is required'),
     body('date').notEmpty().withMessage('Date is required'),
     body('rate').isFloat({ min: 0.01 }).withMessage('Rate must be greater than 0'),
@@ -140,7 +144,7 @@ router.post('/create', isAuthenticated, blockAssociateAccess, [
     }
 
     try {
-        const { projectId, registryDoneBy, date, rate, area } = req.body;
+        const { projectId, name, registryDoneBy, date, rate, area, remarks } = req.body;
 
         // Verify project exists
         const project = await FarmerProject.findByPk(projectId);
@@ -172,10 +176,12 @@ router.post('/create', isAuthenticated, blockAssociateAccess, [
         await FarmerRegistry.create({
             serialNo,
             projectId,
+            name,
             registryDoneBy,
             date,
             rate,
-            area
+            area,
+            remarks: remarks || null
         });
 
         res.redirect('/farmer/registries?projectId=' + projectId);
@@ -260,6 +266,7 @@ router.get('/:id/edit', isAuthenticated, blockAssociateAccess, async (req, res) 
 // Edit Registry POST
 router.post('/:id/edit', isAuthenticated, blockAssociateAccess, [
     body('projectId').notEmpty().withMessage('Project is required'),
+    body('name').notEmpty().withMessage('Name is required'),
     body('registryDoneBy').notEmpty().withMessage('Registry done by is required'),
     body('date').notEmpty().withMessage('Date is required'),
     body('rate').isFloat({ min: 0.01 }).withMessage('Rate must be greater than 0'),
@@ -290,7 +297,7 @@ router.post('/:id/edit', isAuthenticated, blockAssociateAccess, [
             return res.status(404).send('Farmer registry not found');
         }
 
-        const { projectId, registryDoneBy, date, rate, area } = req.body;
+        const { projectId, name, registryDoneBy, date, rate, area, remarks } = req.body;
 
         // Verify project exists
         const project = await FarmerProject.findByPk(projectId);
@@ -324,10 +331,12 @@ router.post('/:id/edit', isAuthenticated, blockAssociateAccess, [
         await registry.update({
             serialNo,
             projectId,
+            name,
             registryDoneBy,
             date,
             rate,
-            area
+            area,
+            remarks: remarks || null
         });
 
         res.redirect(`/farmer/registries/${registry.id}`);
