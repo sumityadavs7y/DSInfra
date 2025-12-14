@@ -334,12 +334,26 @@ router.get('/:id/slip', isAuthenticated, async (req, res) => {
             return res.status(404).send('Payment not found');
         }
 
+        // Get all payments for this booking
+        const allPaymentsData = await Payment.findAll({
+            where: { 
+                bookingId: payment.bookingId,
+                isDeleted: false
+            },
+            order: [['receiptDate', 'ASC']]
+        });
+
+        // Calculate total paid
+        const totalPaid = allPaymentsData.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
+
         // Convert amount to words
         const amountInWords = numberToWords(parseFloat(payment.paymentAmount));
 
         res.render('payment/slip', {
             payment,
             amountInWords,
+            allPaymentsData,
+            totalPaid,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
@@ -540,17 +554,28 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
             return res.status(404).send('Payment not found');
         }
 
-        // Get all payments for this booking
+        // Get all payments for this booking (excluding current payment for history)
         const allPayments = await Payment.findAll({
-            where: { bookingId: payment.bookingId },
+            where: { 
+                bookingId: payment.bookingId,
+                isDeleted: false
+            },
             order: [['receiptDate', 'ASC']]
         });
 
-        // Create PDF with letterhead-compatible margins - Compact layout
+        // Calculate totals
+        const totalPaid = allPayments.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
+        const totalAmount = parseFloat(payment.booking.totalAmount);
+        const pendingAmount = totalAmount - totalPaid;
+
+        // Previous payments (excluding current one)
+        const previousPayments = allPayments.filter(p => p.id !== payment.id);
+
+        // Create PDF matching the exact sample format
         const doc = new PDFDocument({ 
             margins: {
-                top: 100,      // Space for letterhead header
-                bottom: 60,    // Space for letterhead footer
+                top: 50,
+                bottom: 50,
                 left: 50,
                 right: 50
             },
@@ -562,93 +587,169 @@ router.get('/:id/pdf', isAuthenticated, async (req, res) => {
         
         doc.pipe(res);
 
-        // ==================== LETTERHEAD HEADER SPACE (100pt) ====================
-
-        // Document Title (compact)
-        doc.fontSize(16).text('PAYMENT RECEIPT', { align: 'center' });
-        doc.moveDown(0.3);
-        doc.fontSize(9).text(`Receipt No: ${payment.receiptNo}  |  Date: ${new Date(payment.receiptDate).toLocaleDateString('en-IN')}`, { align: 'center' });
+        // Title
+        doc.fontSize(18).font('Helvetica-Bold').text('PAYMENT RECEIPT', { align: 'center' });
         doc.moveDown(0.5);
 
-        // Customer & Booking Details (compact combined)
-        doc.fontSize(11).text('Customer & Booking Details', { underline: true });
-        doc.moveDown(0.3);
-        doc.fontSize(9);
-        doc.text(`Customer: ${payment.booking.customer.applicantName} (${payment.booking.customer.customerNo})  |  Mobile: ${payment.booking.customer.mobileNo}`);
-        doc.text(`Address: ${payment.booking.customer.address}`);
-        doc.text(`Booking: ${payment.booking.bookingNo}  |  Project: ${payment.booking.project.projectName}  |  Plot: ${payment.booking.plotNo}`);
-        doc.text(`Total Booking Amount: ₹${parseFloat(payment.booking.totalAmount).toLocaleString('en-IN')}`);
-        doc.moveDown(0.5);
-
-        // Payment Details (compact)
-        doc.fontSize(11).text('Payment Details', { underline: true });
-        doc.moveDown(0.3);
-        doc.fontSize(10).fillColor('black').text(`Payment Amount: ₹${parseFloat(payment.paymentAmount).toLocaleString('en-IN')}`, { bold: true });
-        doc.fontSize(9).fillColor('black');
-        doc.text(`Amount in Words: ${numberToWords(payment.paymentAmount)} Rupees Only`);
-        doc.text(`Mode: ${payment.paymentMode}  |  Type: ${payment.paymentType}${payment.transactionNo ? '  |  Txn: ' + payment.transactionNo : ''}`);
-        if (payment.isRecurring && payment.installmentNumber) {
-            doc.text(`Installment Number: ${payment.installmentNumber}`);
-        }
-        if (payment.remarks) {
-            doc.text(`Remarks: ${payment.remarks}`);
-        }
-        doc.moveDown(0.5);
-
-        // Balance Details (compact)
-        const totalPaidSoFar = parseFloat(booking.totalPaid || 0);
-        const remainingBalance = parseFloat(booking.totalAmount) - totalPaidSoFar;
+        // Header info line - Booking Appl. No, Receipt No, Date
+        const y = doc.y;
+        doc.fontSize(9).font('Helvetica-Bold');
+        doc.text('Booking Appl. No.', 50, y);
+        doc.font('Helvetica');
+        doc.text(`: ${payment.booking.bookingNo}`, 150, y);
         
-        doc.fontSize(11).text('Balance Details', { underline: true });
-        doc.moveDown(0.3);
-        doc.fontSize(9);
-        doc.text(`Total Amount: ₹${parseFloat(booking.totalAmount).toLocaleString('en-IN')}  |  Total Paid: ₹${totalPaidSoFar.toLocaleString('en-IN')}  |  Balance Due: ₹${remainingBalance.toLocaleString('en-IN')}`);
-        doc.moveDown(0.5);
+        doc.font('Helvetica-Bold');
+        doc.text('Receipt No:', 300, y);
+        doc.font('Helvetica');
+        doc.text(` ${payment.receiptNo}`, 365, y);
+        
+        doc.font('Helvetica-Bold');
+        doc.text('Date:', 480, y);
+        doc.font('Helvetica');
+        doc.text(` ${new Date(payment.receiptDate).toLocaleDateString('en-IN')}`, 505, y);
+        
+        doc.moveDown(1.5);
 
-        // Payment History List (compact)
-        if (allPayments.length > 0) {
-            doc.fontSize(11).text('Payment History', { underline: true });
-            doc.moveDown(0.3);
-            doc.fontSize(8);
+        // APPLICANTS DETAILS Section
+        doc.fontSize(10).font('Helvetica-Bold').text('APPLICANTS DETAILS');
+        doc.moveDown(0.3);
+        
+        const tableTop = doc.y;
+        doc.fontSize(9).font('Helvetica');
+        
+        // Draw applicant details table
+        let yPos = tableTop;
+        const leftCol = 50;
+        const middleCol = 320;
+        
+        // Row 1: Name and Aadhaar
+        doc.font('Helvetica-Bold').text('Mr./Ms./Mrs/M+Dr', leftCol, yPos);
+        doc.font('Helvetica').text(`: ${payment.booking.customer.applicantName}`, leftCol + 120, yPos);
+        doc.font('Helvetica-Bold').text('Aadhar No.', middleCol, yPos);
+        doc.font('Helvetica').text(`: ${payment.booking.customer.aadhaarNo || 'NA'}`, middleCol + 70, yPos);
+        yPos += 15;
+        
+        // Row 2: Father/Husband and Mobile
+        doc.font('Helvetica-Bold').text('Son/Wife/Daughter of', leftCol, yPos);
+        doc.font('Helvetica').text(`: ${payment.booking.customer.fatherOrHusbandName || 'NA'}`, leftCol + 120, yPos);
+        doc.font('Helvetica-Bold').text('Mobile No.', middleCol, yPos);
+        doc.font('Helvetica').text(`: ${payment.booking.customer.mobileNo || 'NA'}`, middleCol + 70, yPos);
+        yPos += 15;
+        
+        // Row 3: Address
+        doc.font('Helvetica-Bold').text('Address', leftCol, yPos);
+        doc.font('Helvetica').text(`: ${payment.booking.customer.address}`, leftCol + 120, yPos, { width: 400 });
+        
+        doc.moveDown(1.5);
+
+        // PAYMENT DETAILS Section
+        doc.fontSize(10).font('Helvetica-Bold').text('PAYMENT DETAILS');
+        doc.moveDown(0.3);
+        
+        yPos = doc.y;
+        
+        // Amount Received
+        doc.font('Helvetica-Bold').text('Amt. Received (Rs.)', leftCol, yPos);
+        doc.fontSize(11).text(`: ₹ ${parseFloat(payment.paymentAmount).toLocaleString('en-IN')}`, leftCol + 120, yPos);
+        doc.fontSize(9).font('Helvetica').text(`( Rupees ${numberToWords(payment.paymentAmount)} Only )`, leftCol + 250, yPos);
+        yPos += 15;
+        
+        // Payment Mode
+        doc.font('Helvetica-Bold').text('Payment Mode', leftCol, yPos);
+        doc.font('Helvetica').text(`: ${payment.paymentMode}`, leftCol + 120, yPos);
+        doc.font('Helvetica-Bold').text('Transaction No.:', middleCol, yPos);
+        doc.font('Helvetica').text(` ${payment.transactionNo || 'NA'}`, middleCol + 85, yPos);
+        doc.font('Helvetica-Bold').text('Date :', 480, yPos);
+        doc.font('Helvetica').text(` ${new Date(payment.receiptDate).toLocaleDateString('en-IN')}`, 505, yPos);
+        yPos += 15;
+        
+        // Remarks
+        doc.font('Helvetica-Bold').text('Remarks (If Any)', leftCol, yPos);
+        doc.font('Helvetica').text(`: ${payment.remarks || 'NA'}`, leftCol + 120, yPos);
+        
+        doc.moveDown(1.5);
+
+        // PREVIOUS PAYMENT DETAILS Section with Table
+        doc.fontSize(10).font('Helvetica-Bold').text('PREVIOUS PAYMENT DETAILS');
+        doc.moveDown(0.2);
+        
+        // Add total and pending amount on the right
+        const rightX = 400;
+        yPos = doc.y;
+        doc.fontSize(9).font('Helvetica-Bold').text('TOTAL AMOUNT (Rs.):', rightX, yPos);
+        doc.font('Helvetica').text(`₹ ${totalAmount.toLocaleString('en-IN')}`, rightX + 120, yPos);
+        yPos += 12;
+        doc.font('Helvetica-Bold').text('PENDING AMOUNT (Rs.):', rightX, yPos);
+        doc.font('Helvetica').text(`₹ ${pendingAmount.toLocaleString('en-IN')}`, rightX + 120, yPos);
+        
+        doc.moveDown(0.3);
+
+        // Draw table for previous payments
+        const tableStartY = doc.y;
+        const colWidths = {
+            date: 70,
+            transactionNo: 100,
+            mode: 80,
+            amount: 90,
+            receiptNo: 90
+        };
+        
+        const drawTableRow = (y, date, txnNo, mode, amount, receiptNo, isHeader = false) => {
+            const font = isHeader ? 'Helvetica-Bold' : 'Helvetica';
+            const fontSize = isHeader ? 9 : 8;
+            doc.font(font).fontSize(fontSize);
             
-            // Show last 5 payments as a list
-            const paymentsToShow = allPayments.slice(-5);
-            paymentsToShow.forEach((p, index) => {
-                const paymentDate = new Date(p.receiptDate).toLocaleDateString('en-IN');
-                const amount = parseFloat(p.paymentAmount).toLocaleString('en-IN');
-                
-                doc.text(`${index + 1}. ${paymentDate} - ${p.receiptNo} - ₹${amount} (${p.paymentMode})`, {
-                    width: 495,
-                    lineGap: 0
-                });
-                doc.moveDown(0.3);
-            });
-            
-            if (allPayments.length > 5) {
-                doc.fontSize(7).fillColor('gray').text(`(Showing last 5 of ${allPayments.length} total payments)`, { align: 'center' });
-                doc.fillColor('black');
+            let x = 50;
+            doc.text(date, x, y, { width: colWidths.date });
+            x += colWidths.date;
+            doc.text(txnNo, x, y, { width: colWidths.transactionNo });
+            x += colWidths.transactionNo;
+            doc.text(mode, x, y, { width: colWidths.mode });
+            x += colWidths.mode;
+            doc.text(amount, x, y, { width: colWidths.amount });
+            x += colWidths.amount;
+            doc.text(receiptNo, x, y, { width: colWidths.receiptNo });
+        };
+        
+        // Table header
+        let tableY = tableStartY;
+        doc.rect(50, tableY - 2, 495, 15).stroke();
+        drawTableRow(tableY, 'Date', 'Transaction No.', 'Mode', 'Amount', 'Recpt. No.', true);
+        tableY += 15;
+        
+        // Table rows for previous payments (max 10 rows shown)
+        const maxRows = 10;
+        for (let i = 0; i < maxRows; i++) {
+            doc.rect(50, tableY - 2, 495, 15).stroke();
+            if (i < previousPayments.length) {
+                const p = previousPayments[i];
+                drawTableRow(
+                    tableY,
+                    new Date(p.receiptDate).toLocaleDateString('en-IN'),
+                    p.transactionNo || '-',
+                    p.paymentMode,
+                    `₹${parseFloat(p.paymentAmount).toLocaleString('en-IN')}`,
+                    p.receiptNo
+                );
             }
-        }
-
-        doc.moveDown(0.8);
-
-        // Signatures (compact - ensure they're above footer space)
-        const pageHeight = doc.page.height;
-        const footerStart = pageHeight - 60;
-        
-        // Ensure enough space for signatures
-        if (doc.y > footerStart - 50) {
-            doc.addPage();
+            tableY += 15;
         }
         
-        doc.fontSize(9);
-        const sigY = Math.max(doc.y, footerStart - 45);
-        doc.text('______________________', 100, sigY);
-        doc.text('Customer Signature', 100, sigY + 15, { width: 150, align: 'center' });
-        doc.text('______________________', 350, sigY);
-        doc.text('Authorized Signature', 350, sigY + 15, { width: 150, align: 'center' });
+        doc.moveDown(2);
 
-        // ==================== LETTERHEAD FOOTER SPACE (60pt) ====================
+        // Terms & Condition
+        doc.fontSize(8).font('Helvetica-Bold').text('Terms & Condition :', 50);
+        doc.font('Helvetica').text('Applicable bank charges shall be levied on outstation cheques. In case the cheque or payment instrument is returned unpaid for any reason, the booking will automatically stand cancelled without any further notice.', 50, doc.y, { 
+            width: 495,
+            align: 'justify'
+        });
+        
+        doc.moveDown(2);
+
+        // Signature line
+        const sigY = doc.y + 20;
+        doc.fontSize(9).font('Helvetica');
+        doc.text('( Authorised Signatory )', 450, sigY, { align: 'right' });
 
         doc.end();
     } catch (error) {
