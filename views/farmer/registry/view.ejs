@@ -84,9 +84,9 @@
                             </tr>
                         </table>
 
-                        <% if (userRole !== 'associate' && !registry.isDeleted) { %>
+                        <% if (userRole !== 'associate' && userRole !== 'farmer' && !registry.isDeleted) { %>
                         <div class="mt-4">
-                            <form method="POST" action="/farmer/registries/<%= registry.id %>/delete" 
+                            <form method="POST" action="/farmer/registries/<%= registry.id %>/delete"
                                   onsubmit="return confirm('Are you sure you want to delete this registry?');">
                                 <button type="submit" class="btn btn-danger">
                                     <i class="bi bi-trash"></i> Delete Registry
@@ -95,7 +95,7 @@
                         </div>
                         <% } %>
 
-                        <% if (userRole !== 'associate' && registry.isDeleted) { %>
+                        <% if (userRole !== 'associate' && userRole !== 'farmer' && registry.isDeleted) { %>
                         <div class="mt-4">
                             <form method="POST" action="/farmer/registries/<%= registry.id %>/restore">
                                 <button type="submit" class="btn btn-success">

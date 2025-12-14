@@ -12,13 +12,14 @@
         title: 'Farmer Registries', 
         icon: 'bi-file-earmark-text', 
         backUrl: '/farmer', 
-        actionUrl: '/farmer/registries/create' + (projectId ? '?projectId=' + projectId : ''), 
+        actionUrl: userRole !== 'farmer' ? '/farmer/registries/create' + (projectId ? '?projectId=' + projectId : '') : '', 
         actionText: 'New Registry', 
         actionIcon: 'bi-plus-circle'
     }) %>
 
     <div class="container my-4">
         <!-- Show/Hide Deleted Toggle -->
+        <% if (userRole !== 'farmer') { %>
         <div class="mb-3">
             <% if (showDeleted) { %>
                 <a href="/farmer/registries?projectId=<%= projectId %>" class="btn btn-outline-danger">
@@ -30,6 +31,7 @@
                 </a>
             <% } %>
         </div>
+        <% } %>
 
         <!-- Search & Filter -->
         <div class="card border-0 shadow-sm mb-4">
@@ -115,7 +117,7 @@
             <div class="card-body text-center py-5">
                 <i class="bi bi-file-earmark-text fs-1 text-muted"></i>
                 <p class="text-muted mt-3">No registries found</p>
-                <% if (userRole !== 'associate') { %>
+                <% if (userRole !== 'associate' && userRole !== 'farmer') { %>
                 <a href="/farmer/registries/create<%= projectId ? '?projectId=' + projectId : '' %>" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Create First Registry
                 </a>
@@ -159,7 +161,7 @@
                                     <a href="/farmer/registries/<%= registry.id %>" class="btn btn-outline-dark" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <% if (userRole !== 'associate' && !registry.isDeleted) { %>
+                                    <% if (userRole !== 'associate' && userRole !== 'farmer' && !registry.isDeleted) { %>
                                     <a href="/farmer/registries/<%= registry.id %>/edit" class="btn btn-outline-primary" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
@@ -169,7 +171,7 @@
                                     </button>
                                     <% } %>
                                 </div>
-                                <% if (userRole !== 'associate' && !registry.isDeleted) { %>
+                                <% if (userRole !== 'associate' && userRole !== 'farmer' && !registry.isDeleted) { %>
                                 <form id="delete-form-<%= registry.id %>" method="POST" action="/farmer/registries/<%= registry.id %>/delete" style="display:none;"></form>
                                 <% } %>
                             </td>

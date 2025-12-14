@@ -22,6 +22,22 @@ const isNotAssociate = (req, res, next) => {
     res.status(403).send('Access denied. Associate users have read-only access.');
 };
 
+// Middleware to check if user is NOT a farmer (farmers are read-only)
+const isNotFarmer = (req, res, next) => {
+    if (req.session && req.session.userId && req.session.userRole !== 'farmer') {
+        return next();
+    }
+    res.status(403).send('Access denied. Farmer users have read-only access.');
+};
+
+// Middleware to check if user is NOT an associate or farmer (both are read-only)
+const isNotReadOnly = (req, res, next) => {
+    if (req.session && req.session.userId && req.session.userRole !== 'associate' && req.session.userRole !== 'farmer') {
+        return next();
+    }
+    res.status(403).send('Access denied. Read-only users cannot perform this action.');
+};
+
 // Middleware to redirect to dashboard if already logged in
 const redirectIfAuthenticated = (req, res, next) => {
     if (req.session && req.session.userId) {
@@ -49,6 +65,29 @@ const getAccessibleBrokerIds = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Error getting accessible broker IDs:', error);
+        res.status(500).send('Error checking access permissions');
+    }
+};
+
+// Middleware to get accessible farmer project IDs for the current user
+// For farmers, returns only their assigned projects
+// For other roles, returns all projects
+const getAccessibleFarmerProjectIds = async (req, res, next) => {
+    try {
+        if (req.session.userRole === 'farmer') {
+            const { UserFarmerProjectAccess } = require('../models');
+            const accessRecords = await UserFarmerProjectAccess.findAll({
+                where: { userId: req.session.userId },
+                attributes: ['farmerProjectId']
+            });
+            req.accessibleFarmerProjectIds = accessRecords.map(record => record.farmerProjectId);
+        } else {
+            // Admin, manager, employee, user have access to all farmer projects
+            req.accessibleFarmerProjectIds = null; // null means all projects
+        }
+        next();
+    } catch (error) {
+        console.error('Error getting accessible farmer project IDs:', error);
         res.status(500).send('Error checking access permissions');
     }
 };
@@ -134,14 +173,69 @@ const blockAssociateAccess = (req, res, next) => {
     next();
 };
 
+// Middleware to block farmers from accessing restricted routes
+const blockFarmerAccess = (req, res, next) => {
+    if (req.session && req.session.userRole === 'farmer') {
+        return res.status(403).send('Access denied. This module is not available for farmer users.');
+    }
+    next();
+};
+
+// Middleware to block both associates and farmers from accessing restricted routes
+const blockReadOnlyAccess = (req, res, next) => {
+    if (req.session && (req.session.userRole === 'associate' || req.session.userRole === 'farmer')) {
+        return res.status(403).send('Access denied. This module is not available for read-only users.');
+    }
+    next();
+};
+
+// Middleware to check if user has access to a specific farmer project
+const canAccessFarmerProject = async (req, res, next) => {
+    try {
+        // Admin, manager, employee, user can access all farmer projects
+        if (req.session.userRole !== 'farmer') {
+            return next();
+        }
+
+        // For farmers, check if they have access to this project
+        const farmerProjectId = req.params.id || req.params.projectId;
+        if (!farmerProjectId) {
+            return res.status(400).send('Farmer Project ID not provided');
+        }
+
+        const { UserFarmerProjectAccess } = require('../models');
+        const hasAccess = await UserFarmerProjectAccess.findOne({
+            where: {
+                userId: req.session.userId,
+                farmerProjectId: parseInt(farmerProjectId)
+            }
+        });
+
+        if (!hasAccess) {
+            return res.status(403).send('Access denied. You do not have permission to view this farmer project.');
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error checking farmer project access:', error);
+        res.status(500).send('Error checking access permissions');
+    }
+};
+
 module.exports = {
     isAuthenticated,
     isAdmin,
     isNotAssociate,
+    isNotFarmer,
+    isNotReadOnly,
     redirectIfAuthenticated,
     getAccessibleBrokerIds,
+    getAccessibleFarmerProjectIds,
     canAccessBroker,
     canAccessBooking,
-    blockAssociateAccess
+    canAccessFarmerProject,
+    blockAssociateAccess,
+    blockFarmerAccess,
+    blockReadOnlyAccess
 };
 

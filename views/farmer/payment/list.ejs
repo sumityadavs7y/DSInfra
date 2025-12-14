@@ -12,13 +12,14 @@
         title: 'Farmer Payments', 
         icon: 'bi-cash-stack', 
         backUrl: '/farmer', 
-        actionUrl: '/farmer/payments/create' + (projectId ? '?projectId=' + projectId : ''), 
+        actionUrl: userRole !== 'farmer' ? '/farmer/payments/create' + (projectId ? '?projectId=' + projectId : '') : '', 
         actionText: 'New Payment', 
         actionIcon: 'bi-plus-circle'
     }) %>
 
     <div class="container my-4">
         <!-- Show/Hide Deleted Toggle -->
+        <% if (userRole !== 'farmer') { %>
         <div class="mb-3">
             <% if (showDeleted) { %>
                 <a href="/farmer/payments?projectId=<%= projectId %>" class="btn btn-outline-danger">
@@ -30,6 +31,7 @@
                 </a>
             <% } %>
         </div>
+        <% } %>
 
         <!-- Search & Filter -->
         <div class="card border-0 shadow-sm mb-4">
@@ -101,7 +103,7 @@
             <div class="card-body text-center py-5">
                 <i class="bi bi-cash-stack fs-1 text-muted"></i>
                 <p class="text-muted mt-3">No payments found</p>
-                <% if (userRole !== 'associate') { %>
+                <% if (userRole !== 'associate' && userRole !== 'farmer') { %>
                 <a href="/farmer/payments/create<%= projectId ? '?projectId=' + projectId : '' %>" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Create First Payment
                 </a>
@@ -143,7 +145,7 @@
                                     <a href="/farmer/payments/<%= payment.id %>" class="btn btn-outline-dark" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <% if (userRole !== 'associate' && !payment.isDeleted) { %>
+                                    <% if (userRole !== 'associate' && userRole !== 'farmer' && !payment.isDeleted) { %>
                                     <a href="/farmer/payments/<%= payment.id %>/edit" class="btn btn-outline-primary" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
@@ -153,7 +155,7 @@
                                     </button>
                                     <% } %>
                                 </div>
-                                <% if (userRole !== 'associate' && !payment.isDeleted) { %>
+                                <% if (userRole !== 'associate' && userRole !== 'farmer' && !payment.isDeleted) { %>
                                 <form id="delete-form-<%= payment.id %>" method="POST" action="/farmer/payments/<%= payment.id %>/delete" style="display:none;"></form>
                                 <% } %>
                             </td>

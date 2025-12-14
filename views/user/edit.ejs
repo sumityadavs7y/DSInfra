@@ -57,13 +57,14 @@
                                 <label for="role" class="form-label">
                                     <i class="bi bi-shield-check"></i> Role
                                 </label>
-                                <select class="form-select" id="role" name="role" required onchange="toggleBrokerSelection()">
+                                <select class="form-select" id="role" name="role" required onchange="toggleRoleSelection()">
                                     <option value="">Select Role</option>
                                     <option value="admin" <%= user.role === 'admin' ? 'selected' : '' %>>Admin</option>
                                     <option value="manager" <%= user.role === 'manager' ? 'selected' : '' %>>Manager</option>
                                     <option value="employee" <%= user.role === 'employee' ? 'selected' : '' %>>Employee</option>
                                     <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>User</option>
                                     <option value="associate" <%= user.role === 'associate' ? 'selected' : '' %>>Partner Login (View Only)</option>
+                                    <option value="farmer" <%= user.role === 'farmer' ? 'selected' : '' %>>Farmer Login (View Only)</option>
                                 </select>
                             </div>
 
@@ -81,6 +82,22 @@
                                     <% } %>
                                 </select>
                                 <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple partners</small>
+                            </div>
+
+                            <div class="mb-4" id="farmerProjectSelectionDiv" style="display: none;">
+                                <label for="farmerProjectIds" class="form-label">
+                                    <i class="bi bi-folder"></i> Select Farmer Projects to View <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="farmerProjectIds" name="farmerProjectIds" multiple size="8">
+                                    <% if (typeof farmerProjects !== 'undefined' && farmerProjects.length > 0) { %>
+                                        <% farmerProjects.forEach(project => { %>
+                                            <option value="<%= project.id %>" <%= (typeof userFarmerProjectIds !== 'undefined' && userFarmerProjectIds.includes(project.id)) ? 'selected' : '' %>><%= project.name %></option>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <option disabled>No farmer projects available</option>
+                                    <% } %>
+                                </select>
+                                <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple projects</small>
                             </div>
 
                             <div class="alert alert-info">
@@ -117,23 +134,33 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function toggleBrokerSelection() {
+        function toggleRoleSelection() {
             const roleSelect = document.getElementById('role');
             const brokerDiv = document.getElementById('brokerSelectionDiv');
             const brokerSelect = document.getElementById('brokerIds');
+            const farmerProjectDiv = document.getElementById('farmerProjectSelectionDiv');
+            const farmerProjectSelect = document.getElementById('farmerProjectIds');
             
+            // Hide all role-specific selections first
+            brokerDiv.style.display = 'none';
+            brokerSelect.required = false;
+            
+            farmerProjectDiv.style.display = 'none';
+            farmerProjectSelect.required = false;
+            
+            // Show the appropriate selection based on role
             if (roleSelect.value === 'associate') {
                 brokerDiv.style.display = 'block';
                 brokerSelect.required = true;
-            } else {
-                brokerDiv.style.display = 'none';
-                brokerSelect.required = false;
+            } else if (roleSelect.value === 'farmer') {
+                farmerProjectDiv.style.display = 'block';
+                farmerProjectSelect.required = true;
             }
         }
 
         // Run on page load to handle any pre-selected values
         document.addEventListener('DOMContentLoaded', function() {
-            toggleBrokerSelection();
+            toggleRoleSelection();
         });
     </script>
 </body>

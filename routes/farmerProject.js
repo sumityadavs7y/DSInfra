@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
-const { isAuthenticated, blockAssociateAccess } = require('../middleware/auth');
+const { isAuthenticated, blockAssociateAccess, blockFarmerAccess, getAccessibleFarmerProjectIds, canAccessFarmerProject } = require('../middleware/auth');
 const { FarmerProject, FarmerPayment, FarmerRegistry } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../models/sequelize');
 
 // Project List Page
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', isAuthenticated, getAccessibleFarmerProjectIds, async (req, res) => {
     try {
         const { search, showDeleted } = req.query;
         let whereClause = {};
@@ -19,6 +19,11 @@ router.get('/', isAuthenticated, async (req, res) => {
 
         if (search) {
             whereClause.name = { [Op.like]: `%${search}%` };
+        }
+
+        // If user is a farmer, filter by accessible projects
+        if (req.accessibleFarmerProjectIds !== null) {
+            whereClause.id = { [Op.in]: req.accessibleFarmerProjectIds };
         }
 
         const projects = await FarmerProject.findAll({
@@ -40,7 +45,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 });
 
 // Create Project GET
-router.get('/create', isAuthenticated, blockAssociateAccess, (req, res) => {
+router.get('/create', isAuthenticated, blockAssociateAccess, blockFarmerAccess, (req, res) => {
     res.render('farmer/project/create', {
         project: {},
         errors: {},
@@ -51,7 +56,7 @@ router.get('/create', isAuthenticated, blockAssociateAccess, (req, res) => {
 });
 
 // Create Project POST
-router.post('/create', isAuthenticated, blockAssociateAccess, [
+router.post('/create', isAuthenticated, blockAssociateAccess, blockFarmerAccess, [
     body('name').notEmpty().withMessage('Project name is required')
 ], async (req, res) => {
     const errors = validationResult(req);
@@ -103,7 +108,7 @@ router.post('/create', isAuthenticated, blockAssociateAccess, [
 });
 
 // View Project
-router.get('/:id', isAuthenticated, async (req, res) => {
+router.get('/:id', isAuthenticated, canAccessFarmerProject, async (req, res) => {
     try {
         const project = await FarmerProject.findByPk(req.params.id);
         
@@ -159,7 +164,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Edit Project GET
-router.get('/:id/edit', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.get('/:id/edit', isAuthenticated, blockAssociateAccess, blockFarmerAccess, canAccessFarmerProject, async (req, res) => {
     try {
         const project = await FarmerProject.findByPk(req.params.id);
         
@@ -181,7 +186,7 @@ router.get('/:id/edit', isAuthenticated, blockAssociateAccess, async (req, res) 
 });
 
 // Edit Project POST
-router.post('/:id/edit', isAuthenticated, blockAssociateAccess, [
+router.post('/:id/edit', isAuthenticated, blockAssociateAccess, blockFarmerAccess, canAccessFarmerProject, [
     body('name').notEmpty().withMessage('Project name is required')
 ], async (req, res) => {
     const errors = validationResult(req);
@@ -240,7 +245,7 @@ router.post('/:id/edit', isAuthenticated, blockAssociateAccess, [
 });
 
 // Delete Project (soft delete)
-router.post('/:id/delete', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.post('/:id/delete', isAuthenticated, blockAssociateAccess, blockFarmerAccess, canAccessFarmerProject, async (req, res) => {
     try {
         const project = await FarmerProject.findByPk(req.params.id);
         
@@ -258,7 +263,7 @@ router.post('/:id/delete', isAuthenticated, blockAssociateAccess, async (req, re
 });
 
 // Restore Project
-router.post('/:id/restore', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.post('/:id/restore', isAuthenticated, blockAssociateAccess, blockFarmerAccess, canAccessFarmerProject, async (req, res) => {
     try {
         const project = await FarmerProject.findByPk(req.params.id);
         
@@ -276,7 +281,7 @@ router.post('/:id/restore', isAuthenticated, blockAssociateAccess, async (req, r
 });
 
 // Toggle Quick Link
-router.post('/:id/toggle-quicklink', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.post('/:id/toggle-quicklink', isAuthenticated, blockAssociateAccess, blockFarmerAccess, canAccessFarmerProject, async (req, res) => {
     try {
         const project = await FarmerProject.findByPk(req.params.id);
         

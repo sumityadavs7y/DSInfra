@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { User, Broker, UserBrokerAccess } = require('../models');
+const { User, Broker, UserBrokerAccess, FarmerProject, UserFarmerProjectAccess } = require('../models');
 const { isAuthenticated, isAdmin } = require('../middleware/auth');
 
 // Middleware to ensure only admins can access user management
@@ -38,11 +38,18 @@ router.get('/create', async (req, res) => {
             order: [['brokerNo', 'ASC']]
         });
 
+        // Fetch all active farmer projects for the farmer selection
+        const farmerProjects = await FarmerProject.findAll({
+            where: { isDeleted: false },
+            order: [['name', 'ASC']]
+        });
+
         res.render('user/create', {
             userName: req.session.userName,
             userEmail: req.session.userEmail,
             userRole: req.session.userRole,
             brokers,
+            farmerProjects,
             errorMessage: null
         });
     } catch (error) {
@@ -54,7 +61,7 @@ router.get('/create', async (req, res) => {
 // Create new user
 router.post('/create', async (req, res) => {
     try {
-        const { name, email, password, role, brokerIds } = req.body;
+        const { name, email, password, role, brokerIds, farmerProjectIds } = req.body;
 
         // Validate required fields
         if (!name || !email || !password || !role) {
@@ -62,11 +69,16 @@ router.post('/create', async (req, res) => {
                 where: { isDeleted: false },
                 order: [['brokerNo', 'ASC']]
             });
+            const farmerProjects = await FarmerProject.findAll({
+                where: { isDeleted: false },
+                order: [['name', 'ASC']]
+            });
             return res.render('user/create', {
                 userName: req.session.userName,
                 userEmail: req.session.userEmail,
                 userRole: req.session.userRole,
                 brokers,
+                farmerProjects,
                 errorMessage: 'All fields are required'
             });
         }
@@ -78,12 +90,39 @@ router.post('/create', async (req, res) => {
                     where: { isDeleted: false },
                     order: [['brokerNo', 'ASC']]
                 });
+                const farmerProjects = await FarmerProject.findAll({
+                    where: { isDeleted: false },
+                    order: [['name', 'ASC']]
+                });
                 return res.render('user/create', {
                     userName: req.session.userName,
                     userEmail: req.session.userEmail,
                     userRole: req.session.userRole,
                     brokers,
+                    farmerProjects,
                     errorMessage: 'Please select at least one associate for the associate login role'
+                });
+            }
+        }
+
+        // Validate farmer project selection for farmer role
+        if (role === 'farmer') {
+            if (!farmerProjectIds || (Array.isArray(farmerProjectIds) && farmerProjectIds.length === 0)) {
+                const brokers = await Broker.findAll({
+                    where: { isDeleted: false },
+                    order: [['brokerNo', 'ASC']]
+                });
+                const farmerProjects = await FarmerProject.findAll({
+                    where: { isDeleted: false },
+                    order: [['name', 'ASC']]
+                });
+                return res.render('user/create', {
+                    userName: req.session.userName,
+                    userEmail: req.session.userEmail,
+                    userRole: req.session.userRole,
+                    brokers,
+                    farmerProjects,
+                    errorMessage: 'Please select at least one farmer project for the farmer login role'
                 });
             }
         }
@@ -95,11 +134,16 @@ router.post('/create', async (req, res) => {
                 where: { isDeleted: false },
                 order: [['brokerNo', 'ASC']]
             });
+            const farmerProjects = await FarmerProject.findAll({
+                where: { isDeleted: false },
+                order: [['name', 'ASC']]
+            });
             return res.render('user/create', {
                 userName: req.session.userName,
                 userEmail: req.session.userEmail,
                 userRole: req.session.userRole,
                 brokers,
+                farmerProjects,
                 errorMessage: 'Email already exists'
             });
         }
@@ -122,6 +166,16 @@ router.post('/create', async (req, res) => {
             await UserBrokerAccess.bulkCreate(accessRecords);
         }
 
+        // If role is farmer, create farmer project access records
+        if (role === 'farmer' && farmerProjectIds) {
+            const farmerProjectIdArray = Array.isArray(farmerProjectIds) ? farmerProjectIds : [farmerProjectIds];
+            const accessRecords = farmerProjectIdArray.map(farmerProjectId => ({
+                userId: user.id,
+                farmerProjectId: parseInt(farmerProjectId)
+            }));
+            await UserFarmerProjectAccess.bulkCreate(accessRecords);
+        }
+
         res.redirect('/user?success=User created successfully');
     } catch (error) {
         console.error('Error creating user:', error);
@@ -129,11 +183,16 @@ router.post('/create', async (req, res) => {
             where: { isDeleted: false },
             order: [['brokerNo', 'ASC']]
         });
+        const farmerProjects = await FarmerProject.findAll({
+            where: { isDeleted: false },
+            order: [['name', 'ASC']]
+        });
         res.render('user/create', {
             userName: req.session.userName,
             userEmail: req.session.userEmail,
             userRole: req.session.userRole,
             brokers,
+            farmerProjects,
             errorMessage: 'Error creating user: ' + error.message
         });
     }
@@ -156,6 +215,12 @@ router.get('/:id/edit', async (req, res) => {
             order: [['brokerNo', 'ASC']]
         });
 
+        // Fetch all active farmer projects for the farmer selection
+        const farmerProjects = await FarmerProject.findAll({
+            where: { isDeleted: false },
+            order: [['name', 'ASC']]
+        });
+
         // Fetch current broker assignments if user is an associate
         let userBrokerIds = [];
         if (user.role === 'associate') {
@@ -165,13 +230,24 @@ router.get('/:id/edit', async (req, res) => {
             userBrokerIds = userBrokerAccess.map(access => access.brokerId);
         }
 
+        // Fetch current farmer project assignments if user is a farmer
+        let userFarmerProjectIds = [];
+        if (user.role === 'farmer') {
+            const userFarmerProjectAccess = await UserFarmerProjectAccess.findAll({
+                where: { userId: user.id }
+            });
+            userFarmerProjectIds = userFarmerProjectAccess.map(access => access.farmerProjectId);
+        }
+
         res.render('user/edit', {
             userName: req.session.userName,
             userEmail: req.session.userEmail,
             userRole: req.session.userRole,
             user,
             brokers,
+            farmerProjects,
             userBrokerIds,
+            userFarmerProjectIds,
             errorMessage: null
         });
     } catch (error) {
@@ -183,7 +259,7 @@ router.get('/:id/edit', async (req, res) => {
 // Update user
 router.post('/:id/edit', async (req, res) => {
     try {
-        const { name, email, role, brokerIds } = req.body;
+        const { name, email, role, brokerIds, farmerProjectIds } = req.body;
         const userId = req.params.id;
 
         const user = await User.findByPk(userId);
@@ -198,10 +274,15 @@ router.post('/:id/edit', async (req, res) => {
                     where: { isDeleted: false },
                     order: [['brokerNo', 'ASC']]
                 });
+                const farmerProjects = await FarmerProject.findAll({
+                    where: { isDeleted: false },
+                    order: [['name', 'ASC']]
+                });
                 const userBrokerAccess = await UserBrokerAccess.findAll({
                     where: { userId: userId }
                 });
                 const userBrokerIds = userBrokerAccess.map(access => access.brokerId);
+                const userFarmerProjectIds = [];
                 
                 const userForRender = await User.findByPk(userId, {
                     attributes: { exclude: ['password'] }
@@ -212,8 +293,44 @@ router.post('/:id/edit', async (req, res) => {
                     userRole: req.session.userRole,
                     user: userForRender,
                     brokers,
+                    farmerProjects,
                     userBrokerIds,
+                    userFarmerProjectIds,
                     errorMessage: 'Please select at least one associate for the associate login role'
+                });
+            }
+        }
+
+        // Validate farmer project selection for farmer role
+        if (role === 'farmer') {
+            if (!farmerProjectIds || (Array.isArray(farmerProjectIds) && farmerProjectIds.length === 0)) {
+                const brokers = await Broker.findAll({
+                    where: { isDeleted: false },
+                    order: [['brokerNo', 'ASC']]
+                });
+                const farmerProjects = await FarmerProject.findAll({
+                    where: { isDeleted: false },
+                    order: [['name', 'ASC']]
+                });
+                const userBrokerIds = [];
+                const userFarmerProjectAccess = await UserFarmerProjectAccess.findAll({
+                    where: { userId: userId }
+                });
+                const userFarmerProjectIds = userFarmerProjectAccess.map(access => access.farmerProjectId);
+                
+                const userForRender = await User.findByPk(userId, {
+                    attributes: { exclude: ['password'] }
+                });
+                return res.render('user/edit', {
+                    userName: req.session.userName,
+                    userEmail: req.session.userEmail,
+                    userRole: req.session.userRole,
+                    user: userForRender,
+                    brokers,
+                    farmerProjects,
+                    userBrokerIds,
+                    userFarmerProjectIds,
+                    errorMessage: 'Please select at least one farmer project for the farmer login role'
                 });
             }
         }
@@ -231,10 +348,18 @@ router.post('/:id/edit', async (req, res) => {
                 where: { isDeleted: false },
                 order: [['brokerNo', 'ASC']]
             });
+            const farmerProjects = await FarmerProject.findAll({
+                where: { isDeleted: false },
+                order: [['name', 'ASC']]
+            });
             const userBrokerAccess = await UserBrokerAccess.findAll({
                 where: { userId: userId }
             });
             const userBrokerIds = userBrokerAccess.map(access => access.brokerId);
+            const userFarmerProjectAccess = await UserFarmerProjectAccess.findAll({
+                where: { userId: userId }
+            });
+            const userFarmerProjectIds = userFarmerProjectAccess.map(access => access.farmerProjectId);
             
             const userForRender = await User.findByPk(userId, {
                 attributes: { exclude: ['password'] }
@@ -245,7 +370,9 @@ router.post('/:id/edit', async (req, res) => {
                 userRole: req.session.userRole,
                 user: userForRender,
                 brokers,
+                farmerProjects,
                 userBrokerIds,
+                userFarmerProjectIds,
                 errorMessage: 'Email already exists'
             });
         }
@@ -272,6 +399,25 @@ router.post('/:id/edit', async (req, res) => {
             await UserBrokerAccess.destroy({ where: { userId: user.id } });
         }
 
+        // Update farmer project access if role is farmer
+        if (role === 'farmer') {
+            // Delete existing farmer project access
+            await UserFarmerProjectAccess.destroy({ where: { userId: user.id } });
+            
+            // Create new farmer project access records
+            if (farmerProjectIds) {
+                const farmerProjectIdArray = Array.isArray(farmerProjectIds) ? farmerProjectIds : [farmerProjectIds];
+                const accessRecords = farmerProjectIdArray.map(farmerProjectId => ({
+                    userId: user.id,
+                    farmerProjectId: parseInt(farmerProjectId)
+                }));
+                await UserFarmerProjectAccess.bulkCreate(accessRecords);
+            }
+        } else {
+            // If role changed from farmer to something else, remove all farmer project access
+            await UserFarmerProjectAccess.destroy({ where: { userId: user.id } });
+        }
+
         res.redirect('/user?success=User updated successfully');
     } catch (error) {
         console.error('Error updating user:', error);
@@ -279,10 +425,18 @@ router.post('/:id/edit', async (req, res) => {
             where: { isDeleted: false },
             order: [['brokerNo', 'ASC']]
         });
+        const farmerProjects = await FarmerProject.findAll({
+            where: { isDeleted: false },
+            order: [['name', 'ASC']]
+        });
         const userBrokerAccess = await UserBrokerAccess.findAll({
             where: { userId: req.params.id }
         });
         const userBrokerIds = userBrokerAccess.map(access => access.brokerId);
+        const userFarmerProjectAccess = await UserFarmerProjectAccess.findAll({
+            where: { userId: req.params.id }
+        });
+        const userFarmerProjectIds = userFarmerProjectAccess.map(access => access.farmerProjectId);
         
         const user = await User.findByPk(req.params.id, {
             attributes: { exclude: ['password'] }
@@ -293,7 +447,9 @@ router.post('/:id/edit', async (req, res) => {
             userRole: req.session.userRole,
             user,
             brokers,
+            farmerProjects,
             userBrokerIds,
+            userFarmerProjectIds,
             errorMessage: 'Error updating user: ' + error.message
         });
     }

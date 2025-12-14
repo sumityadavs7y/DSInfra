@@ -133,6 +133,14 @@
                                             <span class="badge bg-secondary">
                                                 <i class="bi bi-person"></i> User
                                             </span>
+                                        <% } else if (user.role === 'associate') { %>
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-eye"></i> Partner Login
+                                            </span>
+                                        <% } else if (user.role === 'farmer') { %>
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-eye"></i> Farmer Login
+                                            </span>
                                         <% } else { %>
                                             <span class="badge bg-warning">
                                                 <%= user.role %>

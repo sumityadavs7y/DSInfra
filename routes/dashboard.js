@@ -7,6 +7,11 @@ const { Sequelize } = require('sequelize');
 // Dashboard route - protected by authentication
 router.get('/', isAuthenticated, async (req, res) => {
     try {
+        // Redirect farmers to their specific dashboard
+        if (req.session.userRole === 'farmer') {
+            return res.redirect('/farmer');
+        }
+
         // Get statistics
         const totalProjects = await Project.count();
         

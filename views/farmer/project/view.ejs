@@ -12,7 +12,7 @@
         title: project.name, 
         icon: 'bi-folder', 
         backUrl: '/farmer/projects', 
-        actionUrl: userRole !== 'associate' && !project.isDeleted ? '/farmer/projects/' + project.id + '/edit' : null, 
+        actionUrl: userRole !== 'associate' && userRole !== 'farmer' && !project.isDeleted ? '/farmer/projects/' + project.id + '/edit' : null, 
         actionText: 'Edit Project', 
         actionIcon: 'bi-pencil'
     }) %>
@@ -123,7 +123,7 @@
                                     <i class="bi bi-file-earmark-text"></i> View Registries
                                 </a>
                             </div>
-                            <% if (userRole !== 'associate') { %>
+                            <% if (userRole !== 'associate' && userRole !== 'farmer') { %>
                             <div class="col-12 col-md-4">
                                 <a href="/farmer/payments/create?projectId=<%= project.id %>" class="btn btn-outline-success w-100">
                                     <i class="bi bi-plus-circle"></i> Add Payment

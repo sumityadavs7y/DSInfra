@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
-const { isAuthenticated, blockAssociateAccess } = require('../middleware/auth');
+const { isAuthenticated, blockAssociateAccess, blockFarmerAccess, getAccessibleFarmerProjectIds } = require('../middleware/auth');
 const { FarmerProject, FarmerRegistry } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../models/sequelize');
 
 // Registry List Page
-router.get('/', isAuthenticated, async (req, res) => {
+router.get('/', isAuthenticated, getAccessibleFarmerProjectIds, async (req, res) => {
     try {
         const { search, projectId, startDate, endDate, showDeleted } = req.query;
         let whereClause = {};
@@ -17,8 +17,17 @@ router.get('/', isAuthenticated, async (req, res) => {
             whereClause.isDeleted = false;
         }
 
-        // Filter by project
+        // Filter by accessible projects for farmers
+        if (req.accessibleFarmerProjectIds !== null) {
+            whereClause.projectId = { [Op.in]: req.accessibleFarmerProjectIds };
+        }
+
+        // Filter by specific project
         if (projectId) {
+            if (req.accessibleFarmerProjectIds !== null && !req.accessibleFarmerProjectIds.includes(parseInt(projectId))) {
+                // Farmer trying to access unauthorized project
+                return res.status(403).send('Access denied. You do not have permission to view this project.');
+            }
             whereClause.projectId = projectId;
         }
 
@@ -57,9 +66,13 @@ router.get('/', isAuthenticated, async (req, res) => {
             order: [['date', 'DESC'], ['serialNo', 'DESC']]
         });
 
-        // Get all projects for filter dropdown
+        // Get all projects for filter dropdown (filtered for farmers)
+        let projectsWhereClause = { isDeleted: false };
+        if (req.accessibleFarmerProjectIds !== null) {
+            projectsWhereClause.id = { [Op.in]: req.accessibleFarmerProjectIds };
+        }
         const projects = await FarmerProject.findAll({
-            where: { isDeleted: false },
+            where: projectsWhereClause,
             order: [['name', 'ASC']]
         });
 
@@ -93,7 +106,7 @@ router.get('/', isAuthenticated, async (req, res) => {
 });
 
 // Create Registry GET
-router.get('/create', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.get('/create', isAuthenticated, blockAssociateAccess, blockFarmerAccess, async (req, res) => {
     try {
         const projects = await FarmerProject.findAll({
             where: { isDeleted: false },
@@ -117,7 +130,7 @@ router.get('/create', isAuthenticated, blockAssociateAccess, async (req, res) =>
 });
 
 // Create Registry POST
-router.post('/create', isAuthenticated, blockAssociateAccess, [
+router.post('/create', isAuthenticated, blockAssociateAccess, blockFarmerAccess, [
     body('projectId').notEmpty().withMessage('Project is required'),
     body('name').notEmpty().withMessage('Name is required'),
     body('registryDoneBy').notEmpty().withMessage('Registry done by is required'),
@@ -236,7 +249,7 @@ router.get('/:id', isAuthenticated, async (req, res) => {
 });
 
 // Edit Registry GET
-router.get('/:id/edit', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.get('/:id/edit', isAuthenticated, blockAssociateAccess, blockFarmerAccess, async (req, res) => {
     try {
         const registry = await FarmerRegistry.findByPk(req.params.id);
         
@@ -264,7 +277,7 @@ router.get('/:id/edit', isAuthenticated, blockAssociateAccess, async (req, res) 
 });
 
 // Edit Registry POST
-router.post('/:id/edit', isAuthenticated, blockAssociateAccess, [
+router.post('/:id/edit', isAuthenticated, blockAssociateAccess, blockFarmerAccess, [
     body('projectId').notEmpty().withMessage('Project is required'),
     body('name').notEmpty().withMessage('Name is required'),
     body('registryDoneBy').notEmpty().withMessage('Registry done by is required'),
@@ -359,7 +372,7 @@ router.post('/:id/edit', isAuthenticated, blockAssociateAccess, [
 });
 
 // Delete Registry (soft delete)
-router.post('/:id/delete', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.post('/:id/delete', isAuthenticated, blockAssociateAccess, blockFarmerAccess, async (req, res) => {
     try {
         const registry = await FarmerRegistry.findByPk(req.params.id);
         
@@ -377,7 +390,7 @@ router.post('/:id/delete', isAuthenticated, blockAssociateAccess, async (req, re
 });
 
 // Restore Registry
-router.post('/:id/restore', isAuthenticated, blockAssociateAccess, async (req, res) => {
+router.post('/:id/restore', isAuthenticated, blockAssociateAccess, blockFarmerAccess, async (req, res) => {
     try {
         const registry = await FarmerRegistry.findByPk(req.params.id);
         

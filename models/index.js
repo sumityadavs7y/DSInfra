@@ -16,6 +16,7 @@ const Attendance = require('./Attendance');
 const EmployeeSalary = require('./EmployeeSalary');
 const EmployeeDocument = require('./EmployeeDocument');
 const UserBrokerAccess = require('./UserBrokerAccess');
+const UserFarmerProjectAccess = require('./UserFarmerProjectAccess');
 const FarmerProject = require('./FarmerProject');
 const FarmerPayment = require('./FarmerPayment');
 const FarmerRegistry = require('./FarmerRegistry');
@@ -132,6 +133,27 @@ FarmerPayment.belongsTo(FarmerProject, { foreignKey: 'projectId', as: 'project' 
 FarmerProject.hasMany(FarmerRegistry, { foreignKey: 'projectId', as: 'registries' });
 FarmerRegistry.belongsTo(FarmerProject, { foreignKey: 'projectId', as: 'project' });
 
+// User-FarmerProject Access relationships (for farmer role)
+User.belongsToMany(FarmerProject, {
+  through: UserFarmerProjectAccess,
+  foreignKey: 'userId',
+  otherKey: 'farmerProjectId',
+  as: 'accessibleFarmerProjects'
+});
+FarmerProject.belongsToMany(User, {
+  through: UserFarmerProjectAccess,
+  foreignKey: 'farmerProjectId',
+  otherKey: 'userId',
+  as: 'authorizedUsers'
+});
+
+// Direct access to join table
+User.hasMany(UserFarmerProjectAccess, { foreignKey: 'userId', as: 'farmerProjectAccess' });
+UserFarmerProjectAccess.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+FarmerProject.hasMany(UserFarmerProjectAccess, { foreignKey: 'farmerProjectId', as: 'userAccess' });
+UserFarmerProjectAccess.belongsTo(FarmerProject, { foreignKey: 'farmerProjectId', as: 'farmerProject' });
+
 module.exports = {
   sequelize,
   Sequelize,
@@ -153,6 +175,7 @@ module.exports = {
   EmployeeSalary,
   EmployeeDocument,
   UserBrokerAccess,
+  UserFarmerProjectAccess,
   // Farmer Management Models
   FarmerProject,
   FarmerPayment,

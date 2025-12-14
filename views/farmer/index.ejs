@@ -29,7 +29,11 @@
                     <i class="bi bi-flower2 text-success"></i> 
                     Farmer Management
                 </h2>
+                <% if (userRole === 'farmer') { %>
+                <p class="text-muted mb-0">View your farmer projects, payments, and registries.</p>
+                <% } else { %>
                 <p class="text-muted mb-0">Manage farmer projects, payments, and registries.</p>
+                <% } %>
             </div>
         </div>
 
@@ -88,7 +92,7 @@
         </div>
 
         <!-- Quick Actions -->
-        <% if (userRole !== 'associate') { %>
+        <% if (userRole !== 'associate' && userRole !== 'farmer') { %>
         <div class="card border-0 shadow-sm animate-fade-in-up" style="animation-delay: 0.4s">
             <div class="card-header bg-dark text-white">
                 <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
