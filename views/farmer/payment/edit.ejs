@@ -89,6 +89,7 @@
                                         <option value="">Select Payment Mode</option>
                                         <option value="Cash" <%= payment.mode === 'Cash' ? 'selected' : '' %>>Cash</option>
                                         <option value="Cheque" <%= payment.mode === 'Cheque' ? 'selected' : '' %>>Cheque</option>
+                                        <option value="PDC" <%= payment.mode === 'PDC' ? 'selected' : '' %>>PDC (Post Dated Cheque)</option>
                                         <option value="Online Transfer" <%= payment.mode === 'Online Transfer' ? 'selected' : '' %>>Online Transfer</option>
                                         <option value="UPI" <%= payment.mode === 'UPI' ? 'selected' : '' %>>UPI</option>
                                         <option value="Card" <%= payment.mode === 'Card' ? 'selected' : '' %>>Card</option>
