@@ -49,14 +49,16 @@ router.post('/create', isAuthenticated, async (req, res) => {
             email
         } = req.body;
 
-        // Check if Aadhaar already exists
-        const existingCustomer = await Customer.findOne({ where: { aadhaarNo } });
-        if (existingCustomer) {
-            return res.render('customer/create', {
-                userName: req.session.userName,
-                userRole: req.session.userRole,
-                error: 'Customer with this Aadhaar number already exists'
-            });
+        // Check if Aadhaar already exists (only if provided)
+        if (aadhaarNo && aadhaarNo.trim()) {
+            const existingCustomer = await Customer.findOne({ where: { aadhaarNo } });
+            if (existingCustomer) {
+                return res.render('customer/create', {
+                    userName: req.session.userName,
+                    userRole: req.session.userRole,
+                    error: 'Customer with this Aadhaar number already exists'
+                });
+            }
         }
 
         // Generate customer number
@@ -67,10 +69,10 @@ router.post('/create', isAuthenticated, async (req, res) => {
         const customer = await Customer.create({
             customerNo,
             applicantName,
-            fatherOrHusbandName,
+            fatherOrHusbandName: fatherOrHusbandName || null,
             address,
-            aadhaarNo,
-            mobileNo,
+            aadhaarNo: aadhaarNo || null,
+            mobileNo: mobileNo || null,
             email: email || null,
             isActive: true,
             createdBy: req.session.userId
@@ -165,8 +167,8 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
             isActive
         } = req.body;
 
-        // Check if Aadhaar is being changed and already exists for another customer
-        if (aadhaarNo !== customer.aadhaarNo) {
+        // Check if Aadhaar is being changed and already exists for another customer (only if provided)
+        if (aadhaarNo && aadhaarNo.trim() && aadhaarNo !== customer.aadhaarNo) {
             const existingCustomer = await Customer.findOne({ 
                 where: { 
                     aadhaarNo,
@@ -187,10 +189,10 @@ router.post('/:id/edit', isAuthenticated, async (req, res) => {
         // Update customer
         await customer.update({
             applicantName,
-            fatherOrHusbandName,
+            fatherOrHusbandName: fatherOrHusbandName || null,
             address,
-            aadhaarNo,
-            mobileNo,
+            aadhaarNo: aadhaarNo || null,
+            mobileNo: mobileNo || null,
             email: email || null,
             isActive: isActive === 'true' || isActive === true
         });

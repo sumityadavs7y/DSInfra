@@ -54,9 +54,9 @@
                                 <textarea class="form-control" id="description" name="description" rows="3" placeholder="Enter team description (optional)"><%= typeof formData !== 'undefined' ? formData.description : '' %></textarea>
                             </div>
 
-                            <!-- Associates Selection -->
+                            <!-- Partners Selection -->
                             <div class="mb-4">
-                                <label class="form-label fw-bold">Select Associates <span class="text-danger">*</span></label>
+                                <label class="form-label fw-bold">Select Partners <span class="text-danger">*</span></label>
                                 <div class="mb-2">
                                     <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllAssociates()">
                                         <i class="bi bi-check-all"></i> Select All
@@ -68,7 +68,7 @@
                                 
                                 <% if (brokers.length === 0) { %>
                                     <div class="alert alert-warning">
-                                        <i class="bi bi-exclamation-triangle"></i> No active associates found. Please <a href="/broker/create">create an associate</a> first.
+                                        <i class="bi bi-exclamation-triangle"></i> No active partners found. Please <a href="/broker/create">create a partner</a> first.
                                     </div>
                                 <% } else { %>
                                     <div class="row g-2" id="associatesContainer">
@@ -104,7 +104,7 @@
                                         <% }); %>
                                     </div>
                                     <small class="text-muted mt-2 d-block">
-                                        <span id="selectedCount">0</span> associate(s) selected
+                                        <span id="selectedCount">0</span> partner(s) selected
                                     </small>
                                 <% } %>
                             </div>
@@ -152,7 +152,7 @@
             const selectedCount = document.querySelectorAll('.associate-checkbox-input:checked').length;
             if (selectedCount === 0) {
                 e.preventDefault();
-                alert('Please select at least one associate for the team.');
+                alert('Please select at least one partner for the team.');
                 return false;
             }
         });

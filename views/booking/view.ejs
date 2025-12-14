@@ -148,7 +148,7 @@
 
                         <hr class="my-4">
 
-                        <!-- Associate Details -->
+                        <!-- Partner Details -->
                         <% if (booking.broker) { %>
                         <%
                             // Calculate commission breakdown
@@ -162,19 +162,19 @@
                             const plcCommCalc = baseAmountCalc * (associatePlcPercentVal / 100);
                         %>
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="text-success mb-0"><i class="bi bi-briefcase"></i> Associate Details</h5>
+                            <h5 class="text-success mb-0"><i class="bi bi-briefcase"></i> Partner Details</h5>
                             <a href="/broker/<%= booking.broker.id %>" class="btn btn-sm btn-success">
-                                <i class="bi bi-person-badge"></i> View Associate Profile
+                                <i class="bi bi-person-badge"></i> View Partner Profile
                             </a>
                         </div>
                         
                         <div class="row g-3 mb-4">
                             <div class="col-12 col-md-6">
-                                <label class="text-muted small fw-semibold text-uppercase">Associate Name</label>
+                                <label class="text-muted small fw-semibold text-uppercase">Partner Name</label>
                                 <p class="h6 mb-0"><%= booking.broker.name %></p>
                             </div>
                             <div class="col-6 col-md-3">
-                                <label class="text-muted small fw-semibold text-uppercase">Associate No</label>
+                                <label class="text-muted small fw-semibold text-uppercase">Partner No</label>
                                 <p class="h6 mb-0"><%= booking.broker.brokerNo %></p>
                             </div>
                             <div class="col-6 col-md-3">
@@ -183,13 +183,13 @@
                             </div>
                             <% if (booking.associateRate && parseFloat(booking.associateRate) > 0) { %>
                             <div class="col-6 col-md-4">
-                                <label class="text-muted small fw-semibold text-uppercase">Associate Rate</label>
+                                <label class="text-muted small fw-semibold text-uppercase">Partner Rate</label>
                                 <p class="h6 mb-0">₹<%= parseFloat(booking.associateRate).toLocaleString('en-IN') %></p>
                             </div>
                             <% } %>
                             <% if (booking.associatePlcCommission && parseFloat(booking.associatePlcCommission) > 0) { %>
                             <div class="col-6 col-md-4">
-                                <label class="text-muted small fw-semibold text-uppercase">Associate PLC Commission</label>
+                                <label class="text-muted small fw-semibold text-uppercase">Partner PLC Commission</label>
                                 <p class="h6 mb-0"><%= parseFloat(booking.associatePlcCommission).toFixed(2) %>%</p>
                             </div>
                             <% } %>
@@ -224,7 +224,7 @@
                         </div>
                         <% } else { %>
                         <div class="alert alert-light mb-4">
-                            <i class="bi bi-info-circle"></i> No associate linked to this booking
+                            <i class="bi bi-info-circle"></i> No partner linked to this booking
                         </div>
                         <% } %>
 

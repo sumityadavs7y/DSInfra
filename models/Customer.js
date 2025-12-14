@@ -22,7 +22,7 @@ const Customer = sequelize.define('Customer', {
   },
   fatherOrHusbandName: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   address: {
     type: DataTypes.TEXT,
@@ -30,17 +30,33 @@ const Customer = sequelize.define('Customer', {
   },
   aadhaarNo: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
     validate: {
-      len: [12, 12]
+      len: {
+        args: [12, 12],
+        msg: 'Aadhaar number must be exactly 12 digits'
+      },
+      isValidAadhaar(value) {
+        if (value && !/^[0-9]{12}$/.test(value)) {
+          throw new Error('Aadhaar number must be 12 digits');
+        }
+      }
     }
   },
   mobileNo: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     validate: {
-      len: [10, 15]
+      len: {
+        args: [10, 15],
+        msg: 'Mobile number must be between 10-15 digits'
+      },
+      isValidMobile(value) {
+        if (value && !/^[0-9]{10,15}$/.test(value)) {
+          throw new Error('Mobile number must be 10-15 digits');
+        }
+      }
     }
   },
   email: {

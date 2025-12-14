@@ -75,13 +75,13 @@
                                     <option value="manager">Manager</option>
                                     <option value="employee">Employee</option>
                                     <option value="user">User</option>
-                                    <option value="associate">Associate Login (View Only)</option>
+                                    <option value="associate">Partner Login (View Only)</option>
                                 </select>
                             </div>
 
                             <div class="mb-4" id="brokerSelectionDiv" style="display: none;">
                                 <label for="brokerIds" class="form-label">
-                                    <i class="bi bi-briefcase"></i> Select Associates to View <span class="text-danger">*</span>
+                                    <i class="bi bi-briefcase"></i> Select Partners to View <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select" id="brokerIds" name="brokerIds" multiple size="8">
                                     <% if (typeof brokers !== 'undefined' && brokers.length > 0) { %>
@@ -89,10 +89,10 @@
                                             <option value="<%= broker.id %>"><%= broker.brokerNo %> - <%= broker.name %></option>
                                         <% }); %>
                                     <% } else { %>
-                                        <option disabled>No associates available</option>
+                                        <option disabled>No partners available</option>
                                     <% } %>
                                 </select>
-                                <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple associates</small>
+                                <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple partners</small>
                             </div>
 
                             <div class="d-grid gap-2">

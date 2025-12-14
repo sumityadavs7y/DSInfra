@@ -32,16 +32,18 @@
                                     <input type="text" class="form-control" name="applicantName" required>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Father/Husband Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="fatherOrHusbandName" required>
+                                    <label class="form-label fw-semibold">Father/Husband Name</label>
+                                    <input type="text" class="form-control" name="fatherOrHusbandName">
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Mobile <span class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" name="mobileNo" pattern="[0-9]{10}" maxlength="10" required>
+                                    <label class="form-label fw-semibold">Mobile</label>
+                                    <input type="tel" class="form-control" name="mobileNo" pattern="[0-9]{10,15}" maxlength="15">
+                                    <small class="text-muted">10-15 digits</small>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Aadhaar <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" name="aadhaarNo" pattern="[0-9]{12}" maxlength="12" required>
+                                    <label class="form-label fw-semibold">Aadhaar</label>
+                                    <input type="text" class="form-control" name="aadhaarNo" pattern="[0-9]{12}" maxlength="12">
+                                    <small class="text-muted">12 digits</small>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-semibold">Email</label>

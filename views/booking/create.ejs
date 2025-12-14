@@ -93,9 +93,9 @@
                                     <input type="number" class="form-control" name="rate" id="rate" step="0.01" min="0" required>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <label class="form-label fw-semibold">Associate Rate (₹)</label>
+                                    <label class="form-label fw-semibold">Partner Rate (₹)</label>
                                     <input type="number" class="form-control" name="associateRate" id="associateRate" step="0.01" min="0" value="0">
-                                    <div class="form-text">For associate commission calculation</div>
+                                    <div class="form-text">For partner commission calculation</div>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <label class="form-label fw-semibold">PLC (%)</label>
@@ -134,13 +134,13 @@
                             
                             <hr class="my-4">
                             
-                            <!-- Associate Details (Optional) -->
-                            <h5 class="text-dark mb-3"><i class="bi bi-briefcase"></i> Associate Details (Optional)</h5>
+                            <!-- Partner Details (Optional) -->
+                            <h5 class="text-dark mb-3"><i class="bi bi-briefcase"></i> Partner Details (Optional)</h5>
                             <div class="row g-3 mb-4">
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Associate</label>
+                                    <label class="form-label fw-semibold">Partner</label>
                                     <select class="form-select" name="brokerId" id="brokerSelect">
-                                        <option value="">-- No Associate --</option>
+                                        <option value="">-- No Partner --</option>
                                         <% brokers.forEach(broker => { %>
                                             <option value="<%= broker.id %>">
                                                 <%= broker.name %> (<%= broker.mobileNo %>)
@@ -150,7 +150,7 @@
                                     <div class="form-text">Select if this booking was referred by an associate</div>
                                 </div>
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label fw-semibold">Associate PLC Commission (%)</label>
+                                    <label class="form-label fw-semibold">Partner PLC Commission (%)</label>
                                     <input type="number" class="form-control" name="associatePlcCommission" id="associatePlcCommission" 
                                            step="0.01" min="0" max="100" value="0">
                                     <div class="form-text">Additional PLC-based commission percentage</div>
@@ -158,15 +158,15 @@
                                 <div class="col-6 col-md-6">
                                     <label class="form-label fw-semibold">Base Commission (₹)</label>
                                     <input type="number" class="form-control bg-light" id="baseCommission" readonly>
-                                    <div class="form-text">(Effective Rate - Associate Rate) × Area</div>
+                                    <div class="form-text">(Effective Rate - Partner Rate) × Area</div>
                                 </div>
                                 <div class="col-6 col-md-6">
                                     <label class="form-label fw-semibold">PLC Commission (₹)</label>
                                     <input type="number" class="form-control bg-light" id="plcCommission" readonly>
-                                    <div class="form-text">Associate PLC% of Base Amount</div>
+                                    <div class="form-text">Partner PLC% of Base Amount</div>
                                 </div>
                                 <div class="col-12">
-                                    <label class="form-label fw-semibold text-success">Total Associate Commission (₹)</label>
+                                    <label class="form-label fw-semibold text-success">Total Partner Commission (₹)</label>
                                     <input type="number" class="form-control bg-light border-success fw-bold" name="brokerCommission" id="brokerCommission" 
                                            step="0.01" min="0" value="0" readonly>
                                     <div class="form-text">Base Commission + PLC Commission</div>
