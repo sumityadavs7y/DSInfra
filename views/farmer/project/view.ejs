@@ -74,16 +74,30 @@
                                     <small class="text-muted">Payment Amount</small>
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-6 mb-3">
                                 <div class="p-3 bg-light rounded">
                                     <h3 class="text-warning mb-0"><%= registriesCount %></h3>
                                     <small class="text-muted">Total Registries</small>
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-6 mb-3">
                                 <div class="p-3 bg-light rounded">
-                                    <h3 class="text-danger mb-0">₹<%= parseFloat(registriesTotal || 0).toLocaleString('en-IN') %></h3>
+                                    <h3 class="text-info mb-0">₹<%= parseFloat(registriesTotal || 0).toLocaleString('en-IN') %></h3>
                                     <small class="text-muted">Registry Total</small>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="p-3 <%= duePayment > 0 ? 'bg-danger' : duePayment < 0 ? 'bg-warning' : 'bg-success' %> text-white rounded">
+                                    <h2 class="mb-0">₹<%= Math.abs(parseFloat(duePayment || 0)).toLocaleString('en-IN') %></h2>
+                                    <strong>
+                                        <% if (duePayment > 0) { %>
+                                        Due Payment (Registry - Payments)
+                                        <% } else if (duePayment < 0) { %>
+                                        Excess Payment (Payments - Registry)
+                                        <% } else { %>
+                                        Fully Paid (No Dues)
+                                        <% } %>
+                                    </strong>
                                 </div>
                             </div>
                         </div>

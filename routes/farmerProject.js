@@ -137,12 +137,18 @@ router.get('/:id', isAuthenticated, async (req, res) => {
             raw: true
         });
 
+        // Calculate due payment (Registry Total - Payment Total)
+        const registriesTotal = parseFloat(registriesStats?.total || 0);
+        const paymentsTotal = parseFloat(paymentsStats?.total || 0);
+        const duePayment = registriesTotal - paymentsTotal;
+
         res.render('farmer/project/view', {
             project,
             paymentsCount: paymentsStats?.count || 0,
-            paymentsTotal: paymentsStats?.total || 0,
+            paymentsTotal: paymentsTotal,
             registriesCount: registriesStats?.count || 0,
-            registriesTotal: registriesStats?.total || 0,
+            registriesTotal: registriesTotal,
+            duePayment: duePayment,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
