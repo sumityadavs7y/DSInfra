@@ -5,7 +5,6 @@
  * Parameters:
  * - title: Page title (required)
  * - icon: Bootstrap icon class (optional, e.g., 'bi-people-fill')
- * - backUrl: URL for back button (optional, defaults to '/dashboard')
  * - actionUrl: URL for primary action button (optional)
  * - actionText: Text for primary action button (optional)
  * - actionIcon: Icon for primary action button (optional, e.g., 'bi-plus-circle')
@@ -15,7 +14,6 @@
  */
 
 const headerIcon = typeof icon !== 'undefined' ? icon : '';
-const headerBackUrl = typeof backUrl !== 'undefined' ? backUrl : '/dashboard';
 const headerActionUrl = typeof actionUrl !== 'undefined' ? actionUrl : '';
 const headerActionText = typeof actionText !== 'undefined' ? actionText : '';
 const headerActionIcon = typeof actionIcon !== 'undefined' ? actionIcon : 'bi-plus-circle';
@@ -58,9 +56,9 @@ const headerUserRole = typeof userRole !== 'undefined' ? userRole : '';
         <% } else { %>
             <!-- Regular Page Mode -->
             <div class="d-flex align-items-center">
-                <a href="<%= headerBackUrl %>" class="btn btn-outline-secondary btn-sm me-2">
+                <button onclick="history.back()" class="btn btn-outline-secondary btn-sm me-2" type="button">
                     <i class="bi bi-arrow-left"></i> Back
-                </a>
+                </button>
                 <img src="/images/logo.png" alt="Logo" style="height: 30px; width: auto; margin-right: 10px;">
                 <span class="navbar-brand mb-0 h1">
                     <% if (headerIcon) { %>
