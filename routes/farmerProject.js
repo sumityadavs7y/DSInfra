@@ -116,11 +116,26 @@ router.get('/:id', isAuthenticated, canAccessFarmerProject, async (req, res) => 
             return res.status(404).send('Farmer project not found');
         }
 
-        // Get payments count and total
+        // Get payments count and total (excluding PDC)
         const paymentsStats = await FarmerPayment.findOne({
             where: { 
                 projectId: project.id,
-                isDeleted: false 
+                isDeleted: false,
+                mode: { [Op.ne]: 'PDC' }  // Exclude PDC mode payments
+            },
+            attributes: [
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+                [sequelize.fn('SUM', sequelize.col('amount')), 'total']
+            ],
+            raw: true
+        });
+
+        // Get PDC payments count and total separately
+        const pdcPaymentsStats = await FarmerPayment.findOne({
+            where: { 
+                projectId: project.id,
+                isDeleted: false,
+                mode: 'PDC'  // Only PDC mode payments
             },
             attributes: [
                 [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
@@ -142,15 +157,18 @@ router.get('/:id', isAuthenticated, canAccessFarmerProject, async (req, res) => 
             raw: true
         });
 
-        // Calculate due payment (Registry Total - Payment Total)
+        // Calculate amounts
         const registriesTotal = parseFloat(registriesStats?.total || 0);
         const paymentsTotal = parseFloat(paymentsStats?.total || 0);
-        const duePayment = registriesTotal - paymentsTotal;
+        const pdcTotal = parseFloat(pdcPaymentsStats?.total || 0);
+        const duePayment = registriesTotal - paymentsTotal;  // Due = Registry Total - Payment Total (excluding PDC)
 
         res.render('farmer/project/view', {
             project,
             paymentsCount: paymentsStats?.count || 0,
             paymentsTotal: paymentsTotal,
+            pdcPaymentsCount: pdcPaymentsStats?.count || 0,
+            pdcTotal: pdcTotal,
             registriesCount: registriesStats?.count || 0,
             registriesTotal: registriesTotal,
             duePayment: duePayment,

@@ -71,7 +71,7 @@
                             <div class="col-6 mb-3">
                                 <div class="p-3 bg-light rounded">
                                     <h3 class="text-success mb-0">₹<%= parseFloat(paymentsTotal || 0).toLocaleString('en-IN') %></h3>
-                                    <small class="text-muted">Payment Amount</small>
+                                    <small class="text-muted">Payment Amount<br>(Excl. PDC)</small>
                                 </div>
                             </div>
                             <div class="col-6 mb-3">
@@ -86,6 +86,18 @@
                                     <small class="text-muted">Registry Total</small>
                                 </div>
                             </div>
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-secondary text-white rounded">
+                                    <h3 class="mb-0"><%= pdcPaymentsCount %></h3>
+                                    <small>PDC Payments</small>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="p-3 bg-secondary text-white rounded">
+                                    <h3 class="mb-0">₹<%= parseFloat(pdcTotal || 0).toLocaleString('en-IN') %></h3>
+                                    <small>Total PDC Amount</small>
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <div class="p-3 <%= duePayment > 0 ? 'bg-danger' : duePayment < 0 ? 'bg-warning' : 'bg-success' %> text-white rounded">
                                     <h2 class="mb-0">₹<%= Math.abs(parseFloat(duePayment || 0)).toLocaleString('en-IN') %></h2>
@@ -93,7 +105,7 @@
                                         <% if (duePayment > 0) { %>
                                         Due Payment (Registry - Payments)
                                         <% } else if (duePayment < 0) { %>
-                                        Excess Payment (Payments - Registry)
+                                        Excess Payment
                                         <% } else { %>
                                         Fully Paid (No Dues)
                                         <% } %>
