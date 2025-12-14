@@ -400,6 +400,7 @@ router.get('/:id/slip', isAuthenticated, canAccessBooking, async (req, res) => {
             booking,
             payments,
             totalPaid,
+            numberToWords,
             userName: req.session.userName,
             userRole: req.session.userRole
         });
