@@ -263,6 +263,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- Farmer QuickLinks -->
+        <% if (farmerQuickLinks && farmerQuickLinks.length > 0) { %>
+        <div class="card border-0 shadow-sm animate-fade-in-up mt-4" style="animation-delay: 0.9s">
+            <div class="card-body p-4">
+                <h3 class="h5 mb-4">
+                    <i class="bi bi-flower2 text-success"></i> Farmer QuickLinks
+                    <a href="/farmer/projects" class="btn btn-sm btn-outline-secondary float-end">
+                        <i class="bi bi-gear"></i> Manage
+                    </a>
+                </h3>
+                <div class="row g-3 quick-actions-grid">
+                    <% farmerQuickLinks.forEach((project, index) => { %>
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <a href="/farmer/projects/<%= project.id %>" class="btn btn-outline-success w-100 py-3">
+                            <i class="bi bi-folder-fill fs-4 d-block mb-2"></i>
+                            <small><%= project.name %></small>
+                        </a>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+        <% } %>
         <% } %>
     </div>
 

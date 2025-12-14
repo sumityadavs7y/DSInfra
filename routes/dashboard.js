@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { isAuthenticated } = require('../middleware/auth');
-const { Project, Booking, Customer, Payment } = require('../models');
+const { Project, Booking, Customer, Payment, FarmerProject } = require('../models');
 const { Sequelize } = require('sequelize');
 
 // Dashboard route - protected by authentication
@@ -56,10 +56,21 @@ router.get('/', isAuthenticated, async (req, res) => {
             where: { isActive: true }
         });
 
+        // Get quick-linked farmer projects
+        const farmerQuickLinks = await FarmerProject.findAll({
+            where: { 
+                isQuickLink: true,
+                isDeleted: false 
+            },
+            order: [['name', 'ASC']],
+            limit: 6 // Limit to 6 quick links
+        });
+
         res.render('dashboard', {
             userName: req.session.userName,
             userEmail: req.session.userEmail,
             userRole: req.session.userRole,
+            farmerQuickLinks,
             stats: {
                 totalProjects,
                 activeBookings,
@@ -76,6 +87,7 @@ router.get('/', isAuthenticated, async (req, res) => {
             userName: req.session.userName,
             userEmail: req.session.userEmail,
             userRole: req.session.userRole,
+            farmerQuickLinks: [],
             stats: {
                 totalProjects: 0,
                 activeBookings: 0,

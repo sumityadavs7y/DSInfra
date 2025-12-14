@@ -269,4 +269,22 @@ router.post('/:id/restore', isAuthenticated, blockAssociateAccess, async (req, r
     }
 });
 
+// Toggle Quick Link
+router.post('/:id/toggle-quicklink', isAuthenticated, blockAssociateAccess, async (req, res) => {
+    try {
+        const project = await FarmerProject.findByPk(req.params.id);
+        
+        if (!project) {
+            return res.status(404).json({ success: false, message: 'Project not found' });
+        }
+
+        await project.update({ isQuickLink: !project.isQuickLink });
+
+        res.json({ success: true, isQuickLink: project.isQuickLink });
+    } catch (error) {
+        console.error('Error toggling quick link:', error);
+        res.status(500).json({ success: false, message: 'Error toggling quick link' });
+    }
+});
+
 module.exports = router;

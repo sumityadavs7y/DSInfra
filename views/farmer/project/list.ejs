@@ -80,9 +80,22 @@
                                 <i class="bi bi-folder"></i>
                                 <%= project.name %>
                             </h5>
-                            <% if (project.isDeleted) { %>
-                            <span class="badge bg-danger">Deleted</span>
-                            <% } %>
+                            <div class="d-flex align-items-center gap-2">
+                                <% if (userRole !== 'associate' && !project.isDeleted) { %>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input quicklink-toggle" type="checkbox" 
+                                           id="quicklink-<%= project.id %>" 
+                                           data-project-id="<%= project.id %>"
+                                           <%= project.isQuickLink ? 'checked' : '' %>>
+                                    <label class="form-check-label small" for="quicklink-<%= project.id %>" title="Pin to Dashboard">
+                                        <i class="bi bi-pin-angle-fill"></i>
+                                    </label>
+                                </div>
+                                <% } %>
+                                <% if (project.isDeleted) { %>
+                                <span class="badge bg-danger">Deleted</span>
+                                <% } %>
+                            </div>
                         </div>
                         
                         <div class="d-flex gap-2 mt-3">
@@ -121,5 +134,44 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Handle quick link toggle
+        document.querySelectorAll('.quicklink-toggle').forEach(toggle => {
+            toggle.addEventListener('change', async function() {
+                const projectId = this.dataset.projectId;
+                const isChecked = this.checked;
+                
+                try {
+                    const response = await fetch(`/farmer/projects/${projectId}/toggle-quicklink`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Show feedback
+                        const label = this.nextElementSibling;
+                        const originalTitle = label.title;
+                        label.title = data.isQuickLink ? 'Pinned to Dashboard!' : 'Unpinned from Dashboard';
+                        setTimeout(() => {
+                            label.title = originalTitle;
+                        }, 2000);
+                    } else {
+                        // Revert toggle on error
+                        this.checked = !isChecked;
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    // Revert toggle on error
+                    this.checked = !isChecked;
+                    console.error('Error toggling quick link:', error);
+                    alert('Error toggling quick link');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

@@ -17,6 +17,10 @@ const FarmerProject = sequelize.define('FarmerProject', {
   isDeleted: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  isQuickLink: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   tableName: 'farmer_projects',
