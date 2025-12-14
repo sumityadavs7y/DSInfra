@@ -76,6 +76,7 @@
                                     <option value="employee">Employee</option>
                                     <option value="user">User</option>
                                     <option value="associate">Partner Login (View Only)</option>
+                                    <option value="team_leader">Team Leader (View Only)</option>
                                     <option value="farmer">Farmer Login (View Only)</option>
                                 </select>
                             </div>
@@ -146,7 +147,7 @@
             farmerProjectSelect.selectedIndex = -1;
             
             // Show the appropriate selection based on role
-            if (roleSelect.value === 'associate') {
+            if (roleSelect.value === 'associate' || roleSelect.value === 'team_leader') {
                 brokerDiv.style.display = 'block';
                 brokerSelect.required = true;
             } else if (roleSelect.value === 'farmer') {

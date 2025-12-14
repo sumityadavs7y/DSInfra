@@ -36,8 +36,8 @@
         title: 'Partners', 
         icon: 'bi-people-fill',
         backUrl: '/dashboard',
-        actionUrl: userRole !== 'associate' ? '/broker/create' : '',
-        actionText: userRole !== 'associate' ? 'New Partner' : '',
+        actionUrl: userRole !== 'associate' && userRole !== 'team_leader' ? '/broker/create' : '',
+        actionText: userRole !== 'associate' && userRole !== 'team_leader' ? 'New Partner' : '',
         actionIcon: 'bi-person-plus'
     }) %>
 
@@ -51,7 +51,7 @@
                         <div class="col-12 col-md-6">
                             <input type="text" class="form-control" name="search" placeholder="Search by partner no, name, mobile, email..." value="<%= search || '' %>">
                         </div>
-                        <% if (userRole !== 'associate') { %>
+                        <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
                         <div class="col-12 col-md-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="showDeleted" name="showDeleted" value="true" <%= showDeleted ? 'checked' : '' %> onchange="this.form.submit()">
@@ -183,7 +183,7 @@
                     <div class="text-center py-5">
                         <i class="bi bi-person-x fs-1 text-muted"></i>
                         <p class="text-muted mt-3">No associates found</p>
-                        <% if (userRole !== 'associate') { %>
+                        <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
                         <a href="/broker/create" class="btn btn-dark">
                             <i class="bi bi-person-plus"></i> Add First Partner
                         </a>
@@ -275,7 +275,7 @@
                                                 <a href="/broker/<%= broker.id %>" class="btn btn-outline-dark" title="View Partner">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <% if (userRole !== 'associate' && !broker.isDeleted) { %>
+                                                <% if (userRole !== 'associate' && userRole !== 'team_leader' && !broker.isDeleted) { %>
                                                 <a href="/broker/<%= broker.id %>/edit" class="btn btn-outline-primary" title="Edit Partner">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>

@@ -64,7 +64,7 @@
             <div class="card-body text-center py-5">
                 <i class="bi bi-folder fs-1 text-muted"></i>
                 <p class="text-muted mt-3">No projects found</p>
-                <% if (userRole !== 'associate' && userRole !== 'farmer') { %>
+                <% if (userRole !== 'associate' && userRole !== 'team_leader' && userRole !== 'farmer') { %>
                 <a href="/farmer/projects/create" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Create First Project
                 </a>
@@ -83,7 +83,7 @@
                                 <%= project.name %>
                             </h5>
                             <div class="d-flex align-items-center gap-2">
-                                <% if (userRole !== 'associate' && userRole !== 'farmer' && !project.isDeleted) { %>
+                                <% if (userRole !== 'associate' && userRole !== 'team_leader' && userRole !== 'farmer' && !project.isDeleted) { %>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input quicklink-toggle" type="checkbox" 
                                            id="quicklink-<%= project.id %>" 
@@ -104,7 +104,7 @@
                             <a href="/farmer/projects/<%= project.id %>" class="btn btn-sm btn-outline-dark flex-fill">
                                 <i class="bi bi-eye"></i> View
                             </a>
-                            <% if (userRole !== 'associate' && userRole !== 'farmer' && !project.isDeleted) { %>
+                            <% if (userRole !== 'associate' && userRole !== 'team_leader' && userRole !== 'farmer' && !project.isDeleted) { %>
                             <a href="/farmer/projects/<%= project.id %>/edit" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
@@ -115,7 +115,7 @@
                                 </button>
                             </form>
                             <% } %>
-                            <% if (userRole !== 'associate' && userRole !== 'farmer' && project.isDeleted) { %>
+                            <% if (userRole !== 'associate' && userRole !== 'team_leader' && userRole !== 'farmer' && project.isDeleted) { %>
                             <form method="POST" action="/farmer/projects/<%= project.id %>/restore" style="display:inline;">
                                 <button type="submit" class="btn btn-sm btn-success">
                                     <i class="bi bi-arrow-counterclockwise"></i> Restore

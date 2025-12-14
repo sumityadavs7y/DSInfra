@@ -117,7 +117,7 @@
             <div class="card-body text-center py-5">
                 <i class="bi bi-file-earmark-text fs-1 text-muted"></i>
                 <p class="text-muted mt-3">No registries found</p>
-                <% if (userRole !== 'associate' && userRole !== 'farmer') { %>
+                <% if (userRole !== 'associate' && userRole !== 'team_leader' && userRole !== 'farmer') { %>
                 <a href="/farmer/registries/create<%= projectId ? '?projectId=' + projectId : '' %>" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Create First Registry
                 </a>
@@ -163,7 +163,7 @@
                                     <a href="/farmer/registries/<%= registry.id %>" class="btn btn-outline-dark" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
-                                    <% if (userRole !== 'associate' && userRole !== 'farmer' && !registry.isDeleted) { %>
+                                    <% if (userRole !== 'associate' && userRole !== 'team_leader' && userRole !== 'farmer' && !registry.isDeleted) { %>
                                     <a href="/farmer/registries/<%= registry.id %>/edit" class="btn btn-outline-primary" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
@@ -173,7 +173,7 @@
                                     </button>
                                     <% } %>
                                 </div>
-                                <% if (userRole !== 'associate' && userRole !== 'farmer' && !registry.isDeleted) { %>
+                                <% if (userRole !== 'associate' && userRole !== 'team_leader' && userRole !== 'farmer' && !registry.isDeleted) { %>
                                 <form id="delete-form-<%= registry.id %>" method="POST" action="/farmer/registries/<%= registry.id %>/delete" style="display:none;"></form>
                                 <% } %>
                             </td>

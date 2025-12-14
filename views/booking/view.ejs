@@ -12,8 +12,8 @@
         title: 'Booking Details', 
         icon: 'bi-receipt', 
         backUrl: '/booking', 
-        actionUrl: userRole !== 'associate' ? '/booking/' + booking.id + '/edit' : '', 
-        actionText: userRole !== 'associate' ? 'Edit' : '', 
+        actionUrl: (userRole !== 'associate' && userRole !== 'team_leader') ? '/booking/' + booking.id + '/edit' : '', 
+        actionText: (userRole !== 'associate' && userRole !== 'team_leader') ? 'Edit' : '', 
         actionIcon: 'bi-pencil'
     }) %>
 
@@ -148,7 +148,8 @@
 
                         <hr class="my-4">
 
-                        <!-- Partner Details -->
+                        <!-- Partner Details (Hidden for Team Leader) -->
+                        <% if (userRole !== 'team_leader') { %>
                         <% if (booking.broker) { %>
                         <%
                             // Calculate commission breakdown
@@ -226,6 +227,7 @@
                         <div class="alert alert-light mb-4">
                             <i class="bi bi-info-circle"></i> No partner linked to this booking
                         </div>
+                        <% } %>
                         <% } %>
 
                         <!-- Amount Summary -->
@@ -413,7 +415,7 @@
                             </table>
                         </div>
                         
-                        <% if (userRole !== 'associate' && bookingRemainingAmount > 0) { %>
+                        <% if (userRole !== 'associate' && userRole !== 'team_leader' && bookingRemainingAmount > 0) { %>
                         <div class="mt-3">
                             <a href="/payment/create?bookingId=<%= booking.id %>" class="btn btn-success">
                                 <i class="bi bi-plus-circle"></i> Record New Payment
@@ -427,7 +429,7 @@
                     <div class="card-body p-4 text-center">
                         <i class="bi bi-receipt fs-1 text-muted"></i>
                         <p class="text-muted mt-3">No payments recorded yet</p>
-                        <% if (userRole !== 'associate') { %>
+                        <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
                         <a href="/payment/create?bookingId=<%= booking.id %>" class="btn btn-success">
                             <i class="bi bi-plus-circle"></i> Record First Payment
                         </a>

@@ -26,7 +26,7 @@
         <div class="card border-0 shadow-sm mb-4 animate-fade-in-up">
             <div class="card-body p-4">
                 <h2 class="h3 mb-2">Welcome back, <span class="text-gradient"><%= userName %></span>! 👋</h2>
-                <% if (userRole === 'associate') { %>
+                <% if (userRole === 'associate' || userRole === 'team_leader') { %>
                     <p class="text-muted mb-0">View your assigned partners' bookings and payments.</p>
                 <% } else { %>
                     <p class="text-muted mb-0">Here's what's happening with your real estate business today.</p>
@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        <% if (userRole !== 'associate') { %>
+        <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
         <!-- Stats Cards Row 1 -->
         <div class="row g-3 mb-3">
             <div class="col-6 col-md-4">
@@ -139,7 +139,7 @@
         </div>
         <% } %>
         
-        <% if (userRole !== 'associate') { %>
+        <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
         <!-- Quick Actions -->
         <div class="card border-0 shadow-sm animate-fade-in-up" style="animation-delay: 0.8s">
             <div class="card-body p-4">

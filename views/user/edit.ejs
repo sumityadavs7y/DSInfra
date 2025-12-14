@@ -64,6 +64,7 @@
                                     <option value="employee" <%= user.role === 'employee' ? 'selected' : '' %>>Employee</option>
                                     <option value="user" <%= user.role === 'user' ? 'selected' : '' %>>User</option>
                                     <option value="associate" <%= user.role === 'associate' ? 'selected' : '' %>>Partner Login (View Only)</option>
+                                    <option value="team_leader" <%= user.role === 'team_leader' ? 'selected' : '' %>>Team Leader (View Only)</option>
                                     <option value="farmer" <%= user.role === 'farmer' ? 'selected' : '' %>>Farmer Login (View Only)</option>
                                 </select>
                             </div>
@@ -149,7 +150,7 @@
             farmerProjectSelect.required = false;
             
             // Show the appropriate selection based on role
-            if (roleSelect.value === 'associate') {
+            if (roleSelect.value === 'associate' || roleSelect.value === 'team_leader') {
                 brokerDiv.style.display = 'block';
                 brokerSelect.required = true;
             } else if (roleSelect.value === 'farmer') {

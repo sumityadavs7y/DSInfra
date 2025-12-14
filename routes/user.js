@@ -83,8 +83,8 @@ router.post('/create', async (req, res) => {
             });
         }
 
-        // Validate broker selection for associate role
-        if (role === 'associate') {
+        // Validate broker selection for associate and team leader roles
+        if (role === 'associate' || role === 'team_leader') {
             if (!brokerIds || (Array.isArray(brokerIds) && brokerIds.length === 0)) {
                 const brokers = await Broker.findAll({
                     where: { isDeleted: false },
@@ -100,7 +100,7 @@ router.post('/create', async (req, res) => {
                     userRole: req.session.userRole,
                     brokers,
                     farmerProjects,
-                    errorMessage: 'Please select at least one associate for the associate login role'
+                    errorMessage: 'Please select at least one associate for the ' + (role === 'team_leader' ? 'team leader' : 'associate') + ' login role'
                 });
             }
         }
@@ -156,8 +156,8 @@ router.post('/create', async (req, res) => {
             role
         });
 
-        // If role is associate, create broker access records
-        if (role === 'associate' && brokerIds) {
+        // If role is associate or team leader, create broker access records
+        if ((role === 'associate' || role === 'team_leader') && brokerIds) {
             const brokerIdArray = Array.isArray(brokerIds) ? brokerIds : [brokerIds];
             const accessRecords = brokerIdArray.map(brokerId => ({
                 userId: user.id,
@@ -221,9 +221,9 @@ router.get('/:id/edit', async (req, res) => {
             order: [['name', 'ASC']]
         });
 
-        // Fetch current broker assignments if user is an associate
+        // Fetch current broker assignments if user is an associate or team leader
         let userBrokerIds = [];
-        if (user.role === 'associate') {
+        if (user.role === 'associate' || user.role === 'team_leader') {
             const userBrokerAccess = await UserBrokerAccess.findAll({
                 where: { userId: user.id }
             });
@@ -267,8 +267,8 @@ router.post('/:id/edit', async (req, res) => {
             return res.redirect('/user?error=User not found');
         }
 
-        // Validate broker selection for associate role
-        if (role === 'associate') {
+        // Validate broker selection for associate and team leader roles
+        if (role === 'associate' || role === 'team_leader') {
             if (!brokerIds || (Array.isArray(brokerIds) && brokerIds.length === 0)) {
                 const brokers = await Broker.findAll({
                     where: { isDeleted: false },
@@ -296,7 +296,7 @@ router.post('/:id/edit', async (req, res) => {
                     farmerProjects,
                     userBrokerIds,
                     userFarmerProjectIds,
-                    errorMessage: 'Please select at least one associate for the associate login role'
+                    errorMessage: 'Please select at least one associate for the ' + (role === 'team_leader' ? 'team leader' : 'associate') + ' login role'
                 });
             }
         }
@@ -380,8 +380,8 @@ router.post('/:id/edit', async (req, res) => {
         // Update user
         await user.update({ name, email, role });
 
-        // Update broker access if role is associate
-        if (role === 'associate') {
+        // Update broker access if role is associate or team leader
+        if (role === 'associate' || role === 'team_leader') {
             // Delete existing broker access
             await UserBrokerAccess.destroy({ where: { userId: user.id } });
             
@@ -395,7 +395,7 @@ router.post('/:id/edit', async (req, res) => {
                 await UserBrokerAccess.bulkCreate(accessRecords);
             }
         } else {
-            // If role changed from associate to something else, remove all broker access
+            // If role changed from associate/team leader to something else, remove all broker access
             await UserBrokerAccess.destroy({ where: { userId: user.id } });
         }
 

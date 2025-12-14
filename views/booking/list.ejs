@@ -12,8 +12,8 @@
         title: 'Bookings', 
         icon: 'bi-calendar-check-fill', 
         backUrl: '/dashboard', 
-        actionUrl: userRole !== 'associate' ? '/booking/create' : '', 
-        actionText: userRole !== 'associate' ? 'New Booking' : '', 
+        actionUrl: userRole !== 'associate' && userRole !== 'team_leader' ? '/booking/create' : '', 
+        actionText: userRole !== 'associate' && userRole !== 'team_leader' ? 'New Booking' : '', 
         actionIcon: 'bi-calendar-plus'
     }) %>
 
@@ -25,7 +25,7 @@
             
             <div class="row mb-3 g-2">
                 <!-- Show/Hide Deleted Toggle -->
-                <% if (userRole !== 'associate') { %>
+                <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
                 <div class="col-12 col-md-auto">
                     <% if (showDeleted) { %>
                         <a href="/booking?registryStatus=<%= registryStatus %>&bookingDateFrom=<%= bookingDateFrom %>&bookingDateTo=<%= bookingDateTo %>&registryDateFrom=<%= registryDateFrom %>&registryDateTo=<%= registryDateTo %>" class="btn btn-outline-danger">
@@ -168,7 +168,7 @@
                     <div class="text-center py-5">
                         <i class="bi bi-journal-x fs-1 text-muted"></i>
                         <p class="text-muted mt-3">No bookings found</p>
-                        <% if (userRole !== 'associate') { %>
+                        <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
                         <a href="/booking/create" class="btn btn-primary">Create First Booking</a>
                         <% } %>
                     </div>
@@ -222,7 +222,7 @@
                                                 <a href="/booking/<%= booking.id %>" class="btn btn-outline-dark" title="View Booking">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
-                                                <% if (userRole !== 'associate' && !booking.isDeleted) { %>
+                                                <% if (userRole !== 'associate' && userRole !== 'team_leader' && !booking.isDeleted) { %>
                                                 <a href="/booking/<%= booking.id %>/edit" class="btn btn-outline-primary" title="Edit Booking">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>

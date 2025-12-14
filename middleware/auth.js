@@ -14,12 +14,12 @@ const isAdmin = (req, res, next) => {
     res.status(403).send('Access denied. Admin privileges required.');
 };
 
-// Middleware to check if user is NOT an associate (associates are read-only)
+// Middleware to check if user is NOT an associate or team leader (both are read-only)
 const isNotAssociate = (req, res, next) => {
-    if (req.session && req.session.userId && req.session.userRole !== 'associate') {
+    if (req.session && req.session.userId && req.session.userRole !== 'associate' && req.session.userRole !== 'team_leader') {
         return next();
     }
-    res.status(403).send('Access denied. Associate users have read-only access.');
+    res.status(403).send('Access denied. Associate and Team Leader users have read-only access.');
 };
 
 // Middleware to check if user is NOT a farmer (farmers are read-only)
@@ -30,9 +30,9 @@ const isNotFarmer = (req, res, next) => {
     res.status(403).send('Access denied. Farmer users have read-only access.');
 };
 
-// Middleware to check if user is NOT an associate or farmer (both are read-only)
+// Middleware to check if user is NOT an associate, team leader or farmer (all are read-only)
 const isNotReadOnly = (req, res, next) => {
-    if (req.session && req.session.userId && req.session.userRole !== 'associate' && req.session.userRole !== 'farmer') {
+    if (req.session && req.session.userId && req.session.userRole !== 'associate' && req.session.userRole !== 'team_leader' && req.session.userRole !== 'farmer') {
         return next();
     }
     res.status(403).send('Access denied. Read-only users cannot perform this action.');
@@ -47,11 +47,11 @@ const redirectIfAuthenticated = (req, res, next) => {
 };
 
 // Middleware to get accessible broker IDs for the current user
-// For associates, returns only their assigned brokers
+// For associates and team leaders, returns only their assigned brokers
 // For other roles, returns all brokers
 const getAccessibleBrokerIds = async (req, res, next) => {
     try {
-        if (req.session.userRole === 'associate') {
+        if (req.session.userRole === 'associate' || req.session.userRole === 'team_leader') {
             const { UserBrokerAccess } = require('../models');
             const accessRecords = await UserBrokerAccess.findAll({
                 where: { userId: req.session.userId },
@@ -96,11 +96,11 @@ const getAccessibleFarmerProjectIds = async (req, res, next) => {
 const canAccessBroker = async (req, res, next) => {
     try {
         // Admin, manager, employee, user can access all brokers
-        if (req.session.userRole !== 'associate') {
+        if (req.session.userRole !== 'associate' && req.session.userRole !== 'team_leader') {
             return next();
         }
 
-        // For associates, check if they have access to this broker
+        // For associates and team leaders, check if they have access to this broker
         const brokerId = req.params.id || req.params.brokerId;
         if (!brokerId) {
             return res.status(400).send('Broker ID not provided');
@@ -129,11 +129,11 @@ const canAccessBroker = async (req, res, next) => {
 const canAccessBooking = async (req, res, next) => {
     try {
         // Admin, manager, employee, user can access all bookings
-        if (req.session.userRole !== 'associate') {
+        if (req.session.userRole !== 'associate' && req.session.userRole !== 'team_leader') {
             return next();
         }
 
-        // For associates, check if the booking belongs to one of their assigned brokers
+        // For associates and team leaders, check if the booking belongs to one of their assigned brokers
         const bookingId = req.params.id || req.params.bookingId;
         if (!bookingId) {
             return res.status(400).send('Booking ID not provided');
@@ -165,10 +165,10 @@ const canAccessBooking = async (req, res, next) => {
     }
 };
 
-// Middleware to block associates from accessing restricted routes
+// Middleware to block associates and team leaders from accessing restricted routes
 const blockAssociateAccess = (req, res, next) => {
-    if (req.session && req.session.userRole === 'associate') {
-        return res.status(403).send('Access denied. This module is not available for associate users.');
+    if (req.session && (req.session.userRole === 'associate' || req.session.userRole === 'team_leader')) {
+        return res.status(403).send('Access denied. This module is not available for associate and team leader users.');
     }
     next();
 };
@@ -181,9 +181,9 @@ const blockFarmerAccess = (req, res, next) => {
     next();
 };
 
-// Middleware to block both associates and farmers from accessing restricted routes
+// Middleware to block associates, team leaders and farmers from accessing restricted routes
 const blockReadOnlyAccess = (req, res, next) => {
-    if (req.session && (req.session.userRole === 'associate' || req.session.userRole === 'farmer')) {
+    if (req.session && (req.session.userRole === 'associate' || req.session.userRole === 'team_leader' || req.session.userRole === 'farmer')) {
         return res.status(403).send('Access denied. This module is not available for read-only users.');
     }
     next();
