@@ -100,19 +100,6 @@
             height: 14px;
             line-height: 1.2;
         }
-        .totals-row {
-            position: relative;
-            height: 60px;
-        }
-        .totals-box {
-            position: absolute;
-            right: 0;
-            top: 5px;
-            font-size: 9px;
-            font-weight: bold;
-            text-align: right;
-            line-height: 1.8;
-        }
         .terms {
             margin-top: 15px;
             font-size: 8px;
@@ -120,11 +107,6 @@
         }
         .terms strong {
             font-weight: bold;
-        }
-        .signature {
-            text-align: right;
-            margin-top: 40px;
-            font-size: 9px;
         }
         .print-button {
             position: fixed;
@@ -151,7 +133,7 @@
         <!-- Header Information -->
         <table class="header-table">
             <tr>
-                <td style="width: 33%;"><span class="label">Booking Appl. No.</span> : <%= payment.booking.bookingNo %></td>
+                <td style="width: 33%;"><span class="label">Booking Appl. No.</span> :<b> <%= payment.booking.bookingNo %></b></td>
                 <td style="width: 34%;"><span class="label">Receipt No:</span> <%= payment.receiptNo %></td>
                 <td style="width: 33%;"><span class="label">Date:</span> <%= new Date(payment.receiptDate).toLocaleDateString('en-IN') %></td>
             </tr>
@@ -218,56 +200,59 @@
         const pendingAmount = totalBookingAmount - totalPaidAmount;
         %>
 
-        <!-- Totals on the right -->
-        <div class="totals-row">
-            <div class="totals-box">
-                <div><span class="label">TOTAL AMOUNT (Rs.) :</span> &nbsp; ₹ <%= totalBookingAmount.toLocaleString('en-IN') %></div>
-                <div><span class="label">PENDING AMOUNT (Rs.) :</span> &nbsp; ₹ <%= pendingAmount.toLocaleString('en-IN') %></div>
+        <!-- Payment History and Totals Side by Side -->
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <!-- Payment History Table (Left) -->
+            <div style="flex: 0 0 65%;">
+                <table class="payment-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Date</th>
+                            <th style="width: 25%;">Transaction No.</th>
+                            <th style="width: 20%;">Mode</th>
+                            <th style="width: 20%;">Amount</th>
+                            <th style="width: 20%;">Recpt. No.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (let i = 0; i < 5; i++) { %>
+                        <tr>
+                            <% if (i < previousPayments.length) { 
+                                const p = previousPayments[i];
+                            %>
+                                <td><%= new Date(p.receiptDate).toLocaleDateString('en-IN') %></td>
+                                <td><%= p.transactionNo || '-' %></td>
+                                <td><%= p.paymentMode %></td>
+                                <td>₹<%= parseFloat(p.paymentAmount).toLocaleString('en-IN') %></td>
+                                <td><%= p.receiptNo %></td>
+                            <% } else { %>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                            <% } %>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals and Signature (Right) -->
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="padding: 8px; font-size: 9px; font-weight: bold; text-align: right; line-height: 1.8; flex-grow: 1;">
+                    <div><span class="label">TOTAL AMOUNT (Rs.) :</span> &nbsp; ₹ <%= totalBookingAmount.toLocaleString('en-IN') %></div>
+                    <div><span class="label">PENDING AMOUNT (Rs.) :</span> &nbsp; ₹ <%= pendingAmount.toLocaleString('en-IN') %></div>
+                </div>
+                <div style="text-align: center; margin-top: 40px; font-size: 9px;">
+                    ( Authorised Signatory )
+                </div>
             </div>
         </div>
-
-        <!-- Payment History Table -->
-        <table class="payment-table">
-            <thead>
-                <tr>
-                    <th style="width: 12%;">Date</th>
-                    <th style="width: 22%;">Transaction No.</th>
-                    <th style="width: 18%;">Mode</th>
-                    <th style="width: 20%;">Amount</th>
-                    <th style="width: 20%;">Recpt. No.</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% for (let i = 0; i < 5; i++) { %>
-                <tr>
-                    <% if (i < previousPayments.length) { 
-                        const p = previousPayments[i];
-                    %>
-                        <td><%= new Date(p.receiptDate).toLocaleDateString('en-IN') %></td>
-                        <td><%= p.transactionNo || '-' %></td>
-                        <td><%= p.paymentMode %></td>
-                        <td>₹<%= parseFloat(p.paymentAmount).toLocaleString('en-IN') %></td>
-                        <td><%= p.receiptNo %></td>
-                    <% } else { %>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                    <% } %>
-                </tr>
-                <% } %>
-            </tbody>
-        </table>
 
         <!-- Terms & Condition -->
         <div class="terms">
             <strong>Terms & Condition :</strong> Applicable bank charges shall be levied on outstation cheques. In case the cheque or payment instrument is returned unpaid for any reason, the booking will automatically stand cancelled without any further notice.
-        </div>
-
-        <!-- Signature -->
-        <div class="signature">
-            ( Authorised Signatory )
         </div>
     </div>
 
