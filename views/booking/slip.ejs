@@ -18,7 +18,22 @@
             .print-container {
                 box-shadow: none !important;
                 margin: 0;
-                padding: 20px;
+                padding: 10px;
+            }
+            .header-table {
+                font-size: 11px !important;
+            }
+            .section-header {
+                font-size: 12px !important;
+            }
+            .detail-table {
+                font-size: 11px !important;
+            }
+            .banking-section td {
+                font-size: 11px !important;
+            }
+            .terms {
+                font-size: 10px !important;
             }
         }
         body {
@@ -90,16 +105,16 @@
             padding: 5px;
         }
         .banking-section .left-col {
-            width: 50%;
+            width: 35%;
             border: 1px solid #000;
             padding: 10px;
         }
         .banking-section .right-col {
-            width: 50%;
+            width: 65%;
             border: 1px solid #000;
             border-left: none;
             padding: 10px;
-            text-align: center;
+            position: relative;
         }
         .signature-area {
             margin-top: 40px;
@@ -124,7 +139,7 @@
             z-index: 1000;
         }
         @page {
-            margin: 15mm;
+            margin: 5mm;
             size: A4;
         }
     </style>
@@ -155,7 +170,7 @@
         <!-- Header Information -->
         <table class="header-table">
             <tr>
-                <td style="width: 50%;"><span class="label">Booking Appl. No.</span> : <%= booking.bookingNo %></td>
+                <td style="width: 50%;"><span class="label">Booking Appl. No.</span> : <b><%= booking.bookingNo %></b></td>
                 <td style="width: 50%;"><span class="label">Booking Date :</span> <%= new Date(booking.bookingDate).toLocaleDateString('en-IN') %></td>
             </tr>
         </table>
@@ -200,6 +215,12 @@
                 <td class="label" style="width: 120px;">PLC (in %):</td>
                 <td class="value"><%= plcPercent %></td>
             </tr>
+            <% if (booking.legalDetails) { %>
+            <tr>
+                <td class="label">Legal Details</td>
+                <td class="value" colspan="5">: <%= booking.legalDetails %></td>
+            </tr>
+            <% } %>
         </table>
 
         <!-- PAYMENT DETAILS Section -->
@@ -280,12 +301,16 @@
                     </table>
                 </td>
                 <td class="right-col">
-                    <div style="font-weight: bold; font-size: 10px; margin-bottom: 10px;">FOR DS INFRA DEVELOPERS</div>
-                    <div class="signature-area">
-                        <div style="margin-bottom: 5px;">(Customer Signature)</div>
-                    </div>
-                    <div class="signature-area">
-                        <div>(Authorised Signatory)</div>
+                    <div style="font-weight: bold; font-size: 10px; text-align: right; margin-bottom: 60px;">FOR DS INFRA DEVELOPERS</div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                        <div style="text-align: center;">
+                            <div style="width: 150px; margin-bottom: 5px;"></div>
+                            <div>(Customer Signature)</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 150px; margin-bottom: 5px;"></div>
+                            <div>(Authorised Signatory)</div>
+                        </div>
                     </div>
                 </td>
             </tr>
