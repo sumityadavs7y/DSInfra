@@ -18,7 +18,45 @@
             .print-container {
                 box-shadow: none !important;
                 margin: 0;
-                padding: 20px;
+                padding: 5mm;
+            }
+            .title {
+                font-size: 13px !important;
+                margin-bottom: 2px !important;
+            }
+            .header-table {
+                font-size: 8px !important;
+                margin-bottom: 2px !important;
+            }
+            .section-header {
+                font-size: 9px !important;
+                margin-top: 2px !important;
+                margin-bottom: 1px !important;
+                padding: 1px 5px !important;
+            }
+            .detail-table {
+                font-size: 8px !important;
+                margin-bottom: 2px !important;
+            }
+            .detail-table td {
+                padding: 0.5px 3px !important;
+                line-height: 1.2 !important;
+            }
+            .payment-table {
+                font-size: 8px !important;
+                margin-top: 2px !important;
+            }
+            .payment-table th,
+            .payment-table td {
+                padding: 1.5px 3px !important;
+            }
+            .payment-table td {
+                height: 10px !important;
+            }
+            .terms {
+                font-size: 7px !important;
+                margin-top: 3px !important;
+                line-height: 1.3 !important;
             }
         }
         body {
@@ -27,54 +65,54 @@
         }
         .print-container {
             width: 210mm;
-            min-height: 297mm;
+            min-height: 148.5mm;
             margin: 10mm auto;
             background: white;
-            padding: 15mm;
+            padding: 8mm;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .title {
             text-align: center;
-            font-size: 20px;
+            font-size: 15px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
         }
         .header-table {
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
             font-size: 9px;
             border-collapse: collapse;
         }
         .header-table td {
             border: 1px solid #000;
-            padding: 5px;
+            padding: 3px;
         }
         .header-table .label {
             font-weight: bold;
         }
         .section-header {
             background-color: #f0f0f0;
-            padding: 3px 8px;
+            padding: 2px 6px;
             font-weight: bold;
             font-size: 10px;
-            margin-top: 8px;
-            margin-bottom: 3px;
+            margin-top: 4px;
+            margin-bottom: 2px;
             border: 1px solid #000;
         }
         .detail-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 9px;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
         .detail-table td {
-            padding: 1px 5px;
+            padding: 0.5px 4px;
             vertical-align: top;
-            line-height: 1.3;
+            line-height: 1.2;
         }
         .detail-table .label {
             font-weight: bold;
-            width: 150px;
+            width: 130px;
             white-space: nowrap;
         }
         .detail-table .value {
@@ -84,12 +122,12 @@
             width: 100%;
             border-collapse: collapse;
             font-size: 9px;
-            margin-top: 10px;
+            margin-top: 4px;
         }
         .payment-table th,
         .payment-table td {
             border: 1px solid #000;
-            padding: 3px 5px;
+            padding: 2px 4px;
             text-align: left;
         }
         .payment-table th {
@@ -97,13 +135,13 @@
             font-weight: bold;
         }
         .payment-table td {
-            height: 14px;
+            height: 11px;
             line-height: 1.2;
         }
         .terms {
-            margin-top: 15px;
+            margin-top: 4px;
             font-size: 8px;
-            line-height: 1.5;
+            line-height: 1.3;
         }
         .terms strong {
             font-weight: bold;
@@ -115,7 +153,7 @@
             z-index: 1000;
         }
         @page {
-            margin: 15mm -5mm 15mm -5mm;
+            margin: 15mm -5mm 10mm -5mm;
             size: A4;
         }
     </style>
@@ -200,55 +238,55 @@
         const pendingAmount = totalBookingAmount - totalPaidAmount;
         %>
 
-        <!-- Payment History and Totals Side by Side -->
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <!-- Payment History Table (Left) -->
-            <div style="flex: 0 0 65%;">
-                <table class="payment-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;">Date</th>
-                            <th style="width: 25%;">Transaction No.</th>
-                            <th style="width: 20%;">Mode</th>
-                            <th style="width: 20%;">Amount</th>
-                            <th style="width: 20%;">Recpt. No.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% for (let i = 0; i < 5; i++) { %>
-                        <tr>
-                            <% if (i < previousPayments.length) { 
-                                const p = previousPayments[i];
-                            %>
-                                <td><%= new Date(p.receiptDate).toLocaleDateString('en-IN') %></td>
-                                <td><%= p.transactionNo || '-' %></td>
-                                <td><%= p.paymentMode %></td>
-                                <td>₹<%= parseFloat(p.paymentAmount).toLocaleString('en-IN') %></td>
-                                <td><%= p.receiptNo %></td>
-                            <% } else { %>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                                <td>&nbsp;</td>
-                            <% } %>
-                        </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Totals and Signature (Right) -->
-            <div style="flex: 1; display: flex; flex-direction: column;">
-                <div style="padding: 8px; font-size: 9px; font-weight: bold; text-align: right; line-height: 1.8; flex-grow: 1;">
-                    <div><span class="label">TOTAL AMOUNT (Rs.) :</span> &nbsp; ₹ <%= totalBookingAmount.toLocaleString('en-IN') %></div>
-                    <div><span class="label">PENDING AMOUNT (Rs.) :</span> &nbsp; ₹ <%= pendingAmount.toLocaleString('en-IN') %></div>
-                </div>
-                <div style="text-align: center; margin-top: 40px; font-size: 9px;">
-                    ( Authorised Signatory )
-                </div>
-            </div>
-        </div>
+        <!-- Payment History and Totals Merged Table -->
+        <table class="payment-table">
+            <tr>
+                <th style="width: 13%;">Date</th>
+                <th style="width: 20%;">Transaction No.</th>
+                <th style="width: 13%;">Mode</th>
+                <th style="width: 15%;">Amount</th>
+                <th style="width: 14%;">Recpt. No.</th>
+                <th style="width: 25%; font-weight: bold; background-color: #f0f0f0;">SUMMARY</th>
+            </tr>
+            <% for (let i = 0; i < 5; i++) { %>
+            <tr style="height: 18px;">
+                <% if (i < previousPayments.length) { 
+                    const p = previousPayments[i];
+                %>
+                    <td><%= new Date(p.receiptDate).toLocaleDateString('en-IN') %></td>
+                    <td><%= p.transactionNo || '-' %></td>
+                    <td><%= p.paymentMode %></td>
+                    <td>₹<%= parseFloat(p.paymentAmount).toLocaleString('en-IN') %></td>
+                    <td><%= p.receiptNo %></td>
+                <% } else { %>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                <% } %>
+                <% if (i === 0) { %>
+                <td rowspan="5" style="vertical-align: top; padding: 4px 6px;">
+                    <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div style="font-size: 9px; font-weight: bold; line-height: 1.5;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                <span>TOTAL:</span>
+                                <span>₹ <%= totalBookingAmount.toLocaleString('en-IN') %></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-top: 1px solid #ccc; padding-top: 2px;">
+                                <span>PENDING:</span>
+                                <span>₹ <%= pendingAmount.toLocaleString('en-IN') %></span>
+                            </div>
+                        </div>
+                        <div style="text-align: center; font-size: 9px; font-weight: normal; margin-top: 15px; padding-top: 8px; border-top: 1px solid #000;">
+                            ( Authorised Signatory )
+                        </div>
+                    </div>
+                </td>
+                <% } %>
+            </tr>
+            <% } %>
+        </table>
 
         <!-- Terms & Condition -->
         <div class="terms">
