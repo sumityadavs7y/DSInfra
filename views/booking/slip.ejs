@@ -18,22 +18,67 @@
             .print-container {
                 box-shadow: none !important;
                 margin: 0;
-                padding: 8px;
+                padding: 8mm;
+                width: 100%;
+            }
+            .title {
+                font-size: 18px !important;
+                margin-bottom: 5px !important;
             }
             .header-table {
-                font-size: 9px !important;
+                font-size: 11px !important;
+                margin-bottom: 4px !important;
+            }
+            .header-table td {
+                padding: 3px 4px !important;
             }
             .section-header {
-                font-size: 10px !important;
+                font-size: 12px !important;
+                margin-top: 5px !important;
+                margin-bottom: 3px !important;
+                padding: 3px 6px !important;
             }
             .detail-table {
-                font-size: 9px !important;
+                font-size: 11px !important;
+                margin-bottom: 3px !important;
+            }
+            .detail-table td {
+                padding: 2px 4px !important;
+            }
+            .banking-section {
+                margin-top: 5px !important;
             }
             .banking-section td {
-                font-size: 9px !important;
+                font-size: 11px !important;
+                padding: 5px !important;
+            }
+            .banking-section .left-col table tr td {
+                padding: 2px 0 !important;
+            }
+            .banking-section .right-col > div:first-child {
+                margin-bottom: 30px !important;
+            }
+            .banking-section .right-col > div:last-child {
+                margin-top: 8px !important;
             }
             .terms {
-                font-size: 8px !important;
+                font-size: 9px !important;
+                margin-top: 5px !important;
+                line-height: 1.3 !important;
+            }
+            .terms ol {
+                margin: 3px 0 !important;
+                padding-left: 13px !important;
+            }
+            .terms li {
+                margin-bottom: 2px !important;
+            }
+            .terms ul {
+                margin: 2px 0 !important;
+                padding-left: 13px !important;
+            }
+            .terms ul li {
+                margin-bottom: 1px !important;
             }
         }
         body {
@@ -42,7 +87,6 @@
         }
         .print-container {
             width: 210mm;
-            min-height: 297mm;
             margin: 10mm auto;
             background: white;
             padding: 15mm;
@@ -139,8 +183,8 @@
             z-index: 1000;
         }
         @page {
-            margin: 5mm;
-            size: A4;
+            margin: 10mm;
+            size: A4 portrait;
         }
     </style>
 </head>
@@ -301,8 +345,8 @@
                     </table>
                 </td>
                 <td class="right-col">
-                    <div style="font-weight: bold; font-size: 10px; text-align: right; margin-bottom: 60px;">FOR DS INFRA DEVELOPERS</div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                    <div style="font-weight: bold; font-size: 10px; text-align: right; margin-bottom: 35px;">FOR DS INFRA DEVELOPERS</div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
                         <div style="text-align: center;">
                             <div style="width: 150px; margin-bottom: 5px;"></div>
                             <div>(Customer Signature)</div>
