@@ -21,16 +21,18 @@
         userRole: userRole
     }) %>
 
-    <div class="container my-4">
+    <div class="container my-3">
         <!-- Welcome Section -->
-        <div class="card border-0 shadow-sm mb-4 animate-fade-in-up">
-            <div class="card-body p-4">
-                <h2 class="h3 mb-2">Welcome back, <span class="text-gradient"><%= userName %></span>! 👋</h2>
-                <% if (userRole === 'associate' || userRole === 'team_leader') { %>
-                    <p class="text-muted mb-0">View your assigned partners' bookings and payments.</p>
-                <% } else { %>
-                    <p class="text-muted mb-0">Here's what's happening with your real estate business today.</p>
-                <% } %>
+        <div class="alert alert-light border-0 shadow-sm mb-2 py-2 px-3 animate-fade-in-up" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                <div>
+                    <strong class="h6 mb-0 d-inline">Welcome back, <span class="text-gradient"><%= userName %></span>! 👋</strong>
+                    <% if (userRole === 'associate' || userRole === 'team_leader') { %>
+                        <span class="text-muted ms-2 small d-none d-md-inline">View your assigned partners' bookings and payments.</span>
+                    <% } else { %>
+                        <span class="text-muted ms-2 small d-none d-md-inline">Here's what's happening with your real estate business today.</span>
+                    <% } %>
+                </div>
             </div>
         </div>
 

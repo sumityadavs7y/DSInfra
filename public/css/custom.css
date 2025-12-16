@@ -32,15 +32,16 @@ body {
 .navbar {
     /* background: var(--primary-gradient) !important; */
     box-shadow: var(--shadow-md);
-    padding: 1rem 0;
+    padding: 0.25rem 0;
     backdrop-filter: blur(10px);
 }
 
 .navbar-brand {
     font-weight: 700;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     transition: var(--transition-fast);
     letter-spacing: -0.5px;
+    margin-bottom: 0;
 }
 
 .navbar-brand:hover {
@@ -101,6 +102,8 @@ body {
     font-weight: 500;
     transition: var(--transition-fast);
     position: relative;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
 }
 
 .nav-link::after {

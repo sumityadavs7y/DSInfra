@@ -22,37 +22,20 @@ const headerUserName = typeof userName !== 'undefined' ? userName : '';
 const headerUserRole = typeof userRole !== 'undefined' ? userRole : '';
 %>
 
-<nav class="navbar <%= showDashboardMode ? 'navbar-expand-lg' : '' %> navbar-light shadow-sm" style="background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%); border-bottom: 3px solid #e0e0e0;">
+<!-- Top Header -->
+<nav class="navbar navbar-expand-lg navbar-light shadow-sm py-1" id="topHeader" style="background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%); border-bottom: 2px solid #e0e0e0; position: sticky; top: 0; z-index: 1030;">
     <div class="container-fluid">
         <% if (showDashboardMode) { %>
             <!-- Dashboard Mode -->
-            <a class="navbar-brand d-flex align-items-center dashboard-brand-no-zoom" href="/dashboard">
-                <img src="/images/logo.png" alt="Logo" style="height: 40px; width: auto; margin-right: 10px;">
-                <span>
+            <a class="navbar-brand d-flex align-items-center dashboard-brand-no-zoom" href="/dashboard" style="font-size: 1rem; margin-bottom: 0;">
+                <img src="/images/logo.png" alt="Logo" style="height: 32px; width: auto; margin-right: 8px;">
+                <span class="fs-6">
                     <% if (headerIcon) { %>
                         <i class="<%= headerIcon %>"></i>
                     <% } %>
                     <%= title %>
                 </span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <span class="nav-link">
-                            <i class="bi bi-person-circle"></i> <%= headerUserName %> 
-                            <span class="badge bg-dark text-white"><%= headerUserRole.toUpperCase() %></span>
-                        </span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link logout-btn-border" href="/auth/logout" style="border: 2px solid #dc3545; border-radius: 8px; padding: 0.5rem 1rem; color: #dc3545; font-weight: 600;">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
         <% } else { %>
             <!-- Regular Page Mode -->
             <div class="d-flex align-items-center">
@@ -67,13 +50,201 @@ const headerUserRole = typeof userRole !== 'undefined' ? userRole : '';
                     <%= title %>
                 </span>
             </div>
-            <% if (headerActionUrl) { %>
-            <a href="<%= headerActionUrl %>" class="btn btn-dark">
-                <i class="<%= headerActionIcon %>"></i> 
-                <span class="d-none d-sm-inline"><%= headerActionText %></span>
-            </a>
-            <% } %>
+        <% } %>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-lg-center">
+                <% if (!showDashboardMode && headerActionUrl) { %>
+                <li class="nav-item d-lg-none mb-2">
+                    <a href="<%= headerActionUrl %>" class="btn btn-dark btn-sm w-100">
+                        <i class="<%= headerActionIcon %>"></i> <%= headerActionText %>
+                    </a>
+                </li>
+                <% } %>
+                <li class="nav-item">
+                    <span class="nav-link py-1 small">
+                        <i class="bi bi-person-circle"></i> <%= headerUserName %> 
+                        <span class="badge bg-dark text-white"><%= headerUserRole.toUpperCase() %></span>
+                    </span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link logout-btn-border py-1 small" href="/auth/logout" style="border: 2px solid #dc3545; border-radius: 6px; padding: 0.3rem 0.8rem; color: #dc3545; font-weight: 600;">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <% if (!showDashboardMode && headerActionUrl) { %>
+        <a href="<%= headerActionUrl %>" class="btn btn-dark btn-sm d-none d-lg-block ms-2">
+            <i class="<%= headerActionIcon %>"></i> 
+            <span class="d-none d-xl-inline"><%= headerActionText %></span>
+        </a>
         <% } %>
     </div>
 </nav>
+
+<!-- Quick Actions Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-1" id="quickActionsBar" style="border-bottom: 1px solid #e0e0e0; position: sticky; top: 0; z-index: 1020;">
+    <div class="container-fluid">
+        <button class="navbar-toggler w-100 py-1" type="button" data-bs-toggle="collapse" data-bs-target="#quickActionsNav">
+            <span class="d-flex align-items-center justify-content-center w-100 small">
+                <i class="bi bi-lightning-fill text-warning me-2"></i>
+                <span>Quick Actions</span>
+            </span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="quickActionsNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 small">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link py-1 <%= showDashboardMode ? 'active fw-bold' : '' %>" href="/dashboard">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                
+                <% if (headerUserRole !== 'associate' && headerUserRole !== 'team_leader') { %>
+                <!-- Projects -->
+                <li class="nav-item">
+                    <a class="nav-link py-1" href="/project">
+                        <i class="bi bi-grid-3x3-gap"></i> Projects
+                    </a>
+                </li>
+                <% } %>
+                
+                <!-- Bookings -->
+                <li class="nav-item">
+                    <a class="nav-link py-1" href="/booking">
+                        <i class="bi bi-journal-text"></i> Bookings
+                    </a>
+                </li>
+                
+                <!-- Payments -->
+                <li class="nav-item">
+                    <a class="nav-link py-1" href="/payment">
+                        <i class="bi bi-receipt"></i> Payments
+                    </a>
+                </li>
+                
+                <% if (headerUserRole !== 'associate' && headerUserRole !== 'team_leader') { %>
+                <!-- Customers -->
+                <li class="nav-item">
+                    <a class="nav-link py-1" href="/customer">
+                        <i class="bi bi-people"></i> Customers
+                    </a>
+                </li>
+                
+                <!-- Partners -->
+                <li class="nav-item">
+                    <a class="nav-link py-1" href="/broker">
+                        <i class="bi bi-briefcase"></i> Partners
+                    </a>
+                </li>
+                
+                <!-- More Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle py-1" href="#" id="moreDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots"></i> More
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-sm" aria-labelledby="moreDropdown" style="z-index: 1050;">
+                        <li><a class="dropdown-item small py-1" href="/team">
+                            <i class="bi bi-people-fill"></i> Teams
+                        </a></li>
+                        <li><a class="dropdown-item small py-1" href="/employee">
+                            <i class="bi bi-person-workspace"></i> Employees
+                        </a></li>
+                        <li><a class="dropdown-item small py-1" href="/farmer">
+                            <i class="bi bi-flower2"></i> Farmer
+                        </a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <% if (headerUserRole === 'admin') { %>
+                        <li><a class="dropdown-item small py-1" href="/user">
+                            <i class="bi bi-shield-lock"></i> User Management
+                        </a></li>
+                        <% } %>
+                    </ul>
+                </li>
+                <% } else { %>
+                <!-- Partners (for associates/team leaders) -->
+                <li class="nav-item">
+                    <a class="nav-link py-1" href="/broker">
+                        <i class="bi bi-briefcase"></i> My Partners
+                    </a>
+                </li>
+                <% } %>
+            </ul>
+            
+            <!-- Quick Create Buttons -->
+            <div class="d-flex gap-1 flex-wrap">
+                <% if (headerUserRole !== 'associate' && headerUserRole !== 'team_leader') { %>
+                <a href="/booking/create" class="btn btn-sm btn-outline-primary py-1 px-2" title="New Booking">
+                    <i class="bi bi-plus-circle"></i> <span class="d-none d-xl-inline small">Booking</span>
+                </a>
+                <a href="/payment/create" class="btn btn-sm btn-outline-success py-1 px-2" title="Record Payment">
+                    <i class="bi bi-credit-card"></i> <span class="d-none d-xl-inline small">Payment</span>
+                </a>
+                <a href="/customer/create" class="btn btn-sm btn-outline-warning py-1 px-2" title="Add Customer">
+                    <i class="bi bi-person-plus"></i> <span class="d-none d-xl-inline small">Customer</span>
+                </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    /* Ensure dropdown menus appear above all content */
+    .dropdown-menu {
+        z-index: 1050 !important;
+    }
+    
+    /* Ensure navbar dropdowns work properly with sticky positioning */
+    .navbar .dropdown-menu.show {
+        z-index: 1050 !important;
+    }
+    
+    /* Make quick actions bar stick below the top header */
+    #quickActionsBar {
+        top: var(--top-header-height, 56px);
+    }
+    
+    /* Calculate and set the top header height dynamically */
+    @media (min-width: 992px) {
+        :root {
+            --top-header-height: 56px;
+        }
+    }
+    
+    @media (max-width: 991.98px) {
+        :root {
+            --top-header-height: 56px;
+        }
+        #quickActionsBar {
+            top: 0;
+        }
+    }
+</style>
+
+<script>
+    // Dynamically calculate top header height for sticky positioning
+    document.addEventListener('DOMContentLoaded', function() {
+        const topHeader = document.getElementById('topHeader');
+        const quickActionsBar = document.getElementById('quickActionsBar');
+        
+        if (topHeader && quickActionsBar) {
+            function updateQuickActionsPosition() {
+                const topHeaderHeight = topHeader.offsetHeight;
+                quickActionsBar.style.top = topHeaderHeight + 'px';
+            }
+            
+            // Update on load and resize
+            updateQuickActionsPosition();
+            window.addEventListener('resize', updateQuickActionsPosition);
+        }
+    });
+</script>
 
