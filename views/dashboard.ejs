@@ -21,16 +21,16 @@
         userRole: userRole
     }) %>
 
-    <div class="container my-3">
+    <div class="container my-2">
         <!-- Welcome Section -->
-        <div class="alert alert-light border-0 shadow-sm mb-2 py-2 px-3 animate-fade-in-up" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+        <div class="alert alert-light border-0 shadow-sm mb-2 py-2 px-2 animate-fade-in-up" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
             <div class="d-flex align-items-center justify-content-between flex-wrap">
                 <div>
-                    <strong class="h6 mb-0 d-inline">Welcome back, <span class="text-gradient"><%= userName %></span>! 👋</strong>
+                    <strong class="h6 mb-0 d-inline fs-6">Welcome back, <span class="text-gradient"><%= userName %></span>! 👋</strong>
                     <% if (userRole === 'associate' || userRole === 'team_leader') { %>
-                        <span class="text-muted ms-2 small d-none d-md-inline">View your assigned partners' bookings and payments.</span>
+                        <span class="text-muted ms-2 small d-none d-lg-inline">View your assigned partners' bookings and payments.</span>
                     <% } else { %>
-                        <span class="text-muted ms-2 small d-none d-md-inline">Here's what's happening with your real estate business today.</span>
+                        <span class="text-muted ms-2 small d-none d-lg-inline">Here's what's happening with your real estate business today.</span>
                     <% } %>
                 </div>
             </div>
@@ -38,75 +38,75 @@
 
         <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
         <!-- Stats Cards Row 1 -->
-        <div class="row g-3 mb-3">
-            <div class="col-6 col-md-4">
-                <div class="card border-0 shadow-sm border-start border-primary border-4 stat-card animate-fade-in-up" style="animation-delay: 0.1s">
-                    <div class="card-body text-center">
-                        <i class="bi bi-grid-3x3-gap fs-1 text-primary"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1"><%= stats.totalProjects %></h3>
-                        <p class="text-muted small mb-0">Total Projects</p>
+        <div class="row g-2 mb-2">
+            <div class="col-4">
+                <div class="card border-0 shadow-sm border-start border-primary border-3 stat-card compact-stat-card animate-fade-in-up" style="animation-delay: 0.1s">
+                    <div class="card-body text-center py-2 px-1">
+                        <i class="bi bi-grid-3x3-gap fs-5 text-primary"></i>
+                        <h3 class="h6 fw-bold mt-1 mb-0"><%= stats.totalProjects %></h3>
+                        <p class="text-muted mb-0" style="font-size: 0.65rem;">Projects</p>
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
-                <div class="card border-0 shadow-sm border-start border-success border-4 stat-card animate-fade-in-up" style="animation-delay: 0.2s">
-                    <div class="card-body text-center">
-                        <i class="bi bi-calendar-check fs-1 text-success"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1"><%= stats.activeBookings %></h3>
-                        <p class="text-muted small mb-0">Active Bookings</p>
+            <div class="col-4">
+                <div class="card border-0 shadow-sm border-start border-success border-3 stat-card compact-stat-card animate-fade-in-up" style="animation-delay: 0.2s">
+                    <div class="card-body text-center py-2 px-1">
+                        <i class="bi bi-calendar-check fs-5 text-success"></i>
+                        <h3 class="h6 fw-bold mt-1 mb-0"><%= stats.activeBookings %></h3>
+                        <p class="text-muted mb-0" style="font-size: 0.65rem;">Bookings</p>
                     </div>
                 </div>
             </div>
-            <div class="col-6 col-md-4">
-                <div class="card border-0 shadow-sm border-start border-info border-4 stat-card animate-fade-in-up" style="animation-delay: 0.3s">
-                    <div class="card-body text-center">
-                        <i class="bi bi-people fs-1 text-info"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1"><%= stats.activeCustomers %></h3>
-                        <p class="text-muted small mb-0">Active Customers</p>
+            <div class="col-4">
+                <div class="card border-0 shadow-sm border-start border-info border-3 stat-card compact-stat-card animate-fade-in-up" style="animation-delay: 0.3s">
+                    <div class="card-body text-center py-2 px-1">
+                        <i class="bi bi-people fs-5 text-info"></i>
+                        <h3 class="h6 fw-bold mt-1 mb-0"><%= stats.activeCustomers %></h3>
+                        <p class="text-muted mb-0" style="font-size: 0.65rem;">Customers</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Stats Cards Row 2 - Financial -->
-        <div class="row g-3 mb-4">
+        <div class="row g-2 mb-2">
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm border-start border-warning border-4 stat-card animate-fade-in-up" style="animation-delay: 0.4s">
-                    <div class="card-body text-center">
-                        <i class="bi bi-file-earmark-check-fill fs-1 text-warning"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalRevenue).toLocaleString('en-IN') %></h3>
-                        <p class="text-muted small mb-0"><strong>Registered Property Revenue</strong></p>
-                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-info-circle"></i> Booking value of registered properties</small>
+                <div class="card border-0 shadow-sm border-start border-warning border-3 stat-card animate-fade-in-up" style="animation-delay: 0.4s">
+                    <div class="card-body text-center p-2">
+                        <i class="bi bi-file-earmark-check-fill fs-4 text-warning"></i>
+                        <h3 class="h5 fw-bold mt-1 mb-0">₹<%= parseFloat(stats.totalRevenue).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted mb-0" style="font-size: 0.7rem;"><strong>Registered Property Revenue</strong></p>
+                        <small class="text-muted" style="font-size: 0.65rem;"><i class="bi bi-info-circle"></i> Booking value of registered properties</small>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm border-start border-info border-4 stat-card animate-fade-in-up" style="animation-delay: 0.5s">
-                    <div class="card-body text-center">
-                        <i class="bi bi-calculator fs-1 text-info"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalRevenueAllBookings).toLocaleString('en-IN') %></h3>
-                        <p class="text-muted small mb-0"><strong>Total Revenue (All Bookings)</strong></p>
-                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-check-circle-fill"></i> Registered + non-registered</small>
+                <div class="card border-0 shadow-sm border-start border-info border-3 stat-card animate-fade-in-up" style="animation-delay: 0.5s">
+                    <div class="card-body text-center p-2">
+                        <i class="bi bi-calculator fs-4 text-info"></i>
+                        <h3 class="h5 fw-bold mt-1 mb-0">₹<%= parseFloat(stats.totalRevenueAllBookings).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted mb-0" style="font-size: 0.7rem;"><strong>Total Revenue (All Bookings)</strong></p>
+                        <small class="text-muted" style="font-size: 0.65rem;"><i class="bi bi-check-circle-fill"></i> Registered + non-registered</small>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm border-start border-success border-4 stat-card animate-fade-in-up" style="animation-delay: 0.6s">
-                    <div class="card-body text-center">
-                        <i class="bi bi-cash-stack fs-1 text-success"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.totalPaymentsReceived).toLocaleString('en-IN') %></h3>
-                        <p class="text-muted small mb-0"><strong>Payments Received</strong></p>
-                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-wallet2"></i> Actual cash collected</small>
+                <div class="card border-0 shadow-sm border-start border-success border-3 stat-card animate-fade-in-up" style="animation-delay: 0.6s">
+                    <div class="card-body text-center p-2">
+                        <i class="bi bi-cash-stack fs-4 text-success"></i>
+                        <h3 class="h5 fw-bold mt-1 mb-0">₹<%= parseFloat(stats.totalPaymentsReceived).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted mb-0" style="font-size: 0.7rem;"><strong>Payments Received</strong></p>
+                        <small class="text-muted" style="font-size: 0.65rem;"><i class="bi bi-wallet2"></i> Actual cash collected</small>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-md-6 col-lg-3">
-                <div class="card border-0 shadow-sm border-start border-danger border-4 stat-card animate-fade-in-up" style="animation-delay: 0.7s">
-                    <div class="card-body text-center">
-                        <i class="bi bi-hourglass-split fs-1 text-danger"></i>
-                        <h3 class="h2 fw-bold mt-2 mb-1">₹<%= parseFloat(stats.pendingRevenue).toLocaleString('en-IN') %></h3>
-                        <p class="text-muted small mb-0"><strong>Pending Revenue</strong></p>
-                        <small class="text-muted" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill"></i> Total revenue - payments received</small>
+                <div class="card border-0 shadow-sm border-start border-danger border-3 stat-card animate-fade-in-up" style="animation-delay: 0.7s">
+                    <div class="card-body text-center p-2">
+                        <i class="bi bi-hourglass-split fs-4 text-danger"></i>
+                        <h3 class="h5 fw-bold mt-1 mb-0">₹<%= parseFloat(stats.pendingRevenue).toLocaleString('en-IN') %></h3>
+                        <p class="text-muted mb-0" style="font-size: 0.7rem;"><strong>Pending Revenue</strong></p>
+                        <small class="text-muted" style="font-size: 0.65rem;"><i class="bi bi-exclamation-triangle-fill"></i> Total revenue - payments received</small>
                     </div>
                 </div>
             </div>
@@ -115,24 +115,24 @@
         <% } else { %>
         <!-- Partner Quick Actions -->
         <div class="card border-0 shadow-sm animate-fade-in-up">
-            <div class="card-body p-4">
-                <h3 class="h5 mb-4"><i class="bi bi-lightning-fill text-warning"></i> Quick Access</h3>
-                <div class="row g-3 quick-actions-grid">
+            <div class="card-body p-2">
+                <h3 class="h6 mb-2"><i class="bi bi-lightning-fill text-warning"></i> Quick Access</h3>
+                <div class="row g-2 quick-actions-grid">
                     <div class="col-6 col-md-4">
-                        <a href="/broker" class="btn btn-outline-dark w-100 py-3">
-                            <i class="bi bi-briefcase fs-4 d-block mb-2"></i>
+                        <a href="/broker" class="btn btn-outline-dark w-100 py-2">
+                            <i class="bi bi-briefcase fs-5 d-block mb-1"></i>
                             <small>My Partners</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4">
-                        <a href="/booking" class="btn btn-outline-primary w-100 py-3">
-                            <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
+                        <a href="/booking" class="btn btn-outline-primary w-100 py-2">
+                            <i class="bi bi-journal-text fs-5 d-block mb-1"></i>
                             <small>Bookings</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4">
-                        <a href="/payment" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-receipt fs-4 d-block mb-2"></i>
+                        <a href="/payment" class="btn btn-outline-success w-100 py-2">
+                            <i class="bi bi-receipt fs-5 d-block mb-1"></i>
                             <small>Payments</small>
                         </a>
                     </div>
@@ -144,20 +144,20 @@
         <% if (userRole !== 'associate' && userRole !== 'team_leader') { %>
         <!-- Quick Actions -->
         <div class="card border-0 shadow-sm animate-fade-in-up" style="animation-delay: 0.8s">
-            <div class="card-body p-4">
-                <h3 class="h5 mb-4"><i class="bi bi-lightning-fill text-warning"></i> Quick Actions</h3>
-                <div class="row g-3 quick-actions-grid">
+            <div class="card-body p-2">
+                <h3 class="h6 mb-2"><i class="bi bi-lightning-fill text-warning"></i> Quick Actions</h3>
+                <div class="row g-2 quick-actions-grid">
                     <!-- Projects Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/project" class="btn btn-outline-info w-100 py-3">
-                            <i class="bi bi-grid-3x3-gap fs-4 d-block mb-2"></i>
+                        <a href="/project" class="btn btn-outline-info w-100 py-2">
+                            <i class="bi bi-grid-3x3-gap fs-5 d-block mb-1"></i>
                             <small>Projects</small>
                         </a>
                     </div>
                     <% if (userRole === 'admin') { %>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/project/create" class="btn btn-outline-info w-100 py-3">
-                            <i class="bi bi-plus-square fs-4 d-block mb-2"></i>
+                        <a href="/project/create" class="btn btn-outline-info w-100 py-2">
+                            <i class="bi bi-plus-square fs-5 d-block mb-1"></i>
                             <small>New Project</small>
                         </a>
                     </div>
@@ -165,84 +165,84 @@
                     
                     <!-- Bookings Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/booking" class="btn btn-outline-primary w-100 py-3">
-                            <i class="bi bi-journal-text fs-4 d-block mb-2"></i>
+                        <a href="/booking" class="btn btn-outline-primary w-100 py-2">
+                            <i class="bi bi-journal-text fs-5 d-block mb-1"></i>
                             <small>Bookings</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/booking/create" class="btn btn-outline-primary w-100 py-3">
-                            <i class="bi bi-plus-circle fs-4 d-block mb-2"></i>
+                        <a href="/booking/create" class="btn btn-outline-primary w-100 py-2">
+                            <i class="bi bi-plus-circle fs-5 d-block mb-1"></i>
                             <small>New Booking</small>
                         </a>
                     </div>
                     
                     <!-- Payments Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/payment" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-receipt fs-4 d-block mb-2"></i>
+                        <a href="/payment" class="btn btn-outline-success w-100 py-2">
+                            <i class="bi bi-receipt fs-5 d-block mb-1"></i>
                             <small>Payments</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/payment/create" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-credit-card fs-4 d-block mb-2"></i>
+                        <a href="/payment/create" class="btn btn-outline-success w-100 py-2">
+                            <i class="bi bi-credit-card fs-5 d-block mb-1"></i>
                             <small>Record Payment</small>
                         </a>
                     </div>
                     
                     <!-- Customers Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/customer" class="btn btn-outline-warning w-100 py-3">
-                            <i class="bi bi-people fs-4 d-block mb-2"></i>
+                        <a href="/customer" class="btn btn-outline-warning w-100 py-2">
+                            <i class="bi bi-people fs-5 d-block mb-1"></i>
                             <small>Customers</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/customer/create" class="btn btn-outline-warning w-100 py-3">
-                            <i class="bi bi-person-plus fs-4 d-block mb-2"></i>
+                        <a href="/customer/create" class="btn btn-outline-warning w-100 py-2">
+                            <i class="bi bi-person-plus fs-5 d-block mb-1"></i>
                             <small>Add Customer</small>
                         </a>
                     </div>
                     
                     <!-- Partners & Teams Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/broker" class="btn btn-outline-dark w-100 py-3">
-                            <i class="bi bi-briefcase fs-4 d-block mb-2"></i>
+                        <a href="/broker" class="btn btn-outline-dark w-100 py-2">
+                            <i class="bi bi-briefcase fs-5 d-block mb-1"></i>
                             <small>Partners</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/broker/create" class="btn btn-outline-dark w-100 py-3">
-                            <i class="bi bi-person-plus-fill fs-4 d-block mb-2"></i>
+                        <a href="/broker/create" class="btn btn-outline-dark w-100 py-2">
+                            <i class="bi bi-person-plus-fill fs-5 d-block mb-1"></i>
                             <small>Add Partner</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/team" class="btn btn-outline-dark w-100 py-3">
-                            <i class="bi bi-people-fill fs-4 d-block mb-2"></i>
+                        <a href="/team" class="btn btn-outline-dark w-100 py-2">
+                            <i class="bi bi-people-fill fs-5 d-block mb-1"></i>
                             <small>Teams</small>
                         </a>
                     </div>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/team/create" class="btn btn-outline-dark w-100 py-3">
-                            <i class="bi bi-plus-circle-fill fs-4 d-block mb-2"></i>
+                        <a href="/team/create" class="btn btn-outline-dark w-100 py-2">
+                            <i class="bi bi-plus-circle-fill fs-5 d-block mb-1"></i>
                             <small>New Team</small>
                         </a>
                     </div>
                     
                     <!-- Employees Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/employee" class="btn btn-outline-secondary w-100 py-3">
-                            <i class="bi bi-person-workspace fs-4 d-block mb-2"></i>
+                        <a href="/employee" class="btn btn-outline-secondary w-100 py-2">
+                            <i class="bi bi-person-workspace fs-5 d-block mb-1"></i>
                             <small>Employees</small>
                         </a>
                     </div>
                     
                     <!-- Farmer Section -->
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/farmer" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-flower2 fs-4 d-block mb-2"></i>
+                        <a href="/farmer" class="btn btn-outline-success w-100 py-2">
+                            <i class="bi bi-flower2 fs-5 d-block mb-1"></i>
                             <small>Farmer</small>
                         </a>
                     </div>
@@ -250,15 +250,15 @@
                     <!-- Admin Section -->
                     <% if (userRole === 'admin') { %>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/user" class="btn btn-outline-danger w-100 py-3">
-                            <i class="bi bi-shield-lock fs-4 d-block mb-2"></i>
+                        <a href="/user" class="btn btn-outline-danger w-100 py-2">
+                            <i class="bi bi-shield-lock fs-5 d-block mb-1"></i>
                             <small>User Management</small>
                         </a>
                     </div>
                     <% } %>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="#" class="btn btn-outline-secondary w-100 py-3">
-                            <i class="bi bi-graph-up fs-4 d-block mb-2"></i>
+                        <a href="#" class="btn btn-outline-secondary w-100 py-2">
+                            <i class="bi bi-graph-up fs-5 d-block mb-1"></i>
                             <small>Reports</small>
                         </a>
                     </div>
@@ -268,19 +268,19 @@
 
         <!-- Farmer QuickLinks -->
         <% if (farmerQuickLinks && farmerQuickLinks.length > 0) { %>
-        <div class="card border-0 shadow-sm animate-fade-in-up mt-4" style="animation-delay: 0.9s">
-            <div class="card-body p-4">
-                <h3 class="h5 mb-4">
+        <div class="card border-0 shadow-sm animate-fade-in-up mt-2" style="animation-delay: 0.9s">
+            <div class="card-body p-2">
+                <h3 class="h6 mb-2">
                     <i class="bi bi-flower2 text-success"></i> Farmer QuickLinks
                     <a href="/farmer/projects" class="btn btn-sm btn-outline-secondary float-end">
                         <i class="bi bi-gear"></i> Manage
                     </a>
                 </h3>
-                <div class="row g-3 quick-actions-grid">
+                <div class="row g-2 quick-actions-grid">
                     <% farmerQuickLinks.forEach((project, index) => { %>
                     <div class="col-6 col-md-4 col-xl-3">
-                        <a href="/farmer/projects/<%= project.id %>" class="btn btn-outline-success w-100 py-3">
-                            <i class="bi bi-folder-fill fs-4 d-block mb-2"></i>
+                        <a href="/farmer/projects/<%= project.id %>" class="btn btn-outline-success w-100 py-2">
+                            <i class="bi bi-folder-fill fs-5 d-block mb-1"></i>
                             <small><%= project.name %></small>
                         </a>
                     </div>
