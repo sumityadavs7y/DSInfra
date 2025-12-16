@@ -18,64 +18,64 @@
             .print-container {
                 box-shadow: none !important;
                 margin: 0;
-                padding: 3mm;
+                padding: 2mm;
                 width: 100%;
             }
             .title {
-                font-size: 18px !important;
-                margin-bottom: 5px !important;
-            }
-            .header-table {
-                font-size: 11px !important;
+                font-size: 17px !important;
                 margin-bottom: 4px !important;
             }
+            .header-table {
+                font-size: 10.5px !important;
+                margin-bottom: 3px !important;
+            }
             .header-table td {
-                padding: 3px 4px !important;
+                padding: 2px 3px !important;
             }
             .section-header {
-                font-size: 12px !important;
-                margin-top: 5px !important;
-                margin-bottom: 3px !important;
-                padding: 3px 6px !important;
+                font-size: 11.5px !important;
+                margin-top: 4px !important;
+                margin-bottom: 2px !important;
+                padding: 2px 5px !important;
             }
             .detail-table {
-                font-size: 11px !important;
-                margin-bottom: 3px !important;
-            }
-            .detail-table td {
-                padding: 2px 4px !important;
-            }
-            .banking-section {
-                margin-top: 5px !important;
-            }
-            .banking-section td {
-                font-size: 11px !important;
-                padding: 5px !important;
-            }
-            .banking-section .left-col table tr td {
-                padding: 2px 0 !important;
-            }
-            .banking-section .right-col > div:first-child {
-                margin-bottom: 30px !important;
-            }
-            .banking-section .right-col > div:last-child {
-                margin-top: 8px !important;
-            }
-            .terms {
-                font-size: 9px !important;
-                margin-top: 5px !important;
-                line-height: 1.3 !important;
-            }
-            .terms ol {
-                margin: 3px 0 !important;
-                padding-left: 13px !important;
-            }
-            .terms li {
+                font-size: 10.5px !important;
                 margin-bottom: 2px !important;
             }
-            .terms ul {
+            .detail-table td {
+                padding: 1.5px 3px !important;
+            }
+            .banking-section {
+                margin-top: 4px !important;
+            }
+            .banking-section td {
+                font-size: 10.5px !important;
+                padding: 4px !important;
+            }
+            .banking-section .left-col table tr td {
+                padding: 1.5px 0 !important;
+            }
+            .banking-section .right-col > div:first-child {
+                margin-bottom: 27px !important;
+            }
+            .banking-section .right-col > div:last-child {
+                margin-top: 7px !important;
+            }
+            .terms {
+                font-size: 8.5px !important;
+                margin-top: 4px !important;
+                line-height: 1.25 !important;
+            }
+            .terms ol {
                 margin: 2px 0 !important;
-                padding-left: 13px !important;
+                padding-left: 12px !important;
+            }
+            .terms li {
+                margin-bottom: 1.5px !important;
+            }
+            .terms ul {
+                margin: 1.5px 0 !important;
+                padding-left: 12px !important;
             }
             .terms ul li {
                 margin-bottom: 1px !important;
@@ -192,8 +192,8 @@
             z-index: 1000;
         }
         @page {
-            margin: 3mm;
             size: A4 portrait;
+            margin: 10mm -5mm 0mm -5mm;
         }
     </style>
 </head>
@@ -303,11 +303,13 @@
             </tr>
             <tr>
                 <td class="label">Payment Mode</td>
-                <td class="value">: <%= firstPayment.paymentMode %></td>
-                <td class="label" style="width: 140px;">Transaction No.:</td>
-                <td class="value"><%= firstPayment.transactionNo || 'NA' %></td>
+                <td class="value" colspan="2">: <%= firstPayment.paymentMode %></td>
                 <td class="label" style="width: 100px;">Date :</td>
-                <td class="value"><%= new Date(firstPayment.receiptDate).toLocaleDateString('en-IN') %></td>
+                <td class="value" colspan="2"><%= new Date(firstPayment.receiptDate).toLocaleDateString('en-IN') %></td>
+            </tr>
+            <tr>
+                <td class="label">Transaction No.</td>
+                <td class="value" colspan="5">: <%= firstPayment.transactionNo || 'NA' %></td>
             </tr>
             <tr>
                 <td class="label">Remarks (If Any)</td>
