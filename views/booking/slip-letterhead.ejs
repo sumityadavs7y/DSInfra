@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Slip - <%= booking.bookingNo %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .print-container {
+                box-shadow: none !important;
+                margin: 0;
+                padding: 0;
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
+            }
+            #letterheadCanvas {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 210mm !important;
+                height: 297mm !important;
+            }
+            .content-wrapper {
+                padding: 35mm 10mm 5mm 10mm;
+                max-height: 265mm;
+                overflow: hidden;
+            }
+            .title {
+                font-size: 17px !important;
+                margin-bottom: 4px !important;
+            }
+            .header-table {
+                font-size: 10.5px !important;
+                margin-bottom: 3px !important;
+            }
+            .header-table td {
+                padding: 2px 3px !important;
+            }
+            .section-header {
+                font-size: 11.5px !important;
+                margin-top: 4px !important;
+                margin-bottom: 2px !important;
+                padding: 2px 5px !important;
+            }
+            .detail-table {
+                font-size: 10.5px !important;
+                margin-bottom: 2px !important;
+            }
+            .detail-table td {
+                padding: 1.5px 3px !important;
+            }
+            .banking-section {
+                margin-top: 4px !important;
+            }
+            .banking-section td {
+                font-size: 10.5px !important;
+                padding: 4px !important;
+            }
+            .banking-section .left-col table tr td {
+                padding: 1.5px 0 !important;
+            }
+            .banking-section .right-col > div:first-child {
+                margin-bottom: 27px !important;
+            }
+            .banking-section .right-col > div:last-child {
+                margin-top: 7px !important;
+            }
+            .terms {
+                font-size: 10px !important;
+                margin-top: 4px !important;
+                line-height: 1.25 !important;
+            }
+            .terms ol {
+                margin: 2px 0 !important;
+                padding-left: 12px !important;
+            }
+            .terms li {
+                margin-bottom: 1.5px !important;
+            }
+            .terms ul {
+                margin: 1.5px 0 !important;
+                padding-left: 12px !important;
+            }
+            .terms ul li {
+                margin-bottom: 1px !important;
+            }
+        }
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .print-container {
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+            page-break-after: always;
+            page-break-inside: avoid;
+        }
+        #letterheadCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 210mm !important;
+            height: 297mm !important;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+            padding: 35mm 12mm 5mm 12mm;
+            max-height: 265mm;
+            overflow: hidden;
+        }
+        .title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .header-table {
+            width: 100%;
+            margin-bottom: 2px;
+            font-size: 14px;
+            border-collapse: collapse;
+        }
+        .header-table td {
+            border: 1px solid #000;
+            padding: 1px 2px;
+        }
+        .header-table .label {
+            font-weight: bold;
+        }
+        .section-header {
+            background-color: #d3d3d3;
+            padding: 1px 4px;
+            font-weight: bold;
+            font-size: 8px;
+            margin-top: 2px;
+            margin-bottom: 1px;
+            border: 1px solid #000;
+        }
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-bottom: 1px;
+        }
+        .detail-table td {
+            padding: 0.5px 2px;
+            vertical-align: top;
+        }
+        .detail-table .label {
+            font-weight: bold;
+            width: 120px;
+            white-space: nowrap;
+        }
+        .detail-table .value {
+            width: auto;
+        }
+        .banking-section {
+            width: 100%;
+            margin-top: 2px;
+            border-collapse: collapse;
+        }
+        .banking-section td {
+            vertical-align: top;
+            font-size: 11px;
+            padding: 3px;
+        }
+        .banking-section .left-col {
+            width: 35%;
+            border: 1px solid #000;
+            padding: 4px;
+        }
+        .banking-section .right-col {
+            width: 65%;
+            border: 1px solid #000;
+            border-left: none;
+            padding: 4px;
+            position: relative;
+            height: 45px;
+        }
+        .banking-section .right-col > div:first-child {
+            margin-bottom: 12px;
+        }
+        .banking-section .right-col > div:last-child {
+            margin-top: 6px;
+        }
+        .terms {
+            margin-top: 3px;
+            font-size: 11px;
+            line-height: 1.2;
+            page-break-inside: avoid;
+        }
+        .terms ol {
+            margin: 1px 0;
+            padding-left: 10px;
+        }
+        .terms li {
+            margin-bottom: 1px;
+        }
+        * {
+            page-break-inside: avoid;
+        }
+        .download-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        @media print {
+            html, body {
+                height: 297mm;
+                width: 210mm;
+                margin: 0;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Download PDF Button -->
+    <button onclick="downloadPDF()" class="btn btn-success no-print download-button">
+        <i class="bi bi-download"></i> Download PDF
+    </button>
+
+    <div class="print-container">
+        <canvas id="letterheadCanvas"></canvas>
+        <div class="content-wrapper">
+        <%
+        // Calculate payment details
+        const baseAmount = parseFloat(booking.area) * parseFloat(booking.rate);
+        const plcPercent = parseFloat(booking.plc) || 0;
+        const plcAmount = baseAmount * (plcPercent / 100);
+        const totalAmount = parseFloat(booking.totalAmount);
+        const discount = parseFloat(booking.discount) || 0;
+        const effectiveRate = parseFloat(booking.effectiveRate);
+        
+        // Get first payment if exists
+        const firstPayment = payments && payments.length > 0 ? payments[0] : null;
+        %>
+        
+        <!-- Title -->
+        <div class="title">BOOKING APPLICATION FORM</div>
+
+        <!-- Header Information -->
+        <table class="header-table">
+            <tr>
+                <td style="width: 50%;"><span class="label">Booking Appl. No.</span> : <b><%= booking.bookingNo %></b></td>
+                <td style="width: 50%;"><span class="label">Booking Date :</span> <%= new Date(booking.bookingDate).toLocaleDateString('en-IN') %></td>
+            </tr>
+        </table>
+
+        <!-- APPLICANTS DETAILS Section -->
+        <div class="section-header">APPLICANTS DETAILS</div>
+        <table class="detail-table">
+            <tr>
+                <td class="label">Mr./Ms./Mrs/M+Dr</td>
+                <td class="value" colspan="3">: <%= booking.customer.applicantName %></td>
+            </tr>
+            <tr>
+                <td class="label">Son/Wife/Daughter of</td>
+                <td class="value" style="width: 40%;">: <%= booking.customer.fatherOrHusbandName || 'NA' %></td>
+                <td class="label" style="width: 100px;"></td>
+                <td class="value"></td>
+            </tr>
+            <tr>
+                <td class="label">Aadhar No.</td>
+                <td class="value" style="width: 40%;">: <%= booking.customer.aadhaarNo || 'NA' %></td>
+                <td class="label" style="width: 100px;">Mobile No.:</td>
+                <td class="value"><%= booking.customer.mobileNo || 'NA' %></td>
+            </tr>
+            <tr>
+                <td class="label">Address</td>
+                <td class="value" colspan="3">: <%= booking.customer.address %></td>
+            </tr>
+        </table>
+
+        <!-- PROPERTY DETAILS Section -->
+        <div class="section-header">PROPERTY DETAILS</div>
+        <table class="detail-table">
+            <tr>
+                <td class="label">Project Name</td>
+                <td class="value" colspan="3">: <%= booking.project.projectName %></td>
+            </tr>
+            <tr>
+                <td class="label">Plot No.</td>
+                <td class="value" style="width: 25%;">: <%= booking.plotNo %></td>
+                <td class="label" style="width: 140px;">Area (In Sqft):</td>
+                <td class="value" style="width: 25%;"><%= booking.area %></td>
+                <td class="label" style="width: 120px;">PLC (in %):</td>
+                <td class="value"><%= plcPercent %></td>
+            </tr>
+            <% if (booking.legalDetails) { %>
+            <tr>
+                <td class="label">Legal Details</td>
+                <td class="value" colspan="5">: <%= booking.legalDetails %></td>
+            </tr>
+            <% } %>
+        </table>
+
+        <!-- PAYMENT DETAILS Section -->
+        <div class="section-header">PAYMENT DETAILS</div>
+        <table class="detail-table">
+            <tr>
+                <td class="label">Rate ( Per Sqft in Rs.)</td>
+                <td class="value" style="width: 25%;">: <%= parseFloat(booking.rate).toLocaleString('en-IN') %></td>
+                <td class="label" style="width: 140px;">Discount (Rs):</td>
+                <td class="value" style="width: 25%;"><%= discount %></td>
+                <td class="label" style="width: 140px;">Effective Rate :</td>
+                <td class="value"><%= effectiveRate %></td>
+            </tr>
+            <tr>
+                <td class="label">Total Amount (Rs.)</td>
+                <td class="value" colspan="5">: <strong>₹ <%= totalAmount.toLocaleString('en-IN') %></strong> &nbsp;&nbsp;&nbsp; ( Rupees <%= numberToWords(totalAmount) %> Only )</td>
+            </tr>
+        </table>
+
+        <!-- BOOKING DETAILS Section -->
+        <div class="section-header">BOOKING DETAILS</div>
+        <table class="detail-table">
+            <% if (firstPayment) { %>
+            <tr>
+                <td class="label">Booking Amount (Rs.)</td>
+                <td class="value" colspan="5">: <strong>₹ <%= parseFloat(firstPayment.paymentAmount).toLocaleString('en-IN') %></strong> &nbsp;&nbsp;&nbsp; ( Rupees <%= numberToWords(parseFloat(firstPayment.paymentAmount)) %> Only )</td>
+            </tr>
+            <tr>
+                <td class="label">Payment Mode</td>
+                <td class="value" colspan="2">: <%= firstPayment.paymentMode %></td>
+                <td class="label" style="width: 100px;">Date :</td>
+                <td class="value" colspan="2"><%= new Date(firstPayment.receiptDate).toLocaleDateString('en-IN') %></td>
+            </tr>
+            <tr>
+                <td class="label">Transaction No.</td>
+                <td class="value" colspan="5">: <%= firstPayment.transactionNo || 'NA' %></td>
+            </tr>
+            <tr>
+                <td class="label">Remarks (If Any)</td>
+                <td class="value" colspan="5">: <%= firstPayment.remarks || 'NA' %></td>
+            </tr>
+            <% } else { %>
+            <tr>
+                <td class="label">Booking Amount (Rs.)</td>
+                <td class="value" colspan="5">: <strong>₹ 0</strong> &nbsp;&nbsp;&nbsp; ( No Payment Received Yet )</td>
+            </tr>
+            <% } %>
+        </table>
+
+        <!-- BANKING DETAILS Section -->
+        <div class="section-header">BANKING DETAILS</div>
+        <table class="banking-section">
+            <tr>
+                <td class="left-col">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="font-weight: bold; width: 80px; padding: 2px 0;">Name</td>
+                            <td style="padding: 2px 0;">: DS Infra Developers</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 2px 0;">Acc. No.</td>
+                            <td style="padding: 2px 0;">: 7199926523</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 2px 0;">IFSC</td>
+                            <td style="padding: 2px 0;">: IDIB000A532</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 2px 0;">Acc. Type</td>
+                            <td style="padding: 2px 0;">: Current</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 2px 0;">Bank</td>
+                            <td style="padding: 2px 0;">: Indian Bank</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 2px 0;">Branch</td>
+                            <td style="padding: 2px 0;">: Ahimamau, Lucknow</td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="right-col">
+                    <div style="position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; width: calc(100% - 20px);">
+                        <div style="width: 150px;"></div>
+                        <div style="text-align: center; width: 150px;">
+                            <div style="font-weight: bold; font-size: 10px;">FOR DS INFRA DEVELOPERS</div>
+                        </div>
+                    </div>
+                    <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; width: calc(100% - 20px);">
+                        <div style="text-align: center;">
+                            <div style="width: 150px; margin-bottom: 5px;"></div>
+                            <div>(Customer Signature)</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 150px; margin-bottom: 5px;"></div>
+                            <div>(Authorised Signatory)</div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Terms and Conditions Section -->
+        <div class="section-header">[TERMS & CONDITION]</div>
+        <div class="terms">
+            <ol>
+                <li>The Applicant has/have submitted this application requesting allotment of a Unit in the Project as mentioned above.</li>
+                <li>DS Infra Developers reserves the absolute right to either allot or reject the allotment of the unit(s) requested by the applicant(s), which shall be subject to the availability of such units.</li>
+                <li>This application will be processed only after the realization of the booking amount mentioned in the payment details. The stamp duty and registration charges applicable shall be borne by the applicant, as per prevailing laws, shall not be borne entirely by the applicant(s).</li>
+                <li>Applicable bank charges shall be levied on outstation cheques. In case the cheque or payment instrument is returned unpaid for any reason, the booking will automatically stand cancelled without any further notice.</li>
+                <li>By signing this application form, the applicant(s) affirm that they have personally visited and inspected the project location, verified all details, and are fully satisfied with the site, its surroundings, and neighbourhood. The applicant(s) also confirm that they have understood the scheme of development and other project details.</li>
+                <li>The Applicant confirms that he/she has read all the terms and conditions of allotment and found them to be fair and binding. After the waiting period, the company reserves the right to cancel or re-allot the booking at its sole discretion.</li>
+                <li>Cancellation and Refund Policy:
+                    <ul style="list-style-type: disc; margin-top: 3px;">
+                        <li>No refund shall be made to the unit allottee if the booking is cancelled within 30 (thirty) days from the date of cancellation.</li>
+                        <li>No decision regarding refund of the full (or partial) booking amount shall rest solely with the company officials, and the applicant(s) shall not raise any objection to the same.</li>
+                        <li>Any deduction or forfeiture of any amount shall be as per prevailing laws and as decided by the company.</li>
+                    </ul>
+                </li>
+                <li>DS Infra Developers shall not be held liable for any delay or failure in performance of obligations due to causes beyond its reasonable control, including but not limited to natural calamities, government orders, legal disputes, or other unforeseen events.</li>
+                <li>All communication with the applicant(s) shall be sent to the address/contact details provided by the applicant(s) in this form. The company shall not be responsible for any non-receipt of communication due to incorrect or outdated contact details.</li>
+                <li>All disputes or legal proceedings arising out of this application shall be subject to the exclusive jurisdiction of the courts at Lucknow (U.P.) only.</li>
+            </ol>
+        </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Set worker source for PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        // Load and render the letterhead PDF
+        const loadLetterhead = async () => {
+            try {
+                const loadingTask = pdfjsLib.getDocument('/sample/letter_head.pdf');
+                const pdf = await loadingTask.promise;
+                const page = await pdf.getPage(1);
+                
+                const canvas = document.getElementById('letterheadCanvas');
+                const context = canvas.getContext('2d');
+                
+                // Get the container width
+                const container = document.querySelector('.print-container');
+                const containerWidth = container.offsetWidth;
+                
+                // Calculate scale to fit container width
+                const viewport = page.getViewport({ scale: 1.0 });
+                const scale = containerWidth / viewport.width;
+                const scaledViewport = page.getViewport({ scale: scale });
+                
+                // Set canvas dimensions to match A4 exactly
+                canvas.width = scaledViewport.width;
+                canvas.height = scaledViewport.height;
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                
+                // Render full PDF page
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: scaledViewport
+                };
+                await page.render(renderContext).promise;
+            } catch (error) {
+                console.error('Error loading letterhead:', error);
+            }
+        };
+        
+        // Load letterhead when page is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadLetterhead);
+        } else {
+            loadLetterhead();
+        }
+        
+        // Download PDF function
+        async function downloadPDF() {
+            const element = document.querySelector('.print-container');
+            
+            // Ensure content fits in one page
+            const contentWrapper = document.querySelector('.content-wrapper');
+            const maxHeight = 262; // mm (297mm - 35mm top padding)
+            const currentHeight = contentWrapper.offsetHeight * 0.264583; // px to mm
+            
+            const opt = {
+                margin: 0,
+                filename: 'Booking_<%= booking.bookingNo %>_Letterhead.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    height: 1122, // A4 height in pixels at 96 DPI (297mm)
+                    windowHeight: 1122
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+            
+            try {
+                await html2pdf().set(opt).from(element).save();
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
+
