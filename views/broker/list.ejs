@@ -120,7 +120,7 @@
                             <h5 class="mb-0 text-success"><%= stats.registeredBookingsCount %></h5>
                         </div>
                     </div>
-                    <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                    <% if (userRole !== 'associate') { %>
                     <div class="col-6 col-md-3">
                         <div class="p-3 bg-success bg-opacity-10 border border-success rounded">
                             <label class="text-muted small d-block">Total Commission</label>
@@ -162,7 +162,7 @@
                             <h5 class="mb-0 text-warning"><%= stats.nonRegisteredBookingsCount %></h5>
                         </div>
                     </div>
-                    <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                    <% if (userRole !== 'associate') { %>
                     <div class="col-6 col-md-4">
                         <div class="p-3 bg-warning bg-opacity-10 border border-warning rounded">
                             <label class="text-muted small d-block">Total Commission</label>

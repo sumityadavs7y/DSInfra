@@ -174,7 +174,7 @@
                                     <small class="text-muted">Unregistered Bookings</small>
                                 </div>
                             </div>
-                            <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                            <% if (userRole !== 'associate') { %>
                             <div class="col-6 col-md-3">
                                 <div class="p-3">
                                     <h2 class="text-info mb-1">₹<%= stats.totalCommission.toLocaleString('en-IN') %></h2>
@@ -193,7 +193,7 @@
                             <i class="bi bi-journal-text"></i> Bookings (<%= bookings.length %>)
                         </button>
                     </li>
-                    <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                    <% if (userRole !== 'associate') { %>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab">
                             <i class="bi bi-cash-coin"></i> Commission Payments (<%= brokerPayments ? brokerPayments.length : 0 %>)
@@ -223,7 +223,7 @@
                                             <th>Customer</th>
                                             <th>Project</th>
                                             <th>Plot</th>
-                                            <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                                            <% if (userRole !== 'associate') { %>
                                             <th class="d-none d-lg-table-cell">Commission</th>
                                             <% } %>
                                             <th class="text-center">Registry</th>
@@ -239,7 +239,7 @@
                                                 <td><%= booking.customer.applicantName %></td>
                                                 <td><%= booking.project.projectName %></td>
                                                 <td><%= booking.plotNo %></td>
-                                                <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                                                <% if (userRole !== 'associate') { %>
                                                 <td class="d-none d-lg-table-cell fw-bold text-warning">
                                                     ₹<%= parseFloat(booking.brokerCommission || 0).toLocaleString('en-IN') %>
                                                 </td>
@@ -270,7 +270,7 @@
                                             </tr>
                                         <% }) %>
                                     </tbody>
-                                    <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                                    <% if (userRole !== 'associate') { %>
                                     <tfoot class="table-light">
                                         <tr>
                                             <th colspan="5" class="text-end">Total Commission:</th>
@@ -290,8 +290,8 @@
                         </div>
                     </div>
 
-                    <!-- Commission Payments Tab (Hidden for Associates and Team Leaders) -->
-                    <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
+                    <!-- Commission Payments Tab (Hidden for Associates only) -->
+                    <% if (userRole !== 'associate') { %>
                     <div class="tab-pane fade" id="payments" role="tabpanel">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
