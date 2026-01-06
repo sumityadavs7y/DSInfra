@@ -403,19 +403,16 @@
                     </table>
                 </td>
                 <td class="right-col">
-                    <div style="position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; width: calc(100% - 20px);">
-                        <div style="width: 150px;"></div>
+                    <div style="position: absolute; top: 10px; left: 0; right: 0; display: flex; justify-content: center; width: 100%;">
                         <div style="text-align: center; width: 150px;">
                             <div style="font-weight: bold; font-size: 10px;">FOR DS INFRA DEVELOPERS</div>
                         </div>
                     </div>
-                    <div style="position: absolute; bottom: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; width: calc(100% - 20px);">
+                    <div style="position: absolute; bottom: 10px; left: 0; right: 0; display: flex; justify-content: center; width: 100%;">
                         <div style="text-align: center;">
-                            <div style="width: 150px; margin-bottom: 5px;"></div>
-                            <div>(Customer Signature)</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="width: 150px; margin-bottom: 5px;"></div>
+                            <div style="width: 150px; margin-bottom: 5px;">
+                                <img src="/images/sign.png" alt="Signature" style="max-width: 120px; max-height: 50px; display: block; margin: 0 auto;">
+                            </div>
                             <div>(Authorised Signatory)</div>
                         </div>
                     </div>
@@ -529,6 +526,25 @@
                 console.error('Error generating PDF:', error);
                 alert('Error generating PDF. Please try again.');
             }
+        }
+
+        // Listen for message from parent window to auto-download
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.action === 'download') {
+                // Wait a bit more to ensure letterhead is loaded
+                setTimeout(() => {
+                    downloadPDF();
+                }, 1000);
+            }
+        });
+
+        // Auto-download if URL has autodownload parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('autodownload') === 'true') {
+            // Wait for letterhead to load completely
+            setTimeout(() => {
+                downloadPDF();
+            }, 2000);
         }
     </script>
 </body>
