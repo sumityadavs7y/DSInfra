@@ -257,9 +257,15 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <a href="/booking/<%= booking.id %>" class="btn btn-sm btn-dark">
-                                                        <i class="bi bi-eye"></i>
-                                                    </a>
+                                                    <div class="btn-group btn-group-sm" role="group">
+                                                        <a href="/booking/<%= booking.id %>" class="btn btn-outline-dark" title="View Booking">
+                                                            <i class="bi bi-eye"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline-success" title="Download with Letterhead"
+                                                                onclick="downloadBookingPDF('<%= booking.id %>', '<%= booking.bookingNo %>')">
+                                                            <i class="bi bi-file-earmark-pdf"></i>
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <% }) %>
@@ -866,6 +872,12 @@
                 paymentsTabContent.classList.add('show', 'active');
             }
         });
+
+        // Download booking PDF with letterhead
+        function downloadBookingPDF(bookingId, bookingNo) {
+            // Open the letterhead page with autodownload parameter
+            window.open(`/booking/${bookingId}/slip-letterhead?autodownload=true`, '_blank');
+        }
     </script>
 </body>
 </html>
