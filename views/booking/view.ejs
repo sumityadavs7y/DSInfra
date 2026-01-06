@@ -151,8 +151,8 @@
 
                         <hr class="my-4">
 
-                        <!-- Partner Details (Hidden for Team Leader) -->
-                        <% if (userRole !== 'team_leader') { %>
+                        <!-- Partner Details (Hidden for Associates and Team Leaders) -->
+                        <% if (userRole !== 'team_leader' && userRole !== 'associate') { %>
                         <% if (booking.broker) { %>
                         <%
                             // Calculate commission breakdown
