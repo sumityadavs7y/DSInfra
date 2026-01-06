@@ -363,6 +363,60 @@ router.get('/:id/slip', isAuthenticated, async (req, res) => {
     }
 });
 
+// Generate payment slip with letterhead (printable)
+router.get('/:id/slip-letterhead', isAuthenticated, async (req, res) => {
+    try {
+        const payment = await Payment.findByPk(req.params.id, {
+            include: [
+                {
+                    model: Booking,
+                    as: 'booking',
+                    include: [
+                        { model: Customer, as: 'customer' },
+                        { model: Project, as: 'project' }
+                    ]
+                },
+                {
+                    model: User,
+                    as: 'creator',
+                    attributes: ['name']
+                }
+            ]
+        });
+
+        if (!payment) {
+            return res.status(404).send('Payment not found');
+        }
+
+        // Get all payments for this booking
+        const allPaymentsData = await Payment.findAll({
+            where: { 
+                bookingId: payment.bookingId,
+                isDeleted: false
+            },
+            order: [['receiptDate', 'ASC']]
+        });
+
+        // Calculate total paid
+        const totalPaid = allPaymentsData.reduce((sum, p) => sum + parseFloat(p.paymentAmount), 0);
+
+        // Convert amount to words
+        const amountInWords = numberToWords(parseFloat(payment.paymentAmount));
+
+        res.render('payment/slip-letterhead', {
+            payment,
+            amountInWords,
+            allPaymentsData,
+            totalPaid,
+            userName: req.session.userName,
+            userRole: req.session.userRole
+        });
+    } catch (error) {
+        console.error('Error generating payment slip with letterhead:', error);
+        res.status(500).send('Error generating payment slip with letterhead');
+    }
+});
+
 // Show edit payment form
 router.get('/:id/edit', isAuthenticated, isNotAssociate, async (req, res) => {
     try {

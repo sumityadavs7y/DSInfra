@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Receipt - <%= payment.receiptNo %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .print-container {
+                box-shadow: none !important;
+                margin: 0;
+                padding: 0;
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
+            }
+            #letterheadCanvas {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 210mm !important;
+                height: 297mm !important;
+            }
+            .content-wrapper {
+                padding: 35mm 10mm 5mm 10mm;
+                max-height: 265mm;
+                overflow: hidden;
+            }
+            .title {
+                font-size: 18px !important;
+                margin-bottom: 2px !important;
+            }
+            .header-table {
+                font-size: 9px !important;
+                margin-bottom: 2px !important;
+            }
+            .header-table td {
+                padding: 1px 2px !important;
+            }
+            .section-header {
+                font-size: 8px !important;
+                margin-top: 2px !important;
+                margin-bottom: 1px !important;
+                padding: 1px 4px !important;
+            }
+            .detail-table {
+                font-size: 9px !important;
+                margin-bottom: 1px !important;
+            }
+            .detail-table td {
+                padding: 0.5px 2px !important;
+            }
+            .payment-table {
+                font-size: 9px !important;
+                margin-top: 2px !important;
+            }
+            .payment-table th,
+            .payment-table td {
+                padding: 1px 2px !important;
+            }
+            .payment-table td {
+                height: 9px !important;
+            }
+            .terms {
+                font-size: 8px !important;
+                margin-top: 2px !important;
+                line-height: 1.2 !important;
+            }
+        }
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px 0;
+        }
+        .print-container {
+            width: 210mm;
+            height: 297mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+            page-break-after: always;
+            page-break-inside: avoid;
+        }
+        #letterheadCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 210mm !important;
+            height: 297mm !important;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+            padding: 35mm 12mm 5mm 12mm;
+            max-height: 265mm;
+            overflow: hidden;
+        }
+        .title {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .header-table {
+            width: 100%;
+            margin-bottom: 4px;
+            font-size: 10px;
+            border-collapse: collapse;
+        }
+        .header-table td {
+            border: 1px solid #000;
+            padding: 3px;
+        }
+        .header-table .label {
+            font-weight: bold;
+        }
+        .section-header {
+            background-color: #f0f0f0;
+            padding: 2px 6px;
+            font-weight: bold;
+            font-size: 9px;
+            margin-top: 4px;
+            margin-bottom: 2px;
+            border: 1px solid #000;
+        }
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            margin-bottom: 2px;
+        }
+        .detail-table td {
+            padding: 0.5px 4px;
+            vertical-align: top;
+            line-height: 1.2;
+        }
+        .detail-table .label {
+            font-weight: bold;
+            width: 130px;
+            white-space: nowrap;
+        }
+        .detail-table .value {
+            width: auto;
+        }
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+        .payment-table th,
+        .payment-table td {
+            border: 1px solid #000;
+            padding: 2px 4px;
+            text-align: left;
+        }
+        .payment-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .payment-table td {
+            height: 11px;
+            line-height: 1.2;
+        }
+        .terms {
+            margin-top: 4px;
+            font-size: 9px;
+            line-height: 1.3;
+        }
+        .terms strong {
+            font-weight: bold;
+        }
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .no-print {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Download PDF Button -->
+    <button id="downloadPdfBtn" class="btn btn-success no-print print-button">
+        <i class="bi bi-download"></i> Download PDF
+    </button>
+
+    <div class="print-container">
+        <!-- Letterhead Canvas -->
+        <canvas id="letterheadCanvas"></canvas>
+        
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Title -->
+            <div class="title">PAYMENT RECEIPT</div>
+
+            <!-- Header Information -->
+            <table class="header-table">
+                <tr>
+                    <td style="width: 33%;"><span class="label">Booking Appl. No.</span> :<b> <%= payment.booking.bookingNo %></b></td>
+                    <td style="width: 34%;"><span class="label">Receipt No:</span> <%= payment.receiptNo %></td>
+                    <td style="width: 33%;"><span class="label">Date:</span> <%= new Date(payment.receiptDate).toLocaleDateString('en-IN') %></td>
+                </tr>
+            </table>
+
+            <!-- APPLICANTS DETAILS Section -->
+            <div class="section-header">APPLICANTS DETAILS</div>
+            <table class="detail-table">
+                <tr>
+                    <td class="label">Mr./Ms./Mrs/M+Dr</td>
+                    <td class="value" style="width: 40%;">: <%= payment.booking.customer.applicantName %></td>
+                    <td class="label" style="width: 130px;">Aadhar No.</td>
+                    <td class="value">: <%= payment.booking.customer.aadhaarNo || 'NA' %></td>
+                </tr>
+                <tr>
+                    <td class="label">Son/Wife/Daughter of</td>
+                    <td class="value" style="width: 40%;">: <%= payment.booking.customer.fatherOrHusbandName || 'NA' %></td>
+                    <td class="label" style="width: 130px;">Mobile No.</td>
+                    <td class="value">: <%= payment.booking.customer.mobileNo || 'NA' %></td>
+                </tr>
+                <tr>
+                    <td class="label">Address</td>
+                    <td class="value" colspan="3">: <%= payment.booking.customer.address %></td>
+                </tr>
+            </table>
+
+            <!-- PAYMENT DETAILS Section -->
+            <div class="section-header">PAYMENT DETAILS</div>
+            <table class="detail-table">
+                <tr>
+                    <td class="label">Amt. Received (Rs.)</td>
+                    <td class="value" colspan="3">: <strong>₹ <%= parseFloat(payment.paymentAmount).toLocaleString('en-IN') %></strong> &nbsp;&nbsp;&nbsp; ( Rupees <%= amountInWords %> Only )</td>
+                </tr>
+                <tr>
+                    <td class="label">Payment Mode</td>
+                    <td class="value">: <%= payment.paymentMode %></td>
+                    <td colspan="2">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="width: 50%; padding: 0;"><strong>Transaction No.:</strong> <%= payment.transactionNo || 'NA' %></td>
+                                <td style="width: 50%; padding: 0;"><strong>Date :</strong> <%= new Date(payment.receiptDate).toLocaleDateString('en-IN') %></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Remarks (If Any)</td>
+                    <td class="value" colspan="3">: <%= payment.remarks || 'NA' %></td>
+                </tr>
+            </table>
+
+            <!-- PREVIOUS PAYMENT DETAILS Section -->
+            <div class="section-header">PREVIOUS PAYMENT DETAILS</div>
+            
+            <%
+            // Get previous payments (excluding current one)
+            const previousPayments = (typeof allPaymentsData !== 'undefined' && allPaymentsData) 
+                ? allPaymentsData.filter(p => p.id !== payment.id) 
+                : [];
+            
+            // Calculate totals
+            const totalPaidAmount = (typeof totalPaid !== 'undefined') ? totalPaid : parseFloat(payment.paymentAmount);
+            const totalBookingAmount = parseFloat(payment.booking.totalAmount);
+            const pendingAmount = totalBookingAmount - totalPaidAmount;
+            %>
+
+            <!-- Payment History and Totals Merged Table -->
+            <table class="payment-table">
+                <tr>
+                    <th style="width: 13%;">Date</th>
+                    <th style="width: 20%;">Transaction No.</th>
+                    <th style="width: 13%;">Mode</th>
+                    <th style="width: 15%;">Amount</th>
+                    <th style="width: 14%;">Recpt. No.</th>
+                    <th style="width: 25%; font-weight: bold; background-color: #f0f0f0;">SUMMARY</th>
+                </tr>
+                <% for (let i = 0; i < 5; i++) { %>
+                <tr style="height: 18px;">
+                    <% if (i < previousPayments.length) { 
+                        const p = previousPayments[i];
+                    %>
+                        <td><%= new Date(p.receiptDate).toLocaleDateString('en-IN') %></td>
+                        <td><%= p.transactionNo || '-' %></td>
+                        <td><%= p.paymentMode %></td>
+                        <td>₹<%= parseFloat(p.paymentAmount).toLocaleString('en-IN') %></td>
+                        <td><%= p.receiptNo %></td>
+                    <% } else { %>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    <% } %>
+                    <% if (i === 0) { %>
+                    <td rowspan="5" style="vertical-align: top; padding: 4px 6px;">
+                        <div style="display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                            <div style="font-size: 10px; font-weight: bold; line-height: 1.5;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                                    <span>TOTAL:</span>
+                                    <span>₹ <%= totalBookingAmount.toLocaleString('en-IN') %></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-top: 1px solid #ccc; padding-top: 2px;">
+                                    <span>PENDING:</span>
+                                    <span>₹ <%= pendingAmount.toLocaleString('en-IN') %></span>
+                                </div>
+                            </div>
+                            <div style="text-align: center; font-size: 10px; font-weight: normal; margin-top: 15px; padding-top: 8px; border-top: 1px solid #000;">
+                                <img src="/images/sign.png" alt="Signature" style="max-width: 120px; max-height: 50px; display: block; margin: 0 auto 5px auto;">
+                                ( Authorised Signatory )
+                            </div>
+                        </div>
+                    </td>
+                    <% } %>
+                </tr>
+                <% } %>
+            </table>
+
+            <!-- Terms & Condition -->
+            <div class="terms">
+                <strong>Terms & Condition :</strong> Applicable bank charges shall be levied on outstation cheques. In case the cheque or payment instrument is returned unpaid for any reason, the booking will automatically stand cancelled without any further notice.
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // PDF.js worker configuration
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // Load letterhead PDF
+        const loadLetterhead = async () => {
+            try {
+                const loadingTask = pdfjsLib.getDocument('/sample/letter_head.pdf');
+                const pdf = await loadingTask.promise;
+                const page = await pdf.getPage(1);
+                
+                const canvas = document.getElementById('letterheadCanvas');
+                const context = canvas.getContext('2d');
+                
+                // Get viewport dimensions
+                const viewport = page.getViewport({ scale: 1.0 });
+                
+                // Calculate scale to fit container width
+                const scale = (document.querySelector('.print-container').offsetWidth / viewport.width);
+                const scaledViewport = page.getViewport({ scale: scale });
+                
+                // Set canvas dimensions
+                canvas.height = scaledViewport.height;
+                canvas.width = scaledViewport.width;
+                
+                // Render PDF page
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: scaledViewport
+                };
+                await page.render(renderContext).promise;
+            } catch (error) {
+                console.error('Error loading letterhead:', error);
+            }
+        };
+
+        // Load letterhead when page is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadLetterhead);
+        } else {
+            loadLetterhead();
+        }
+        
+        // Download PDF function
+        async function downloadPDF() {
+            const element = document.querySelector('.print-container');
+            
+            const opt = {
+                margin: 0,
+                filename: 'Payment_Receipt_<%= payment.receiptNo %>_Letterhead.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    height: 1122, // A4 height in pixels at 96 DPI (297mm)
+                    windowHeight: 1122
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+            
+            try {
+                await html2pdf().set(opt).from(element).save();
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            }
+        }
+
+        // Attach download handler
+        document.getElementById('downloadPdfBtn').addEventListener('click', downloadPDF);
+
+        // Listen for message from parent window to auto-download
+        window.addEventListener('message', function(event) {
+            if (event.data && event.data.action === 'download') {
+                // Wait a bit more to ensure letterhead is loaded
+                setTimeout(() => {
+                    downloadPDF();
+                }, 1000);
+            }
+        });
+
+        // Auto-download if URL has autodownload parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('autodownload') === 'true') {
+            // Wait for letterhead to load completely
+            setTimeout(() => {
+                downloadPDF();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
