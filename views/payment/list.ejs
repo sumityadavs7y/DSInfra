@@ -108,6 +108,10 @@
                                                 <a href="/payment/<%= payment.id %>" class="btn btn-outline-dark" title="View Payment">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
+                                                <button type="button" class="btn btn-outline-success" title="Download with Letterhead"
+                                                        onclick="downloadPaymentPDF('<%= payment.id %>', '<%= payment.receiptNo %>')">
+                                                    <i class="bi bi-file-earmark-pdf"></i>
+                                                </button>
                                                 <% if (userRole !== 'associate' && userRole !== 'team_leader' && !payment.isDeleted) { %>
                                                 <a href="/payment/<%= payment.id %>/edit" class="btn btn-outline-primary" title="Edit Payment">
                                                     <i class="bi bi-pencil"></i>
@@ -145,6 +149,12 @@
                 row.style.display = text.includes(searchTerm) ? '' : 'none';
             });
         });
+
+        // Download payment PDF with letterhead
+        function downloadPaymentPDF(paymentId, receiptNo) {
+            // Open the letterhead page with autodownload parameter
+            window.open(`/payment/${paymentId}/slip-letterhead?autodownload=true`, '_blank');
+        }
     </script>
 </body>
 </html>
