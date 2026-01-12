@@ -39,8 +39,10 @@
     "pg-hstore": "^2.3.4",
     "razorpay": "^2.9.2",
     "sequelize": "^6.37.7",
-    "sqlite3": "^5.1.7",
     "umzug": "^3.8.2"
+  },
+  "optionalDependencies": {
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
